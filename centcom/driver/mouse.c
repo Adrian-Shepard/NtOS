@@ -9,16 +9,10 @@
 
 static int g_mouse_x = 400;
 static int g_mouse_y = 300;
-static int g_left = 0;
-static int g_right = 0;
-static int g_middle = 0;
+static int g_left = 0, g_right = 0, g_middle = 0;
 
 static uint8_t g_packet[3];
 static int g_cycle = 0;
-
-// Аккумуляторы для плавности
-static int acc_x = 0;
-static int acc_y = 0;
 
 static void mouse_wait(uint8_t a_type) {
     uint32_t timeout = 100000;
@@ -43,40 +37,30 @@ static uint8_t mouse_read(void) {
 
 void mouse_init(void) {
     uint8_t status;
-    
     for (int i = 0; i < 32; i++) {
         if (inb(0x64) & 0x01) (void)inb(0x60);
         else break;
     }
 
-    mouse_wait(1);
-    outb(PS2_COMMAND, 0xA8);
-
-    mouse_wait(1);
-    outb(PS2_COMMAND, 0x20);
-    mouse_wait(0);
-    status = inb(PS2_DATA);
+    mouse_wait(1); outb(PS2_COMMAND, 0xA8);
+    mouse_wait(1); outb(PS2_COMMAND, 0x20);
+    mouse_wait(0); status = inb(PS2_DATA);
     
-    status |= 0x02;
-    status &= ~0x10;
-    status |= 0x40;
+    status |= 0x02;  // Прерывание мыши
+    status &= ~0x10; // Тактирование
+    status |= 0x40;  // Отключаем трансляцию (мышь сама шлет 3 байта)
     
-    mouse_wait(1);
-    outb(PS2_COMMAND, 0x60);
-    mouse_wait(1);
-    outb(PS2_DATA, status);
+    mouse_wait(1); outb(PS2_COMMAND, 0x60);
+    mouse_wait(1); outb(PS2_DATA, status);
 
-    mouse_write(0xF6); mouse_read();
+    mouse_write(0xF6); mouse_read(); // Сброс
     mouse_write(0xF3); mouse_read(); mouse_write(100); mouse_read(); // 100Hz
-    mouse_write(0xE8); mouse_read(); mouse_write(0x03); mouse_read(); // 8 counts/mm
-    mouse_write(0xF4); mouse_read();
+    mouse_write(0xE8); mouse_read(); mouse_write(0x03); mouse_read(); // 8 count/mm
+    mouse_write(0xF4); mouse_read(); // Включить
 
     g_mouse_x = fb_width() / 2;
     g_mouse_y = fb_height() / 2;
-    acc_x = g_mouse_x;
-    acc_y = g_mouse_y;
-
-    logi(S_KBD, "PS/2 Mouse initialized (sensitivity limited)");
+    logi(S_KBD, "PS/2 Mouse ready");
 }
 
 void mouse_irq(regs_t *r) {
@@ -85,8 +69,9 @@ void mouse_irq(regs_t *r) {
     if (!(status & 0x01)) return;
     
     uint8_t data = inb(PS2_DATA);
-    if (!(status & 0x20)) return;
+    if (!(status & 0x20)) return; // Только данные мыши
 
+    // Синхронизация: первый байт всегда имеет бит 3 (0x08)
     if (g_cycle == 0 && !(data & 0x08)) return; 
 
     g_packet[g_cycle] = data;
@@ -96,21 +81,28 @@ void mouse_irq(regs_t *r) {
         g_cycle = 0;
 
         uint8_t flags = g_packet[0];
-        if (flags & 0xC0) return;
+        if (flags & 0xC0) return; // Переполнение
 
         int dx = g_packet[1];
         int dy = g_packet[2];
 
+        // Знаковое расширение
         if (flags & 0x10) dx |= 0xFFFFFF00;
         if (flags & 0x20) dy |= 0xFFFFFF00;
 
-        // Накопление дробных значений для плавности (делим на 3)
-        acc_x += dx;
-        acc_y += dy;
+        // --- НАСТРОЙКА ЧУВСТВИТЕЛЬНОСТИ ---
+        // Если слишком быстро, поменяй dx / 2, если медленно, убери деление
+        int move_x = dx / 2;
+        int move_y = dy / 2;
 
-        g_mouse_x = acc_x / 3;
-        g_mouse_y -= (acc_y / 3); // Y инвертирован
-        acc_y -= (acc_y / 3) * 3; // Остаток сохраняем
+        // Компенсация для очень медленных движений (1 пиксель)
+        if (move_x == 0 && dx > 0) move_x = 1;
+        if (move_x == 0 && dx < 0) move_x = -1;
+        if (move_y == 0 && dy > 0) move_y = 1;
+        if (move_y == 0 && dy < 0) move_y = -1;
+
+        g_mouse_x += move_x;
+        g_mouse_y -= move_y; // Инверсия Y
 
         if (g_mouse_x < 0) g_mouse_x = 0;
         if (g_mouse_y < 0) g_mouse_y = 0;

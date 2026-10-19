@@ -145,8 +145,6 @@ void gui_demo(void) {
         mouse_state_t m = mouse_get_state();
         
         if (m.x != last_mx || m.y != last_my) {
-            // Отключаем прерывания на момент стирания и рисования курсора
-            // Это гарантирует, что экран не мигнет промежуточным кадром
             __asm__ volatile("cli"); 
             restore_cursor_bg();
             draw_cursor(m.x, m.y);
@@ -163,8 +161,9 @@ void gui_demo(void) {
         }
         last_left = m.left;
 
-        // Спим до следующего прерывания
-        __asm__ volatile("sti; hlt; cli"); 
+        // Инструкция pause снижает нагрузку на CPU,
+        // но позволяет мгновенно проснуться при прерывании от мыши
+        __asm__ volatile("pause");
     }
 
     __asm__ volatile("cli");
