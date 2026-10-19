@@ -1,6 +1,6 @@
 #include "bootscreen.h"
 #include "fb.h"
-#include "../sound/speaker.h"
+#include "../log/log.h"
 #include "../core/gdt.h"
 #include "../core/idt.h"
 #include "../mem/pmm.h"
@@ -10,346 +10,294 @@
 #include "../fs/ntmem_fs.h"
 #include <stdint.h>
 
-/* ============================================================= */
-/*                     ГЛОБАЛЬНЫЙ РЫЧАГ ЗВУКА                    */
-/* ============================================================= */
-/* 1 = звуки включены, 0 = полная тишина во время boot screen.   */
-/* Одно место — отключает все бипы ниже.                         */
-#define BOOT_SCREEN_SOUND 0
+// Цветовая палитра в стиле CCBF
+#define COL_BG      0x000A0A0C
+#define COL_PANEL   0x00141A20
+#define COL_BORDER  0x00AA2222
+#define COL_RED     0x00FF3333
+#define COL_ORANGE  0x00FFAA00
+#define COL_TEXT    0x00D0D0D0
+#define COL_MUTED   0x00808080
+#define COL_CYAN    0x0044DDFF
+#define COL_GREEN   0x0044FF88
 
-/* ---------- цвета ---------- */
-#define BG_BLACK 0x00000000
-#define FG_GREEN 0x0033FF33
-#define FG_AMBER 0x00FFC844
-#define BG_RED   0x00901828
-#define FG_CYAN  0x0040E8E8
-
-/* ---------- тайминги ---------- */
-#define TYPE_PAUSE   140
-#define LINE_PAUSE   900
-#define BLANK_PAUSE  200
-#define BLOCK_PAUSE  120
-
-/* ---------- звуковые макросы ---------- */
-/*
- * Профиль SOFT: частоты 110–196 Hz, длительности 8–100 мс.
- * Пауза после бипа пропорциональна длительности (в speaker_beep).
- * Субъективно воспринимается как тихие щелчки, не как «гудки».
- */
-#if BOOT_SCREEN_SOUND
-  #define BEEP_PHASE   speaker_beep(147, 15)   /* D3   15 мс — старт фазы */
-  #define BEEP_END     speaker_beep(196, 18)   /* G3   18 мс — конец блока */
-  #define BEEP_TICK    speaker_beep(110,  8)   /* A2    8 мс — тик данных */
-  #define BEEP_REVEAL  speaker_beep(165, 30)   /* E3   30 мс — появление */
-  #define BEEP_LOUD    speaker_beep(131, 60)   /* C3   60 мс — большой акцент */
-  #define BEEP_TRUST   speaker_beep(110, 100)  /* A2  100 мс — закрытие */
-#else
-  #define BEEP_PHASE
-  #define BEEP_END
-  #define BEEP_TICK
-  #define BEEP_REVEAL
-  #define BEEP_LOUD
-  #define BEEP_TRUST
-#endif
-
-/* ---------- утилиты ---------- */
+static uint32_t g_cur_y = 0;
+static const uint32_t PAD_X = 16;
+static const uint32_t PAD_Y = 16;
+static int g_current_percent = 0;
 
 static void delay_ms(uint32_t ms) {
-    for (uint32_t i = 0; i < ms * 500; i++)
-        __asm__ volatile("pause");
+    for (volatile uint32_t i = 0; i < ms * 10000; i++) __asm__ volatile("pause");
 }
 
-static void tw(const char *s, uint32_t fg) {
-    while (*s) {
-        fb_putc(*s++, fg, BG_BLACK);
-        for (uint32_t i = 0; i < TYPE_PAUSE; i++) __asm__ volatile("pause");
-    }
+static void put_str(const char *s, uint32_t fg, uint32_t bg) {
+    while (*s) fb_putc(*s++, fg, bg);
 }
 
-static void twline(const char *s) {
-    tw(s, FG_GREEN);
-    fb_putc('\n', FG_GREEN, BG_BLACK);
-    delay_ms(LINE_PAUSE);
-}
-
-static void blank(void) {
-    fb_putc('\n', FG_GREEN, BG_BLACK);
-    delay_ms(BLANK_PAUSE);
-}
-
-/* ---------- вывод чисел ---------- */
-
-static void puthex(uint32_t v) {
-    const char *h = "0123456789abcdef";
-    for (int i = 7; i >= 0; i--)
-        fb_putc(h[(v >> (i * 4)) & 0xF], FG_GREEN, BG_BLACK);
-}
-
-static void puthex64(uint64_t v) {
-    const char *h = "0123456789abcdef";
-    fb_puts("0x", FG_GREEN, BG_BLACK);
-    for (int i = 15; i >= 0; i--)
-        fb_putc(h[(v >> (i * 4)) & 0xF], FG_GREEN, BG_BLACK);
-}
-
-static void putdec(uint64_t v) {
+static void put_dec(uint64_t v, uint32_t fg, uint32_t bg) {
     char b[24]; int i = 0;
-    if (!v) { fb_putc('0', FG_GREEN, BG_BLACK); return; }
+    if (!v) { fb_putc('0', fg, bg); return; }
     while (v) { b[i++] = '0' + (v % 10); v /= 10; }
-    while (i--) fb_putc(b[i], FG_GREEN, BG_BLACK);
+    while (i--) fb_putc(b[i], fg, bg);
 }
 
-static void putdec_pad(uint64_t v, int width) {
-    char b[24]; int i = 0;
-    if (!v) b[i++] = '0';
-    while (v) { b[i++] = '0' + (v % 10); v /= 10; }
-    while (i < width) b[i++] = ' ';
-    while (i--) fb_putc(b[i], FG_GREEN, BG_BLACK);
+static void draw_centered_text(const char *s, uint32_t scale, uint32_t y, uint32_t fg, uint32_t bg) {
+    fb_set_scale(scale);
+    int len = 0; while (s[len]) len++;
+    uint32_t width = len * 8 * scale;
+    uint32_t x = (fb_width() - width) / 2;
+    fb_set_cursor(x, y);
+    put_str(s, fg, bg);
 }
 
-/* печатает 64 бита двумя строками */
-static void print_bin_split(uint64_t v, uint32_t fg, uint32_t bg) {
-    for (int i = 63; i >= 32; i--) {
-        fb_putc((v >> i) & 1 ? '1' : '0', fg, bg);
-        if (i % 8 == 0 && i != 32) fb_putc(' ', fg, bg);
+static void draw_header(const char *subtitle) {
+    uint32_t w = fb_width();
+    
+    fb_fill_rect(PAD_X, PAD_Y + 48, w - PAD_X * 2, 16, COL_BG);
+
+    fb_fill_rect(PAD_X, PAD_Y, w - PAD_X * 2, 32, COL_RED);
+    fb_set_cursor(PAD_X + 8, PAD_Y + 12);
+    put_str("NANOTRASEN SECURITY SYSTEMS // CENTCOM BOOT", 0x00FFFFFF, COL_RED);
+
+    fb_set_cursor(PAD_X, PAD_Y + 48);
+    put_str("PHASE: ", COL_MUTED, COL_BG);
+    put_str(subtitle, COL_ORANGE, COL_BG);
+    
+    const char *term_str = "TERMINAL: NT-0xDEADBEEF";
+    int term_len = 0; while (term_str[term_len]) term_len++;
+    fb_set_cursor(w - PAD_X - (term_len * 8), PAD_Y + 48);
+    put_str(term_str, COL_MUTED, COL_BG);
+}
+
+static void log_line(const char *tag, const char *msg) {
+    if (g_cur_y > fb_height() - 100) return;
+
+    fb_set_cursor(PAD_X + 16, g_cur_y);
+    
+    put_str("[ ", COL_MUTED, COL_PANEL);
+    put_str("..", COL_CYAN, COL_PANEL);
+    put_str(" ] ", COL_MUTED, COL_PANEL);
+    delay_ms(10);
+    
+    fb_set_cursor(PAD_X + 16, g_cur_y);
+    put_str("[ ", COL_MUTED, COL_PANEL);
+    put_str("OK", COL_GREEN, COL_PANEL);
+    put_str(" ] ", COL_MUTED, COL_PANEL);
+    
+    put_str(tag, COL_CYAN, COL_PANEL);
+    
+    int tag_len = 0; while(tag[tag_len]) tag_len++;
+    for (int i = tag_len; i < 16; i++) fb_putc(' ', COL_PANEL, COL_PANEL);
+    
+    put_str(msg, COL_TEXT, COL_PANEL);
+    g_cur_y += 12;
+}
+
+static void animate_progress(int target_percent) {
+    uint32_t w = fb_width();
+    uint32_t h = fb_height();
+    uint32_t bar_w = w - PAD_X * 4;
+    uint32_t bar_h = 20;
+    uint32_t bar_y = h - PAD_Y - 40;
+    
+    if (g_current_percent == 0) {
+        fb_draw_box(PAD_X * 2, bar_y, bar_w, bar_h, COL_BORDER);
     }
-    fb_putc('\n', fg, bg);
-    for (int i = 0; i < 12; i++) fb_putc(' ', fg, bg);
-    for (int i = 31; i >= 0; i--) {
-        fb_putc((v >> i) & 1 ? '1' : '0', fg, bg);
-        if (i % 8 == 0 && i != 0) fb_putc(' ', fg, bg);
+
+    while (g_current_percent < target_percent) {
+        g_current_percent++;
+        
+        fb_fill_rect(PAD_X * 2 + 2, bar_y + 2, bar_w - 4, bar_h - 4, COL_PANEL);
+        
+        uint32_t fill_w = (bar_w - 4) * g_current_percent / 100;
+        fb_fill_rect(PAD_X * 2 + 2, bar_y + 2, fill_w, bar_h - 4, COL_GREEN);
+        
+        fb_set_cursor(PAD_X * 2 + 8, bar_y + 6);
+        put_dec(g_current_percent, COL_BG, COL_GREEN);
+        put_str("%", COL_BG, COL_GREEN);
+        
+        delay_ms(5);
     }
-    fb_putc('\n', fg, bg);
 }
 
-/* ============================================================= */
-/*          ФАЗА 1: HANDOFF — реальные данные из bootinfo        */
-/* ============================================================= */
+// =============================================================
+//          ФАЗА 1: HANDOFF
+// =============================================================
 void bootscreen_phase1(const bootinfo_t *bi) {
-    BEEP_PHASE;
-    fb_set_scale(2);
-    fb_clear(BG_BLACK);
-    delay_ms(300);
+    log_set_fb(0); 
+    fb_set_scale(1);
+    fb_clear(COL_BG);
+    
+    draw_header("1 - SYSTEM HANDSHAKE");
+    
+    uint32_t w = fb_width();
+    uint32_t h = fb_height();
+    fb_fill_rect(PAD_X, PAD_Y + 72, w - PAD_X * 2, h - PAD_Y - 140, COL_PANEL);
+    fb_draw_box(PAD_X, PAD_Y + 72, w - PAD_X * 2, h - PAD_Y - 140, COL_BORDER);
+    g_cur_y = PAD_Y + 88;
 
-    twline("BOOT HANDOFF — FIRMWARE TO KERNEL");
-    blank();
+    char buf[64];
+    
+    log_line("BOOTINFO", "Handoff verified from UEFI");
+    
+    int p = 0;
+    const char *prefix = "FB Mode: ";
+    while (prefix[p]) { buf[p] = prefix[p]; p++; }
+    buf[p++] = '0' + (bi->fb_width / 1000) % 10;
+    buf[p++] = '0' + (bi->fb_width / 100) % 10;
+    buf[p++] = '0' + (bi->fb_width / 10) % 10;
+    buf[p++] = '0' + (bi->fb_width / 1) % 10;
+    buf[p++] = 'x';
+    buf[p++] = '0' + (bi->fb_height / 1000) % 10;
+    buf[p++] = '0' + (bi->fb_height / 100) % 10;
+    buf[p++] = '0' + (bi->fb_height / 10) % 10;
+    buf[p++] = '0' + (bi->fb_height / 1) % 10;
+    buf[p] = 0;
+    log_line("FRAMEBUFFER", buf);
 
-    twline("FRAMEBUFFER");
-    tw("  ADDRESS: ", FG_GREEN);  puthex64(bi->fb_addr);  twline("");
-    tw("  WIDTH:   ", FG_GREEN);  putdec(bi->fb_width);   twline(" px");
-    tw("  HEIGHT:  ", FG_GREEN);  putdec(bi->fb_height);  twline(" px");
-    tw("  PITCH:   ", FG_GREEN);  putdec(bi->fb_pitch);   twline(" bytes/row");
-    tw("  BPP:     ", FG_GREEN);  putdec(bi->fb_bpp);     twline(" bits/pixel");
-    tw("  SIZE:    ", FG_GREEN);
-        putdec((uint64_t)bi->fb_width * bi->fb_height * 4);
-    twline(" bytes");
-    blank();
+    log_line("MEMORY_MAP", "EFI descriptors received");
+    log_line("CPU_MODE", "Long mode 64-bit protected");
 
-    twline("BOOTINFO STRUCTURE");
-    tw("  MAGIC:   ", FG_GREEN);  puthex64(bi->magic);    twline("");
-    tw("  ADDRESS: ", FG_GREEN);  puthex64(BOOTINFO_FIXED_ADDR); twline("");
-    blank();
-
-    twline("MEMORY MAP");
-    tw("  ADDRESS: ", FG_GREEN);  puthex64(bi->mmap_addr);       twline("");
-    tw("  SIZE:    ", FG_GREEN);  putdec(bi->mmap_size);         twline(" bytes");
-    tw("  ENTRY:   ", FG_GREEN);  putdec(bi->mmap_desc_size);    twline(" bytes");
-    tw("  VERSION: ", FG_GREEN);  putdec(bi->mmap_desc_ver);     twline("");
-    blank();
-
-    BEEP_END;
-    tw("[ HANDOFF VERIFIED ]\n", FG_AMBER);
-    delay_ms(BLOCK_PAUSE);
+    animate_progress(15);
 }
 
-/* ============================================================= */
-/*          ФАЗА 2: CPU — реальные GDT/IDT/TSS                   */
-/* ============================================================= */
+// =============================================================
+//          ФАЗА 2: CPU
+// =============================================================
 void bootscreen_phase2(void) {
-    BEEP_PHASE;
-    fb_set_scale(2);
-    fb_clear(BG_BLACK);
-    delay_ms(300);
+    draw_header("2 - CPU SUBSYSTEM");
+    
+    char buf[64];
+    int p;
 
-    twline("CPU SUBSYSTEM");
-    blank();
+    p = 0;
+    const char *gdt_s = "Entries: ";
+    while (gdt_s[p]) { buf[p] = gdt_s[p]; p++; }
+    buf[p++] = '0' + gdt_count();
+    buf[p] = 0;
+    log_line("GDT", buf);
 
-    twline("GLOBAL DESCRIPTOR TABLE");
-    tw("  ENTRIES: ", FG_GREEN);  putdec(gdt_count());       twline(" loaded");
-    tw("  TSS:     ", FG_GREEN);  puthex64(gdt_tss_base());  twline("");
-    blank();
+    p = 0;
+    const char *idt_s = "Vectors: ";
+    while (idt_s[p]) { buf[p] = idt_s[p]; p++; }
+    buf[p++] = '0' + (idt_count() / 100) % 10;
+    buf[p++] = '0' + (idt_count() / 10) % 10;
+    buf[p++] = '0' + (idt_count() / 1) % 10;
+    buf[p] = 0;
+    log_line("IDT", buf);
 
-    twline("INTERRUPT DESCRIPTOR TABLE");
-    tw("  VECTORS:  ", FG_GREEN);  putdec(idt_count());  twline(" loaded");
-    twline("  EXC GATES: 0..31");
-    twline("  IRQ GATES: 32..47");
-    blank();
+    log_line("TSS", "Task State Segment initialized");
+    log_line("EXCEPTIONS", "Page Fault / GP / DF handlers ready");
 
-    twline("EXECUTION MODE");
-    twline("  LONG MODE: 64-BIT");
-    twline("  RING:      KERNEL (0)");
-    blank();
-
-    BEEP_END;
-    tw("[ CPU LAYER ARMED ]\n", FG_AMBER);
-    delay_ms(BLOCK_PAUSE);
+    animate_progress(35);
 }
 
-/* ============================================================= */
-/*          ФАЗА 3: MEMORY — реальные цифры PMM/VMM/HEAP         */
-/* ============================================================= */
+// =============================================================
+//          ФАЗА 3: MEMORY
+// =============================================================
 void bootscreen_phase3(void) {
-    BEEP_PHASE;
-    fb_set_scale(2);
-    fb_clear(BG_BLACK);
-    delay_ms(300);
+    draw_header("3 - MEMORY MANAGER");
+    
+    char buf[64];
+    int p = 0;
+    
+    uint64_t total_mb = (pmm_total_pages() * 4) / 1024;
+    const char *ram_s = "RAM Total: ";
+    while (ram_s[p]) { buf[p] = ram_s[p]; p++; }
+    
+    if (total_mb >= 100) buf[p++] = '0' + (total_mb / 100) % 10;
+    if (total_mb >= 10)  buf[p++] = '0' + (total_mb / 10) % 10;
+    buf[p++] = '0' + (total_mb / 1) % 10;
+    buf[p++] = ' '; buf[p++] = 'M'; buf[p++] = 'B';
+    buf[p] = 0;
+    log_line("PMM", buf);
+    
+    log_line("PAGING", "4-level page tables active");
+    log_line("VMM", "Identity map 0..4 GiB");
 
-    uint64_t total_pages = pmm_total_pages();
-    uint64_t free_pages  = pmm_free_pages();
-    uint64_t used_pages  = total_pages - free_pages;
-    uint64_t total_mb    = (total_pages * 4) / 1024;
-    uint64_t free_mb     = (free_pages * 4) / 1024;
-    uint64_t used_mb     = (used_pages * 4) / 1024;
+    p = 0;
+    const char *heap_s = "Size: ";
+    while (heap_s[p]) { buf[p] = heap_s[p]; p++; }
+    uint64_t heap_mb = heap_total() / (1024 * 1024);
+    buf[p++] = '0' + (heap_mb / 10) % 10;
+    buf[p++] = '0' + (heap_mb / 1) % 10;
+    buf[p++] = ' '; buf[p++] = 'M'; buf[p++] = 'B';
+    buf[p] = 0;
+    log_line("HEAP", buf);
 
-    twline("PHYSICAL MEMORY MANAGER");
-    tw("  TOTAL: ", FG_GREEN);  putdec(total_mb);    twline(" MiB");
-    tw("  FREE:  ", FG_GREEN);  putdec(free_mb);     twline(" MiB");
-    tw("  USED:  ", FG_GREEN);  putdec(used_mb);     twline(" MiB");
-    tw("  PAGES: ", FG_GREEN);  putdec(total_pages); twline(" total");
-    blank();
-
-    twline("VIRTUAL MEMORY MANAGER");
-    tw("  CR3:   ", FG_GREEN);  puthex64(vmm_get_cr3()); twline("");
-    twline("  4-LEVEL PAGING");
-    twline("  IDENTITY MAP: 0..4 GiB");
-    blank();
-
-    twline("KERNEL HEAP");
-    tw("  BASE:  ", FG_GREEN);  puthex64(0x5000000);  twline("");
-    tw("  USED:  ", FG_GREEN);  putdec(heap_used());   twline(" bytes");
-    tw("  TOTAL: ", FG_GREEN);  putdec(heap_total());  twline(" bytes");
-    blank();
-
-    BEEP_END;
-    tw("[ MEMORY LAYER ONLINE ]\n", FG_AMBER);
-    delay_ms(BLOCK_PAUSE);
+    animate_progress(60);
 }
 
-/* ============================================================= */
-/*          ФАЗА 4: PERIPHERALS — реальное состояние             */
-/* ============================================================= */
+// =============================================================
+//          ФАЗА 4: PERIPHERALS
+// =============================================================
 void bootscreen_phase4(void) {
-    BEEP_PHASE;
-    fb_set_scale(2);
-    fb_clear(BG_BLACK);
-    delay_ms(300);
-
-    twline("INTERRUPT CONTROLLER");
-    twline("  8259 PIC: REMAPPED");
-    twline("  VECTORS:  0x20..0x2F");
-    twline("  IRQ0:     PIT");
-    twline("  IRQ1:     KEYBOARD");
-    blank();
-
-    twline("PROGRAMMABLE INTERVAL TIMER");
-    twline("  CHANNEL: 0");
-    twline("  MODE:    SQUARE WAVE");
-    tw("  FREQ:    ", FG_GREEN);  putdec(100);          twline(" Hz");
-    tw("  TICKS:   ", FG_GREEN);  putdec(pit_ticks());  twline("");
-    blank();
-
-    twline("INPUT");
-    twline("  PS/2 CONTROLLER: INITIALIZED");
-    twline("  KEYBOARD:        READY");
-    blank();
-
-    twline("SERIAL PORT");
-    twline("  COM1 @ 0x3F8");
-    twline("  BAUD: 38400 8N1");
-    blank();
-
-    twline("FRAMEBUFFER");
-    twline("  LINEAR 32BPP");
-    blank();
-
-    twline("SOUND");
-    twline("  PC SPEAKER: READY");
-    twline("  NTSAD BUS:  ONLINE");
-    blank();
-
-    BEEP_END;
-    tw("[ PERIPHERALS READY ]\n", FG_AMBER);
-    delay_ms(BLOCK_PAUSE);
+    draw_header("4 - PERIPHERALS & DRIVERS");
+    
+    log_line("PCI_BUS", "Enumeration complete");
+    log_line("AHCI", "SATA controller initialized");
+    log_line("PIC", "8259 Interrupt Controller remapped");
+    log_line("PIT", "Timer configured at 100 Hz");
+    log_line("PS2_KBD", "Keyboard buffer online");
+    log_line("SB16", "Audio DSP ready");
+    
+    animate_progress(85);
 }
 
-/* ============================================================= */
-/*          ФАЗА 5: BINARY — реальный дамп ядра                  */
-/* ============================================================= */
+// =============================================================
+//          ФАЗА 5: BINARY (С исправленной анимацией)
+// =============================================================
 void bootscreen_phase5(const bootinfo_t *bi) {
-    fb_set_scale(1);
-    fb_clear(BG_RED);
+    draw_header("5 - SYSTEM BINARY");
+    
+    char buf[64];
+    int p = 0;
+    const char *fs_s = "Files mounted: ";
+    while (fs_s[p]) { buf[p] = fs_s[p]; p++; }
+    buf[p++] = '0' + (ntmem_fs_count() / 10) % 10;
+    buf[p++] = '0' + (ntmem_fs_count() / 1) % 10;
+    buf[p] = 0;
+    
+    log_line("FILESYSTEM", buf);
+    log_line("SYSCALL", "STAR/LSTAR MSRs configured");
+    log_line("SCHEDULER", "Round-Robin thread manager ready");
+    log_line("SECURITY", "Access level: 1/10 (RESTRICTED)");
+    
+    animate_progress(100);
+    delay_ms(400);
 
-    BEEP_REVEAL;
-    delay_ms(1200);
+    // Финальный экран перед передачей управления
+    fb_clear(COL_BG);
+    uint32_t h = fb_height();
+    uint32_t w = fb_width();
 
-    fb_set_scale(6);
-    fb_puts("     N T O S      \n", FG_CYAN, BG_RED);
-    BEEP_LOUD;
-    delay_ms(2500);
+    draw_centered_text("N T O S", 6, h / 2 - 80, COL_ORANGE, COL_BG);
 
-    fb_set_scale(3);
-    fb_puts("  SYSTEM BOOT BINARY  \n", FG_CYAN, BG_RED);
-    delay_ms(2500);
+    // Анимация спиннера
+    const char *spinner = "|/-\\";
+    uint32_t spin_y = h / 2 + 10;
+    uint32_t spin_x = (w - 16) / 2; // Центрируем 16x16 (шрифт 8x8 при scale=2)
 
-    fb_set_scale(1);
-    fb_puts("\n", FG_CYAN, BG_RED);
-    delay_ms(1500);
+    for (int i = 0; i < 12; i++) {
+        // Очищаем строго ту область, где рисуем (16x16)
+        fb_fill_rect(spin_x, spin_y, 16, 16, COL_BG);
+        
+        fb_set_scale(2); 
+        fb_set_cursor(spin_x, spin_y); // Рисуем без сдвигов
+        fb_putc(spinner[i % 4], COL_CYAN, COL_BG);
+        delay_ms(80);
+    }
 
-    uint64_t total_pages = pmm_total_pages();
-    uint64_t free_pages  = pmm_free_pages();
-    uint64_t heap_u      = heap_used();
-    uint64_t heap_t      = heap_total();
+    // Стираем спиннер окончательно
+    fb_fill_rect(spin_x, spin_y, 16, 16, COL_BG);
 
-    #define BIN(label, value) do { \
-        BEEP_TICK; \
-        fb_puts(label, FG_CYAN, BG_RED); \
-        print_bin_split(value, FG_CYAN, BG_RED); \
-        delay_ms(1200); \
-    } while (0)
+    draw_centered_text("SYSTEM OPERATIONAL", 2, h / 2 + 40, COL_CYAN, COL_BG);
+    draw_centered_text("TRUST THE CORPORATION", 2, h / 2 + 70, COL_MUTED, COL_BG);
 
-    BIN("BOOTINFO    ", BOOTINFO_FIXED_ADDR);
-    BIN("BOOT_MAGIC  ", bi->magic);
-    BIN("FB_ADDR     ", bi->fb_addr);
-    BIN("FB_DIMS     ", ((uint64_t)bi->fb_width << 32) | bi->fb_height);
-    BIN("FB_PITCH    ", bi->fb_pitch);
-    BIN("FB_BPP      ", bi->fb_bpp);
-    BIN("MMAP_ADDR   ", bi->mmap_addr);
-    BIN("MMAP_SIZE   ", bi->mmap_size);
-    BIN("MMAP_DESC   ", bi->mmap_desc_size);
-    BIN("RAM_TOTAL   ", total_pages);
-    BIN("RAM_FREE    ", free_pages);
-    BIN("HEAP_USED   ", heap_u);
-    BIN("HEAP_TOTAL  ", heap_t);
-
-    #undef BIN
-
-    fb_puts("\n", FG_CYAN, BG_RED);
     delay_ms(500);
-
-    BEEP_TICK;
-    fb_puts("FS_MOUNTED  ", FG_CYAN, BG_RED);
-    putdec_pad(ntmem_fs_count(), 2);
-    fb_puts(" file(s) in ntmem_fs\n", FG_CYAN, BG_RED);
-    delay_ms(800);
-
-    fb_puts("\n", FG_CYAN, BG_RED);
-    delay_ms(500);
-
-    BEEP_REVEAL;
-    fb_puts("           STATUS: KERNEL OPERATIONAL\n", FG_CYAN, BG_RED);
-    delay_ms(2500);
-
-    BEEP_TRUST;
-    fb_puts("           TRUST THE CORPORATION\n", FG_CYAN, BG_RED);
-    delay_ms(4500);
+    
+    log_set_fb(1);
+    fb_set_scale(1);
+    fb_clear(0x00101018); 
+    fb_set_cursor(0, 0);
 }

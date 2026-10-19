@@ -114,7 +114,7 @@ static uint64_t g_buf_phys = 0;
 #define TIMEOUT_MS 100
 
 static int port_stop(hba_port_t *p) {
-    p->cmd &= ~1U;                 /* clear ST */
+    p->cmd &= ~1U;
     uint64_t start = pit_ticks();
     while ((p->cmd & 0x8000) && (pit_ticks() - start) < TIMEOUT_MS/10);
     return (p->cmd & 0x8000) == 0;
@@ -125,8 +125,8 @@ static int port_start(hba_port_t *p) {
     while ((p->cmd & 0x8000) && (pit_ticks() - start) < TIMEOUT_MS/10);
     if (p->cmd & 0x8000) return 0;
 
-    p->cmd |= (1U << 4);           /* FRE */
-    p->cmd |= (1U << 0);           /* ST */
+    p->cmd |= (1U << 4);
+    p->cmd |= (1U << 0);
     return 1;
 }
 
@@ -147,12 +147,27 @@ int ahci_init(void) {
     }
 
     g_abar = (hba_mem_t*)bar5;
-    g_abar->ghc |= (1U << 31);  /* AE = 1 */
+    
+    // Читаем Capabilities (CAP) и Global Host Control (GHC) до изменений
+    logi(S_DRV, "AHCI CAP=%x GHC=%x", g_abar->cap, g_abar->ghc);
+    
+    g_abar->ghc |= (1U << 31);  /* AE = 1 (AHCI Enable) */
+    logi(S_DRV, "AHCI GHC after enable=%x", g_abar->ghc);
 
     uint32_t pi = g_abar->pi;
+    logi(S_DRV, "AHCI Ports Implemented (PI) = %x", pi);
+    
+    if (pi == 0 || pi == 0xFFFFFFFF) {
+        loge(S_DRV, "Invalid PI (%x) - MMIO failed?", pi);
+        return 0;
+    }
+
     for (int i = 0; i < 32; i++) {
         if (pi & (1U << i)) {
             hba_port_t *p = &g_abar->ports[i];
+            
+            logi(S_DRV, "Port %d: ssts=%x sig=%x cmd=%x", i, p->ssts, p->sig, p->cmd);
+            
             if ((p->ssts & 0x0F) == 3) {
                 g_port = p;
                 logi(S_DRV, "SATA drive on port %d (sig=%x)", i, p->sig);
@@ -162,7 +177,7 @@ int ahci_init(void) {
     }
 
     if (!g_port) {
-        loge(S_DRV, "No SATA drive connected");
+        loge(S_DRV, "No SATA drive connected (device not present on any port)");
         return 0;
     }
 

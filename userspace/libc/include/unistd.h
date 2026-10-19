@@ -29,6 +29,6 @@ int  ntrfs_write(const char *name, const void *buf, unsigned long len);
 
 int  exec(const char *path);
 int  fork(void);
-int  sys_wait(int *status);
+int  sys_wait(int pid, int *status);
 
 #define O_RDONLY 0

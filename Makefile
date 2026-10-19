@@ -7,9 +7,9 @@ OBJCOPY := objcopy
 QEMU       := /mnt/x/OSdevTools/qemu/qemu-system-x86_64.exe
 OVMF_CODE  := X:/OSdevTools/qemu/share/edk2-x86_64-code.fd
 OVMF_VARS  := X:/OSdevTools/qemu/share/edk2-x86_64-vars.fd
-IMG_WIN    := X:/NtOS/ntos.img
-DISK_WIN   := X:/NtOS/disk.img
-SERIAL_WIN := X:/NtOS/serial.log
+IMG_WIN    := X:/NtOS/NtOS/ntos.img
+DISK_WIN   := X:/NtOS/NtOS/disk.img
+SERIAL_WIN := X:/NtOS/NtOS/serial.log
 
 BUILD := build
 
@@ -155,16 +155,16 @@ disk.img:
 # ---------- запуск ----------
 run: ntos.img disk.img
 	@echo "Запускаю QEMU..."
-	@$(QEMU) -M pc -m 512 \
+	@$(QEMU) -M q35 -m 512 \
 	    -audiodev sdl,id=snd0 \
 	    -machine pcspk-audiodev=snd0 \
 	    -device sb16,audiodev=snd0 \
 	    -drive if=pflash,format=raw,readonly=on,file=$(OVMF_CODE) \
 	    -drive if=pflash,format=raw,file=$(OVMF_VARS) \
 	    -drive format=raw,file=$(IMG_WIN) \
-	    -device ahci,id=ahci \
+	    -device ich9-ahci,id=ahci_ctrl \
 	    -drive id=disk0,format=raw,file=$(DISK_WIN),if=none \
-	    -device ide-hd,drive=disk0,bus=ahci.0 \
+	    -device ide-hd,drive=disk0,bus=ahci_ctrl.0 \
 	    -serial file:$(SERIAL_WIN) \
 	    -display sdl &
 

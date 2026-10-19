@@ -111,3 +111,17 @@ void fb_draw_box(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t c) {
     fb_draw_vline(x, y, h, c);
     fb_draw_vline(x + w - 1, y, h, c);
 }
+
+/* Заполняет прямоугольник сплошным цветом */
+void fb_fill_rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t c) {
+    uint32_t x_end = x + w;
+    uint32_t y_end = y + h;
+    if (x_end > g_w) x_end = g_w;
+    if (y_end > g_h) y_end = g_h;
+
+    for (uint32_t yy = y; yy < y_end; yy++) {
+        for (uint32_t xx = x; xx < x_end; xx++) {
+            g_fb[yy * g_pitch_px + xx] = c;
+        }
+    }
+}

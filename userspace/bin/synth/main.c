@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include "synth_user.h"
 
-#define MAX_EVENTS 128
+#define MAX_EVENTS 2048
 #define MAX_PCM    32768
 
 typedef struct {
@@ -23,6 +23,45 @@ static int starts_with(const char *s, const char *p) {
 static int streq(const char *a, const char *b) {
     while (*a && *b && *a == *b) { a++; b++; }
     return *a == *b;
+}
+
+/* Парсер строк в формате NTSAD v3: "частота1 частота2 ... длительность_ms"
+   Если частот нет (или стоит 0), создается событие-пауза. */
+static int parse_ntsad_line(const char *line, event_t *ev) {
+    ev->count = 0;
+    ev->ms = 0;
+    const char *p = line;
+    
+    if (*p == '#' || *p == '\0' || *p == '\r') return 0;
+
+    int nums[16];
+    int num_cnt = 0;
+    
+    while (*p) {
+        while (*p == ' ' || *p == '\t') p++;
+        if (*p == '\0' || *p == '\r' || *p == '\n') break;
+        
+        if (*p >= '0' && *p <= '9') {
+            int val = 0;
+            while (*p >= '0' && *p <= '9') {
+                val = val * 10 + (*p - '0');
+                p++;
+            }
+            if (num_cnt < 16) nums[num_cnt++] = val;
+        } else {
+            p++;
+        }
+    }
+    
+    if (num_cnt < 2) return 0;
+    
+    ev->ms = nums[num_cnt - 1]; // Последнее число — длительность
+    for (int i = 0; i < num_cnt - 1 && ev->count < 8; i++) {
+        if (nums[i] > 0) {
+            ev->freqs[ev->count++] = nums[i];
+        }
+    }
+    return ev->ms > 0;
 }
 
 static int note_to_freq(const char *s) {
@@ -54,63 +93,67 @@ static int note_to_freq(const char *s) {
     return midi_to_freq((oct + 1) * 12 + semi);
 }
 
-static int parse_event(const char *line, event_t *ev) {
-    ev->count = 0;
-    ev->ms = 0;
-    const char *p = line;
-    while (*p) {
-        while (*p == ' ') p++;
-        if (*p == 0) break;
-        int val = 0;
-        while (*p >= '0' && *p <= '9') { val = val * 10 + (*p - '0'); p++; }
-        if (val > 0) {
-            if (*p == 0 || *p == '\n' || *p == '\r') {
-                ev->ms = val;
-            } else {
-                if (ev->count < 8) ev->freqs[ev->count++] = val;
-            }
-        }
-    }
-    return ev->count > 0 && ev->ms > 0;
-}
-
 static void cmd_help(void) {
     printf("synth commands:\n");
-    printf("  add <note> <ms>   - append note (C4, 440)\n");
+    printf("  add <note1> [note2] ... <ms> - append chord (e.g., add C4 E4 G4 1000)\n");
     printf("  list              - show current melody\n");
     printf("  play              - play melody\n");
     printf("  clear             - clear melody\n");
-    printf("  save/load         - RAM KV\n");
-    printf("  dsave/dload       - NTRFS Disk\n");
+    printf("  save/load <name>  - RAM KV\n");
+    printf("  dsave/dload <name>- NTRFS Disk\n");
     printf("  quit              - exit\n");
 }
 
 static void cmd_add(const char *arg) {
     if (g_event_count >= MAX_EVENTS) { printf("full\n"); return; }
-    char note[16]; int i = 0;
-    while (*arg && *arg != ' ' && i < 15) note[i++] = *arg++;
-    note[i] = 0;
-    while (*arg == ' ') arg++;
-    int ms = 0;
-    while (*arg >= '0' && *arg <= '9') { ms = ms * 10 + (*arg - '0'); arg++; }
-    if (!note[0] || ms <= 0) { printf("usage: add <note> <ms>\n"); return; }
     
-    int f = note_to_freq(note);
-    if (f <= 0) { printf("bad note '%s'\n", note); return; }
-
     event_t *ev = &g_events[g_event_count];
-    ev->count = 1;
-    ev->freqs[0] = f;
-    ev->ms = ms;
-    g_event_count++;
-    printf("added %s (%d Hz), %d ms\n", note, f, ms);
+    ev->count = 0;
+    ev->ms = 0;
+    const char *p = arg;
+    
+    while (*p) {
+        while (*p == ' ') p++;
+        if (!*p) break;
+        
+        int is_digit = 1;
+        for (const char *c = p; *c && *c != ' '; c++) {
+            if (*c < '0' || *c > '9') { is_digit = 0; break; }
+        }
+        
+        if (is_digit) {
+            int ms = 0;
+            while (*p >= '0' && *p <= '9') { ms = ms * 10 + (*p - '0'); p++; }
+            ev->ms = ms;
+        } else {
+            char note[16]; int i = 0;
+            while (*p && *p != ' ' && i < 15) note[i++] = *p++;
+            note[i] = 0;
+            int f = note_to_freq(note);
+            if (f > 0 && ev->count < 8) {
+                ev->freqs[ev->count++] = f;
+            }
+        }
+    }
+    
+    if (ev->ms > 0 && (ev->count > 0 || ev->count == 0)) {
+        // Если пользователь ввел просто "add 1000", это будет пауза
+        g_event_count++;
+        printf("added event (%d notes) for %d ms\n", ev->count, ev->ms);
+    } else {
+        printf("usage: add <note1> [note2] ... <ms>\n");
+    }
 }
 
 static void cmd_list(void) {
     if (g_event_count == 0) { printf("(empty)\n"); return; }
     for (int i = 0; i < g_event_count; i++) {
         printf("  [%d] ", i);
-        for (int k = 0; k < g_events[i].count; k++) printf("%d ", g_events[i].freqs[k]);
+        if (g_events[i].count == 0) {
+            printf("PAUSE ");
+        } else {
+            for (int k = 0; k < g_events[i].count; k++) printf("%d ", g_events[i].freqs[k]);
+        }
         printf("for %d ms\n", g_events[i].ms);
     }
 }
@@ -128,11 +171,16 @@ static void cmd_play(void) {
         
         while (remaining > 0) {
             int chunk_ms = remaining > 1000 ? 1000 : remaining;
-            size_t n = synth_chord(g_pcm, MAX_PCM, g_events[i].freqs, g_events[i].count, chunk_ms, 0, 80);
-            if (n > 0) {
-                play_pcm(g_pcm, n);
-                sleep(chunk_ms);
+            
+            if (g_events[i].count > 0) {
+                size_t n = synth_chord(g_pcm, MAX_PCM, g_events[i].freqs, g_events[i].count, chunk_ms, 0, 80);
+                if (n > 0) {
+                    play_pcm(g_pcm, n);
+                }
             }
+            
+            // Ждем, пока звук проиграется (или просто выжидаем паузу)
+            sleep(chunk_ms + 50); 
             remaining -= chunk_ms;
         }
     }
@@ -141,14 +189,40 @@ static void cmd_play(void) {
 
 static void cmd_clear(void) { g_event_count = 0; printf("cleared\n"); }
 
+static void load_from_buffer(const char *buf, long n) {
+    g_event_count = 0;
+    char line[256];
+    int l_idx = 0;
+    for (int i = 0; i <= n; i++) {
+        if (buf[i] == '\n' || buf[i] == 0) {
+            line[l_idx] = 0;
+            l_idx = 0;
+            if (line[0] != '#' && line[0] != 0) {
+                if (g_event_count < MAX_EVENTS) {
+                    event_t ev;
+                    if (parse_ntsad_line(line, &ev)) {
+                        g_events[g_event_count++] = ev;
+                    }
+                }
+            }
+        } else if (buf[i] != '\r') {
+            if (l_idx < 255) line[l_idx++] = buf[i];
+        }
+    }
+}
+
 static void cmd_save(const char *name) {
     if (!name || !*name) { printf("usage: save <name>\n"); return; }
-    char buf[2048];
+    char buf[4096];
     int p = 0;
-    p += sprintf(buf + p, "# NTSAD v2\n");
-    for (int i = 0; i < g_event_count && p < 1900; i++) {
-        for (int k = 0; k < g_events[i].count; k++) {
-            p += sprintf(buf + p, "%d ", g_events[i].freqs[k]);
+    p += sprintf(buf + p, "# NTSAD v3\n");
+    for (int i = 0; i < g_event_count && p < 4000; i++) {
+        if (g_events[i].count == 0) {
+            p += sprintf(buf + p, "0 ");
+        } else {
+            for (int k = 0; k < g_events[i].count; k++) {
+                p += sprintf(buf + p, "%d ", g_events[i].freqs[k]);
+            }
         }
         p += sprintf(buf + p, "%d\n", g_events[i].ms);
     }
@@ -158,41 +232,26 @@ static void cmd_save(const char *name) {
 
 static void cmd_load(const char *name) {
     if (!name || !*name) { printf("usage: load <name>\n"); return; }
-    char buf[2048];
+    char buf[4096];
     long n = kv_read(name, buf, sizeof(buf) - 1);
     if (n < 0) { printf("not found: %s\n", name); return; }
     buf[n] = 0;
-    g_event_count = 0;
-    
-    char line[256];
-    int l_idx = 0;
-    for (int i = 0; i <= n; i++) {
-        if (buf[i] == '\n' || buf[i] == 0) {
-            line[l_idx] = 0;
-            l_idx = 0;
-            if (line[0] != '#' && line[0] != 0) {
-                if (g_event_count < MAX_EVENTS) {
-                    event_t ev;
-                    if (parse_event(line, &ev)) {
-                        g_events[g_event_count++] = ev;
-                    }
-                }
-            }
-        } else if (buf[i] != '\r') {
-            if (l_idx < 255) line[l_idx++] = buf[i];
-        }
-    }
+    load_from_buffer(buf, n);
     printf("loaded %d events from %s (RAM)\n", g_event_count, name);
 }
 
 static void cmd_dsave(const char *name) {
     if (!name || !*name) { printf("usage: dsave <name>\n"); return; }
-    char buf[2048];
+    char buf[4096];
     int p = 0;
-    p += sprintf(buf + p, "# NTSAD v2\n");
-    for (int i = 0; i < g_event_count && p < 1900; i++) {
-        for (int k = 0; k < g_events[i].count; k++) {
-            p += sprintf(buf + p, "%d ", g_events[i].freqs[k]);
+    p += sprintf(buf + p, "# NTSAD v3\n");
+    for (int i = 0; i < g_event_count && p < 4000; i++) {
+        if (g_events[i].count == 0) {
+            p += sprintf(buf + p, "0 ");
+        } else {
+            for (int k = 0; k < g_events[i].count; k++) {
+                p += sprintf(buf + p, "%d ", g_events[i].freqs[k]);
+            }
         }
         p += sprintf(buf + p, "%d\n", g_events[i].ms);
     }
@@ -202,30 +261,11 @@ static void cmd_dsave(const char *name) {
 
 static void cmd_dload(const char *name) {
     if (!name || !*name) { printf("usage: dload <name>\n"); return; }
-    char buf[2048];
+    char buf[4096];
     long n = ntrfs_read(name, buf, sizeof(buf) - 1);
     if (n < 0) { printf("not found on disk: %s\n", name); return; }
     buf[n] = 0;
-    g_event_count = 0;
-    
-    char line[256];
-    int l_idx = 0;
-    for (int i = 0; i <= n; i++) {
-        if (buf[i] == '\n' || buf[i] == 0) {
-            line[l_idx] = 0;
-            l_idx = 0;
-            if (line[0] != '#' && line[0] != 0) {
-                if (g_event_count < MAX_EVENTS) {
-                    event_t ev;
-                    if (parse_event(line, &ev)) {
-                        g_events[g_event_count++] = ev;
-                    }
-                }
-            }
-        } else if (buf[i] != '\r') {
-            if (l_idx < 255) line[l_idx++] = buf[i];
-        }
-    }
+    load_from_buffer(buf, n);
     printf("loaded %d events from disk '%s'\n", g_event_count, name);
 }
 
@@ -254,7 +294,7 @@ static void execute(void) {
 }
 
 int main(void) {
-    printf("\nNTSAD synthesizer v2\n");
+    printf("\nNTSAD synthesizer v3\n");
     printf("type 'help'\n\n");
     prompt();
 

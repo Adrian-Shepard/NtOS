@@ -15,7 +15,6 @@
 #define SB16_MIXADDR (SB16_BASE + 0x4)
 #define SB16_MIXDATA (SB16_BASE + 0x5)
 
-/* 8 MiB — безопасно ниже 16 MiB ISA DMA limit */
 #define DMA_BUF_PHYS 0x800000
 #define DMA_BUF_SIZE 65536
 
@@ -65,7 +64,8 @@ static void sb_write(uint8_t v) { outb(SB16_WRITE, v); }
 void sb16_poll(void) {
     if (!g_dma_playing) return;
     uint64_t now = pit_ticks();
-    if (g_dma_max_ticks && (now - g_dma_start_tick) > g_dma_max_ticks) {
+    // ИСПРАВЛЕНО: >= вместо >, чтобы карта корректно сбрасывала флаг занятости
+    if (g_dma_max_ticks && (now - g_dma_start_tick) >= g_dma_max_ticks) {
         g_dma_playing = 0;
     }
 }
@@ -112,14 +112,12 @@ void sb16_stop(void) {
     dma_mask_channel(1);
     g_dma_playing = 0;
 
-    /* Сброс DSP, чтобы очистить буфер и остановить старый звук */
     outb(SB16_RESET, 1);
     for (volatile int i = 0; i < 100000; i++);
     outb(SB16_RESET, 0);
 
     if (wait_read_short()) {
-        inb(SB16_READ); /* ACK */
-        /* Восстанавливаем sample rate после сброса */
+        inb(SB16_READ);
         sb_write(0x41);
         sb_write((uint8_t)(SAMPLE_RATE >> 8));
         sb_write((uint8_t)(SAMPLE_RATE & 0xFF));
@@ -127,11 +125,9 @@ void sb16_stop(void) {
 }
 
 int sb16_play_tone_async(int freq_hz, int ms) {
-    dbg("play: enter");
-    if (!g_ok) { dbg("play: not ok"); return 0; }
-
+    if (!g_ok) return 0;
     sb16_poll();
-    if (g_dma_playing) { dbg("play: busy, reject"); return 0; }
+    if (g_dma_playing) return 0;
 
     if (freq_hz < 20)    freq_hz = 20;
     if (freq_hz > 10000) freq_hz = 10000;
@@ -141,7 +137,6 @@ int sb16_play_tone_async(int freq_hz, int ms) {
     int samples = (SAMPLE_RATE * ms) / 1000;
     if (samples > DMA_BUF_SIZE) samples = DMA_BUF_SIZE;
 
-    dbg("play: filling buffer");
     for (int i = 0; i < samples; i++) {
         int phase = (int)(((int64_t)i * freq_hz * 256) / SAMPLE_RATE) & 0xFF;
         int s = g_sine[phase];
@@ -153,25 +148,19 @@ int sb16_play_tone_async(int freq_hz, int ms) {
         if (v > 255) v = 255;
         g_buf[i] = (uint8_t)v;
     }
-    dbg("play: buffer filled");
 
     dma_setup_8bit(1, DMA_BUF_PHYS, (uint16_t)samples, 0x49);
-    dbg("play: dma setup");
 
     sb_write(0x14);
     sb_write((uint8_t)((samples - 1) & 0xFF));
     sb_write((uint8_t)(((samples - 1) >> 8) & 0xFF));
-    dbg("play: commands sent");
 
     dma_unmask_channel(1);
-    dbg("play: unmasked");
 
     g_dma_start_tick = pit_ticks();
-    /* samples / 220.5 = тики PIT (100 Hz). Округляем + запас 20 тиков. */
-    g_dma_max_ticks  = (uint64_t)((samples * 1000ULL) / 22050ULL / 10ULL) + 20;
+    g_dma_max_ticks  = (samples / 220) + 20;
     g_dma_playing    = 1;
 
-    dbg("play: exit");
     return 1;
 }
 
@@ -182,7 +171,6 @@ int sb16_play_pcm_async(const uint8_t *pcm, uint32_t samples) {
     if (samples == 0) return 0;
     if (samples > DMA_BUF_SIZE) samples = DMA_BUF_SIZE;
 
-    /* копируем в DMA-буфер */
     for (uint32_t i = 0; i < samples; i++) {
         g_buf[i] = pcm[i];
     }
@@ -196,11 +184,12 @@ int sb16_play_pcm_async(const uint8_t *pcm, uint32_t samples) {
     dma_unmask_channel(1);
 
     g_dma_start_tick = pit_ticks();
-    g_dma_max_ticks  = (samples / 22) + 20; /* ~SAMPLE_RATE / 1000 */
+    g_dma_max_ticks  = (samples / 220) + 20; 
     g_dma_playing    = 1;
 
     return 1;
 }
+
 void sb16_play_tone(int freq_hz, int ms) {
     if (!sb16_play_tone_async(freq_hz, ms)) return;
     uint64_t start = pit_ticks();

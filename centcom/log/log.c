@@ -8,6 +8,11 @@
 
 static char g_ring[RING_SIZE][LINE_LEN];
 static int  g_ring_head = 0;
+static int  g_fb_enabled = 1;
+
+void log_set_fb(int enabled) {
+    g_fb_enabled = enabled;
+}
 
 static const char *tag(subsys_t s) {
     static const char *t[] = {
@@ -36,37 +41,24 @@ static uint32_t color(subsys_t s) {
 
 static void ch(char c, uint32_t col) {
     serial_putc(c);
-    fb_putc(c, col, 0x00101018);
+    if (g_fb_enabled) {
+        fb_putc(c, col, 0x00101018);
+    }
 }
 
 static void str(const char *s, uint32_t col) { while (*s) ch(*s++, col); }
-
-static void hex(uint64_t v, uint32_t col) {
-    static const char *h = "0123456789abcdef";
-    ch('0', col); ch('x', col);
-    for (int i = 60; i >= 0; i -= 4) ch(h[(v >> i) & 0xF], col);
-}
-
-static void dec(uint64_t v, uint32_t col) {
-    char b[24]; int i = 0;
-    if (!v) { ch('0', col); return; }
-    while (v) { b[i++] = '0' + (v % 10); v /= 10; }
-    while (i--) ch(b[i], col);
-}
 
 static void vlog(subsys_t s, const char *lvl, const char *fmt, va_list ap) {
     uint32_t col = color(s);
     char line_buf[LINE_LEN];
     int p = 0;
 
-    // Формируем строку для кольцевого буфера
     line_buf[p++] = '[';
     const char *t = tag(s);
     for (int i = 0; t[i] && p < LINE_LEN - 1; i++) line_buf[p++] = t[i];
     line_buf[p++] = ']';
     line_buf[p++] = ' ';
     
-    // Выводим цветной тег
     ch('[', col); str(tag(s), col); ch(']', col);
     if (lvl) { ch(':', col); str(lvl, col); line_buf[p++] = ':'; }
     ch(' ', col);
@@ -120,7 +112,6 @@ static void vlog(subsys_t s, const char *lvl, const char *fmt, va_list ap) {
     ch('\n', col);
     line_buf[p] = 0;
 
-    // Записываем в кольцо
     int i = 0;
     while (line_buf[i] && i < LINE_LEN - 1) { g_ring[g_ring_head][i] = line_buf[i]; i++; }
     g_ring[g_ring_head][i] = 0;
@@ -138,10 +129,8 @@ void log_get_recent(char *out_buf, int max_lines) {
     int idx = g_ring_head - 1;
     if (idx < 0) idx = RING_SIZE - 1;
 
-    // Идем назад от головы
     for (int i = 0; i < RING_SIZE && count < max_lines; i++) {
         if (g_ring[idx][0] != 0) {
-            // Добавляем в буфер (в конец)
             int p = 0; while(out_buf[p]) p++;
             int j = 0; while(g_ring[idx][j]) { out_buf[p++] = g_ring[idx][j++]; }
             out_buf[p++] = '\n';

@@ -1,89 +1,57 @@
-CC      := gcc
-LD      := ld
-NASM    := nasm
-TAR     := tar
+# userspace/Makefile
+CC      = gcc
+LD      = ld
+CFLAGS  = -ffreestanding -fno-pie -fno-stack-protector -mno-red-zone -m64 -mcmodel=large -Wall -O2 -I libc/include -I libc
+LDFLAGS = -nostdlib -static -T libc/user.ld -z max-page-size=0x1000
 
-CFLAGS := -ffreestanding -nostdlib -fno-stack-protector -fno-pie \
-          -mno-red-zone -mcmodel=large -O2 \
-          -I libc/include -I libc
-
-LDFLAGS := -nostdlib -static -T libc/user.ld
-
-LIBC_OBJS := libc/crt0.o libc/syscall.o libc/printf.o libc/string.o libc/synth_user.o
-
-PROGRAMS := bin/hello/hello.elf \
-            bin/cat/cat.elf \
-            bin/ls/ls.elf \
-            bin/echo/echo.elf \
-            bin/sleep/sleep.elf \
-            bin/synth/synth.elf \
-            bin/midi2ntsad/midi2ntsad.elf \
-            bin/sh/sh.elf
-
-STAGE := stage
-
-all: initrd.tar
-
-libc/crt0.o: libc/crt0.asm
-	$(NASM) -f elf64 $< -o $@
-
-libc/syscall.o: libc/syscall.asm
-	$(NASM) -f elf64 $< -o $@
-
-libc/printf.o: libc/printf.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-libc/string.o: libc/string.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-libc/synth_user.o: libc/synth_user.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-bin/hello/hello.elf: bin/hello/main.c $(LIBC_OBJS) libc/user.ld
-	$(CC) $(CFLAGS) -c bin/hello/main.c -o bin/hello/main.o
-	$(LD) $(LDFLAGS) $(LIBC_OBJS) bin/hello/main.o -o $@
-
-bin/cat/cat.elf: bin/cat/main.c $(LIBC_OBJS) libc/user.ld
-	$(CC) $(CFLAGS) -c bin/cat/main.c -o bin/cat/main.o
-	$(LD) $(LDFLAGS) $(LIBC_OBJS) bin/cat/main.o -o $@
-
-bin/ls/ls.elf: bin/ls/main.c $(LIBC_OBJS) libc/user.ld
-	$(CC) $(CFLAGS) -c bin/ls/main.c -o bin/ls/main.o
-	$(LD) $(LDFLAGS) $(LIBC_OBJS) bin/ls/main.o -o $@
-
-bin/echo/echo.elf: bin/echo/main.c $(LIBC_OBJS) libc/user.ld
-	$(CC) $(CFLAGS) -c bin/echo/main.c -o bin/echo/main.o
-	$(LD) $(LDFLAGS) $(LIBC_OBJS) bin/echo/main.o -o $@
-
-bin/sleep/sleep.elf: bin/sleep/main.c $(LIBC_OBJS) libc/user.ld
-	$(CC) $(CFLAGS) -c bin/sleep/main.c -o bin/sleep/main.o
-	$(LD) $(LDFLAGS) $(LIBC_OBJS) bin/sleep/main.o -o $@
-
-bin/synth/synth.elf: bin/synth/main.c $(LIBC_OBJS) libc/user.ld
-	$(CC) $(CFLAGS) -c bin/synth/main.c -o bin/synth/main.o
-	$(LD) $(LDFLAGS) $(LIBC_OBJS) bin/synth/main.o -o $@
-
-bin/midi2ntsad/midi2ntsad.elf: bin/midi2ntsad/main.c $(LIBC_OBJS) libc/user.ld
-	$(CC) $(CFLAGS) -c bin/midi2ntsad/main.c -o bin/midi2ntsad/main.o
-	$(LD) $(LDFLAGS) $(LIBC_OBJS) bin/midi2ntsad/main.o -o $@
-
-bin/sh/sh.elf: bin/sh/main.c $(LIBC_OBJS) libc/user.ld
-	$(CC) $(CFLAGS) -c bin/sh/main.c -o bin/sh/main.o
-	$(LD) $(LDFLAGS) $(LIBC_OBJS) bin/sh/main.o -o $@
-
-$(STAGE):
-	mkdir -p $(STAGE)
-
-initrd.tar: $(PROGRAMS) bin/midi2ntsad/test.mid | $(STAGE)
-	rm -f $(STAGE)/*.elf $(STAGE)/*.mid
-	cp $(PROGRAMS) $(STAGE)/
-	cp bin/midi2ntsad/test.mid $(STAGE)/
-	cd $(STAGE) && $(TAR) --format=ustar -cf ../initrd.tar *
-	@echo "created initrd.tar with:"
-	@$(TAR) -tf initrd.tar | sed 's/^/  /'
-
-clean:
-	rm -f libc/*.o bin/*/*.o $(PROGRAMS) initrd.tar
-	rm -rf $(STAGE)
+PROGS = hello echo cat ls sleep sh synth midi2ntsad midiplay
 
 .PHONY: all clean
+
+all: libc.a $(PROGS) initrd.tar
+
+libc.a: libc/crt0.o libc/printf.o libc/string.o libc/synth_user.o libc/syscall.o
+	ar rcs $@ $^
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.o: %.asm
+	nasm -f elf64 $< -o $@
+
+hello: bin/hello/main.o libc.a
+	$(LD) $(LDFLAGS) -o bin/hello/hello.elf libc/crt0.o $< libc.a
+cat: bin/cat/main.o libc.a
+	$(LD) $(LDFLAGS) -o bin/cat/cat.elf libc/crt0.o $< libc.a
+ls: bin/ls/main.o libc.a
+	$(LD) $(LDFLAGS) -o bin/ls/ls.elf libc/crt0.o $< libc.a
+echo: bin/echo/main.o libc.a
+	$(LD) $(LDFLAGS) -o bin/echo/echo.elf libc/crt0.o $< libc.a
+sleep: bin/sleep/main.o libc.a
+	$(LD) $(LDFLAGS) -o bin/sleep/sleep.elf libc/crt0.o $< libc.a
+sh: bin/sh/main.o libc.a
+	$(LD) $(LDFLAGS) -o bin/sh/sh.elf libc/crt0.o $< libc.a
+synth: bin/synth/main.o libc.a
+	$(LD) $(LDFLAGS) -o bin/synth/synth.elf libc/crt0.o $< libc.a
+midi2ntsad: bin/midi2ntsad/main.o libc.a
+	$(LD) $(LDFLAGS) -o bin/midi2ntsad/midi2ntsad.elf libc/crt0.o $< libc.a
+midiplay: bin/midiplay/main.o libc.a
+	$(LD) $(LDFLAGS) -o bin/midiplay/midiplay.elf libc/crt0.o $< libc.a
+
+initrd.tar: $(PROGS)
+	mkdir -p stage
+	cp bin/hello/hello.elf stage/
+	cp bin/cat/cat.elf stage/
+	cp bin/ls/ls.elf stage/
+	cp bin/echo/echo.elf stage/
+	cp bin/sleep/sleep.elf stage/
+	cp bin/sh/sh.elf stage/
+	cp bin/synth/synth.elf stage/
+	cp bin/midi2ntsad/midi2ntsad.elf stage/
+	cp bin/midiplay/midiplay.elf stage/
+	cp bin/midi2ntsad/test.mid stage/
+	cd stage && tar -cf ../initrd.tar *
+
+clean:
+	rm -f libc/*.o bin/*/*.o bin/hello/hello.elf bin/cat/cat.elf bin/ls/ls.elf bin/echo/echo.elf bin/sleep/sleep.elf bin/synth/synth.elf bin/midi2ntsad/midi2ntsad.elf bin/sh/sh.elf bin/midiplay/midiplay.elf initrd.tar
+	rm -rf stage

@@ -3,10 +3,24 @@
 #include <unistd.h>
 #include "synth_user.h"
 
-#define MAX_OUT_SIZE 8192
+#define MAX_OUT_SIZE 32768
+#define MAX_NOTES 4096
 
-static uint8_t g_midi_buf[16384];
+static uint8_t g_midi_buf[65536];
 static char g_out_buf[MAX_OUT_SIZE];
+
+// ВЫНЕСЕНО ИЗ MAIN В ГЛОБАЛЬНУЮ ОБЛАСТЬ
+static int times[MAX_NOTES * 2];
+static int unique_times[MAX_NOTES * 2];
+
+typedef struct {
+    int start_ms;
+    int dur_ms;
+    int freq;
+} parsed_note_t;
+
+static parsed_note_t g_notes[MAX_NOTES];
+static int g_note_count = 0;
 
 static uint32_t read_vlq(const uint8_t **p, const uint8_t *end) {
     uint32_t v = 0;
@@ -55,12 +69,8 @@ int main(int argc, char **argv) {
     uint32_t us_per_tick = 500000 / division;
     uint8_t running_status = 0;
 
-    int active_notes[128]; // храним тик, когда нота включилась
+    int active_notes[128]; 
     for (int i = 0; i < 128; i++) active_notes[i] = -1;
-
-    int out_pos = 0;
-    out_pos += sprintf(g_out_buf + out_pos, "# NTSAD v2 (chords)\n");
-    int note_count = 0;
 
     while (p < trk_end) {
         tick += read_vlq(&p, trk_end);
@@ -92,20 +102,74 @@ int main(int argc, char **argv) {
             } else if (event == 0x80 || (event == 0x90 && vel == 0)) {
                 if (active_notes[note] >= 0) {
                     uint32_t dur_ms = ((tick - active_notes[note]) * us_per_tick) / 1000;
-                    if (dur_ms < 20) dur_ms = 20; // минимум 20 мс
-
-                    int f = midi_to_freq(note);
-                    out_pos += sprintf(g_out_buf + out_pos, "%d %d\n", f, dur_ms);
+                    if (dur_ms < 20) dur_ms = 20;
+                    
+                    if (g_note_count < MAX_NOTES) {
+                        g_notes[g_note_count].start_ms = (active_notes[note] * us_per_tick) / 1000;
+                        g_notes[g_note_count].dur_ms = dur_ms;
+                        g_notes[g_note_count].freq = midi_to_freq(note);
+                        g_note_count++;
+                    }
                     active_notes[note] = -1;
-                    note_count++;
                 }
             }
         }
     }
 
-    if (note_count == 0) { printf("no notes\n"); return 1; }
+    if (g_note_count == 0) { printf("no notes\n"); return 1; }
 
-    printf("writing %d bytes, %d notes...\n", out_pos, note_count);
+    int time_count = 0;
+    for (int i = 0; i < g_note_count; i++) {
+        times[time_count++] = g_notes[i].start_ms;
+        times[time_count++] = g_notes[i].start_ms + g_notes[i].dur_ms;
+    }
+    
+    // Сортировка
+    for (int i = 0; i < time_count - 1; i++) {
+        for (int j = i + 1; j < time_count; j++) {
+            if (times[j] < times[i]) {
+                int tmp = times[i]; times[i] = times[j]; times[j] = tmp;
+            }
+        }
+    }
+    
+    // Удаление дубликатов
+    int u_count = 0;
+    for (int i = 0; i < time_count; i++) {
+        if (i == 0 || times[i] != times[i - 1]) {
+            unique_times[u_count++] = times[i];
+        }
+    }
+    
+    // Генерация NTSAD
+    int out_pos = 0;
+    out_pos += sprintf(g_out_buf + out_pos, "# NTSAD v3 (timeline)\n");
+    
+    for (int i = 0; i < u_count - 1; i++) {
+        int t_start = unique_times[i];
+        int t_end = unique_times[i + 1];
+        int duration = t_end - t_start;
+        if (duration <= 0) continue;
+        
+        int freqs[8];
+        int fcount = 0;
+        for (int j = 0; j < g_note_count; j++) {
+            if (g_notes[j].start_ms <= t_start && t_start < g_notes[j].start_ms + g_notes[j].dur_ms) {
+                if (fcount < 8) freqs[fcount++] = g_notes[j].freq;
+            }
+        }
+        
+        if (fcount == 0) {
+            out_pos += sprintf(g_out_buf + out_pos, "0 %d\n", duration);
+        } else {
+            for (int k = 0; k < fcount; k++) {
+                out_pos += sprintf(g_out_buf + out_pos, "%d ", freqs[k]);
+            }
+            out_pos += sprintf(g_out_buf + out_pos, "%d\n", duration);
+        }
+    }
+
+    printf("writing %d bytes, %d notes, %d intervals...\n", out_pos, g_note_count, u_count - 1);
     if (ntrfs_write(argv[2], g_out_buf, out_pos) > 0) {
         printf("ok: done\n");
     } else printf("write failed\n");

@@ -162,9 +162,14 @@ process_t *process_create_user(const uint8_t *elf, uint64_t elf_size,
     uint64_t entry = elf_load(elf, elf_size);
     if (!entry) { vmm_switch(old_cr3); return 0; }
 
-    uint64_t user_stack_phys = pmm_alloc();
-    if (!user_stack_phys) { vmm_switch(old_cr3); return 0; }
-    vmm_map(USER_STACK_VADDR, user_stack_phys, PTE_PRESENT | PTE_WRITE | PTE_USER);
+    // ИЗМЕНЕНО: Выделяем 16 страниц под стек (64 КБ)
+    uint64_t user_stack_phys = 0;
+    for (int i = 0; i < 16; i++) {
+        uint64_t phys = pmm_alloc();
+        if (!phys) { vmm_switch(old_cr3); return 0; }
+        vmm_map(USER_STACK_VADDR - (i * 0x1000), phys, PTE_PRESENT | PTE_WRITE | PTE_USER);
+        if (i == 0) user_stack_phys = phys;
+    }
 
     uint64_t user_rsp = build_user_stack(user_stack_phys, argc, argv);
 
@@ -192,7 +197,7 @@ process_t *process_create_user(const uint8_t *elf, uint64_t elf_size,
     p->kernel_stack_top = kstack_phys + 0x1000;
     p->user_entry       = entry;
     p->stack_phys       = user_stack_phys;
-    p->stack_size       = 0x1000;
+    p->stack_size       = 0x1000 * 16;
     p->wake_tick        = 0;
     p->exit_code        = 0;
     p->state            = PROC_READY;
@@ -219,21 +224,23 @@ process_t *process_fork(process_t *parent, syscall_regs_t *r) {
 
     uint64_t *sp = (uint64_t*)(kstack_phys + 0x1000);
 
-    /* 1. Стек для context_switch (7 записей) */
-    *--sp = 0; // r15
-    *--sp = 0; // r14
-    *--sp = 0; // r13
-    *--sp = 0; // r12
-    *--sp = 0; // rbx
-    *--sp = 0; // rbp
-    *--sp = 0x202; // rflags
-    *--sp = (uint64_t)syscall_fork_ret; // адрес возврата
-
-    /* 2. Стек для syscall_fork_ret (15 регистров) */
+    /* 1. Сначала 15 регистров syscall_regs_t */
     sp -= 15;
     syscall_regs_t *child_regs = (syscall_regs_t*)sp;
     *child_regs = *r;
     child_regs->rax = 0;
+
+    /* 2. Затем адрес возврата и rflags для context_switch */
+    *--sp = (uint64_t)syscall_fork_ret;
+    *--sp = 0x202;
+
+    /* 3. Остальные 6 регистров, которые pop'ает context_switch */
+    *--sp = 0; // rbp
+    *--sp = 0; // rbx
+    *--sp = 0; // r12
+    *--sp = 0; // r13
+    *--sp = 0; // r14
+    *--sp = 0; // r15
 
     child->kernel_stack_top = kstack_phys + 0x1000;
     child->rsp = (uint64_t)sp;

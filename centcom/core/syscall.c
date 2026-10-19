@@ -60,6 +60,7 @@ static int is_user_ptr(uint64_t addr, uint64_t len) {
     if (len == 0) return 1;
     uint64_t end = addr + len;
     if (end < addr) return 0;
+    // Учитываем 16 страниц под стек (64 КБ)
     if (addr >= USER_CODE_VADDR && end <= USER_STACK_VADDR + 0x1000) return 1;
     return 0;
 }
@@ -155,7 +156,7 @@ static uint64_t sys_sleep(uint64_t ms) {
 static uint64_t sys_play_pcm(uint64_t buf, uint64_t samples) {
     if (!is_user_ptr(buf, samples)) return (uint64_t)-1;
     if (samples > 32768) samples = 32768;
-    sb16_stop();
+    // Без sb16_stop(), чтобы куски не прерывали друг друга
     int ok = sb16_play_pcm_async((const uint8_t*)buf, (uint32_t)samples);
     return ok ? samples : 0;
 }
@@ -237,12 +238,14 @@ static uint64_t sys_exec_do(const uint8_t *elf, uint64_t elf_size) {
         return 0;
     }
 
-    uint64_t new_stack_phys = pmm_alloc();
-    if (!new_stack_phys) {
-        vmm_switch(old_cr3);
-        return 0;
+    // ИЗМЕНЕНО: Выделяем 16 страниц под стек (64 КБ)
+    uint64_t new_stack_phys = 0;
+    for (int i = 0; i < 16; i++) {
+        uint64_t phys = pmm_alloc();
+        if (!phys) { vmm_switch(old_cr3); return 0; }
+        vmm_map(USER_STACK_VADDR - (i * 0x1000), phys, PTE_PRESENT | PTE_WRITE | PTE_USER);
+        if (i == 0) new_stack_phys = phys;
     }
-    vmm_map(USER_STACK_VADDR, new_stack_phys, PTE_PRESENT | PTE_WRITE | PTE_USER);
     
     uint64_t new_rsp = exec_build_user_stack(new_stack_phys);
 
@@ -311,7 +314,6 @@ static uint64_t sys_wait(uint64_t pid, uint64_t status_ptr) {
 }
 
 uint64_t syscall_dispatch(syscall_regs_t *r) {
-    // Запоминаем сисколл для паники
     g_last_syscall = (int)r->rax;
     g_last_syscall_arg = r->rdi;
 
@@ -321,6 +323,18 @@ uint64_t syscall_dispatch(syscall_regs_t *r) {
             if (p && p->is_user) {
                 p->exit_code = (int)r->rdi;
                 p->state = PROC_ZOMBIE;
+                
+                // Пробуждаем родителя
+                for (int i = 0; i < PROC_MAX; i++) {
+                    process_t *pr = process_get(i);
+                    if (pr && pr->state != PROC_FREE && pr->pid == p->parent_pid) {
+                        if (pr->state == PROC_BLOCKED) {
+                            pr->state = PROC_READY;
+                            pr->wake_tick = 0;
+                        }
+                    }
+                }
+
                 __asm__ volatile("cli");
                 schedule();
                 for (;;) __asm__ volatile("hlt");

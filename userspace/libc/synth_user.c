@@ -20,7 +20,6 @@ static const signed char g_sine[256] = {
     -49, -46, -43, -40, -37, -34, -31, -28, -25, -22, -19, -16, -12,  -9,  -6,  -3
 };
 
-/* Приводим частоту в комфортный слышимый диапазон [100, 2000] Гц */
 static int fold_freq(int freq) {
     if (freq <= 0) return 0;
     while (freq < 100) freq *= 2;
@@ -33,14 +32,13 @@ size_t synth_chord(uint8_t *buf, size_t max_samples, int *freqs, int count, int 
     if (n > max_samples) n = max_samples;
     if (n == 0 || count == 0) return 0;
 
-    unsigned int phases[8];
-    unsigned int phase_incs[8];
+    unsigned int phases[8] = {0};
+    unsigned int phase_incs[8] = {0};
     int vcount = 0;
 
     for (int i = 0; i < count && i < 8; i++) {
         int f = fold_freq(freqs[i]);
         if (f == 0) continue;
-        phases[vcount] = 0;
         phase_incs[vcount] = (unsigned int)(((unsigned long)f << 32) / SAMPLE_RATE_USER);
         vcount++;
     }
@@ -70,16 +68,16 @@ size_t synth_chord(uint8_t *buf, size_t max_samples, int *freqs, int count, int 
                     break;
                 }
             }
-            mix += sample;
+            mix += sample; 
             phases[v] += phase_incs[v];
         }
-        mix /= vcount;
-
+        
         long env = 127;
         if (i < (size_t)attack) env = (i * 127) / attack;
         else if (i > n - release) env = ((n - i) * 127) / release;
 
-        int v = 128 + (mix * amp * env / (127 * 127));
+        // Делим на 2, чтобы избежать клиппинга
+        int v = 128 + (mix * amp * env / (127 * 127 * 2));
         if (v < 0) v = 0;
         if (v > 255) v = 255;
         buf[i] = (uint8_t)v;
@@ -89,6 +87,68 @@ size_t synth_chord(uint8_t *buf, size_t max_samples, int *freqs, int count, int 
 
 size_t synth_note(uint8_t *buf, size_t max_samples, int freq, int ms, int wave, int volume) {
     return synth_chord(buf, max_samples, &freq, 1, ms, wave, volume);
+}
+
+// Функция для midiplay (собирает все ноты в один трек)
+size_t synth_track(uint8_t *buf, size_t max_samples, synth_note_t *notes, int note_count, int total_ms, int wave, int volume) {
+    size_t total_samples = (SAMPLE_RATE_USER * total_ms) / 1000;
+    if (total_samples > max_samples) total_samples = max_samples;
+    if (total_samples == 0) return 0;
+
+    for (size_t i = 0; i < total_samples; i++) buf[i] = 128;
+
+    int amp = volume * 127 / 100;
+    if (amp > 127) amp = 127;
+
+    for (int n = 0; n < note_count; n++) {
+        synth_note_t *note = &notes[n];
+        size_t start_samp = (SAMPLE_RATE_USER * note->start_ms) / 1000;
+        size_t dur_samp = (SAMPLE_RATE_USER * note->duration_ms) / 1000;
+        
+        if (start_samp >= total_samples) continue;
+        if (start_samp + dur_samp > total_samples) dur_samp = total_samples - start_samp;
+        if (dur_samp == 0) continue;
+
+        int f = fold_freq(note->freq);
+        if (f == 0) continue;
+
+        unsigned int phase = 0;
+        unsigned int phase_inc = (unsigned int)(((unsigned long)f << 32) / SAMPLE_RATE_USER);
+
+        size_t attack = 50;
+        size_t release = 50;
+        if (attack + release > dur_samp) { attack = dur_samp / 2; release = dur_samp / 2; }
+
+        for (size_t i = 0; i < dur_samp; i++) {
+            int sample = 0;
+            unsigned char hi = phase >> 24;
+            switch (wave) {
+                case 0: sample = g_sine[hi]; break;
+                case 1: sample = (hi < 128) ? 127 : -127; break;
+                case 2: sample = ((int)hi - 128) * 2; break;
+                case 3: {
+                    int p = hi;
+                    if (p < 128) sample = p * 2 - 128;
+                    else         sample = (255 - p) * 2 - 128;
+                    sample *= 2;
+                    break;
+                }
+            }
+            phase += phase_inc;
+
+            long env = 127;
+            if (i < attack) env = (i * 127) / attack;
+            else if (i > dur_samp - release) env = ((dur_samp - i) * 127) / release;
+
+            int val = (sample * amp * env) / (127 * 127 * 2);
+            size_t out_idx = start_samp + i;
+            int mixed = buf[out_idx] + val;
+            if (mixed < 0) mixed = 0;
+            if (mixed > 255) mixed = 255;
+            buf[out_idx] = (uint8_t)mixed;
+        }
+    }
+    return total_samples;
 }
 
 int midi_to_freq(int midi) {

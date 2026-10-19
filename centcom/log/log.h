@@ -18,5 +18,5 @@ void logw(subsys_t s, const char *fmt, ...);
 void loge(subsys_t s, const char *fmt, ...);
 void logd(subsys_t s, const char *fmt, ...);
 
-/* Для паники */
 void log_get_recent(char *out_buf, int max_lines);
+void log_set_fb(int enabled); // <-- НОВАЯ ФУНКЦИЯ
