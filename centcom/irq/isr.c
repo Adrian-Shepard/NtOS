@@ -8,7 +8,7 @@
 #include "../sound/cue.h"
 #include "../ntsad/ntsad.h"
 #include "../sched/sched.h"
-
+#include "../driver/mouse.h"
 static irq_handler_t g_handlers[16] = {0};
 static volatile uint64_t g_tick_count = 0;
 
@@ -42,6 +42,7 @@ static void irq1_handler(regs_t *r) {
 void isr_irq_init(void) {
     irq_register(0, irq0_handler);
     irq_register(1, irq1_handler);
+    irq_register(12, mouse_irq);
     logi(S_IRQ, "IRQ handlers registered: 0 (PIT), 1 (keyboard)");
 }
 

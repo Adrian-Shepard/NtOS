@@ -10,7 +10,7 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [6] preparing memory map...
 [7] final GetMemoryMap + ExitBootServices...
 [DRV] PC speaker ready
-[CPU] GDT loaded: 7 entries, TSS at 0x0000000004058100
+[CPU] GDT loaded: 7 entries, TSS at 0x0000000004059680
 [CPU] IDT loaded: 256 vectors (int3 DPL=3)
 [PMM] total RAM: 510 MB
 [PMM] free pages: 115466 (451 MB)
@@ -27,6 +27,7 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [IRQ] IRQ handlers registered: 0 (PIT), 1 (keyboard)
 [TMR] PIT configured at 100 Hz (divisor=11931)
 [KBD] PS/2 keyboard initialized
+[KBD] PS/2 Mouse initialized (sensitivity limited)
 [LOG] NTSAD bus online (queue=128, subs=16)
 [DRV] cue subsystem ready
 [sb16] init: start t=0
@@ -45,14 +46,9 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [NTM]   sleep.elf (8952 bytes)
 [NTM]   synth.elf (17792 bytes)
 [NTM]   test.mid (1485 bytes)
-[SYC] syscall enabled: STAR=0x0010000800000000 LSTAR=0x0000000004009390
+[SYC] syscall enabled: STAR=0x0010000800000000 LSTAR=0x000000000400a2f0
 [SCH] scheduler initialized, main pid=0 cr3=0x0000000000400000
-[KBD] sc=0x000000000000001d
-[KBD] unmapped sc=0x000000000000001d
-[KBD] sc=0x0000000000000038
-[KBD] unmapped sc=0x0000000000000038
-[KBD] sc=0x00000000000000b8
-[KBD] sc=0x000000000000009d
+[IRQ] got irq=12
 [CPU] interrupts enabled
 [BOO] CENTCOM core online
 [BOO] NtOS v0.14a boot sequence complete
@@ -66,3 +62,15 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [BOO] boot complete. Trust the Corporation.
 [SEC] access level: 1/10
 [tick] 100
+[tick] 200
+[tick] 300
+[tick] 400
+[tick] 500
+[tick] 600
+[tick] 700
+[tick] 800
+[tick] 900
+[tick] 1000
+[tick] 1100
+[tick] 1200
+[tick] 1300

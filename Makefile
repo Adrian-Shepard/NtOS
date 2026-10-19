@@ -36,6 +36,7 @@ COBJS := $(BUILD)/entry.o \
          $(BUILD)/serial.o \
          $(BUILD)/fb.o \
          $(BUILD)/bootscreen.o \
+         $(BUILD)/gui.o \
          $(BUILD)/shell.o \
          $(BUILD)/gdt.o \
          $(BUILD)/idt.o \
@@ -47,6 +48,7 @@ COBJS := $(BUILD)/entry.o \
          $(BUILD)/heap.o \
          $(BUILD)/pit.o \
          $(BUILD)/keyboard.o \
+         $(BUILD)/mouse.o \
          $(BUILD)/usermode.o \
          $(BUILD)/usermode_asm.o \
          $(BUILD)/syscall.o \
@@ -107,6 +109,7 @@ $(BUILD)/log.o:          centcom/log/log.c          ; @mkdir -p $(BUILD); $(CC) 
 $(BUILD)/serial.o:       centcom/log/serial.c       ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/fb.o:           centcom/tty/fb.c           ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/bootscreen.o:   centcom/tty/bootscreen.c   ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/gui.o:          centcom/tty/gui.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/shell.o:        centcom/tty/shell.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/isr_c.o:        centcom/irq/isr.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/isr_asm.o:      centcom/irq/isr.asm        ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
@@ -116,6 +119,7 @@ $(BUILD)/vmm.o:          centcom/mem/vmm.c          ; @mkdir -p $(BUILD); $(CC) 
 $(BUILD)/heap.o:         centcom/mem/heap.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/pit.o:          centcom/time/pit.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/keyboard.o:     centcom/driver/keyboard.c  ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/mouse.o:        centcom/driver/mouse.c     ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/elf.o:          centcom/elf/elf.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/tar.o:          centcom/fs/tar.c           ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/ntmem_fs.o:     centcom/fs/ntmem_fs.c      ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@

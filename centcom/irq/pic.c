@@ -18,9 +18,13 @@ void pic_init(void) {
     outb(PIC1_DATA, 0x01); io_wait();
     outb(PIC2_DATA, 0x01); io_wait();
 
-    /* IRQ0 (PIT), IRQ1 (keyboard), IRQ5 (SB16) — все разрешены */
-    outb(PIC1_DATA, 0xDC);
-    outb(PIC2_DATA, 0xFF);
+    // PIC1: Разрешаем IRQ0 (PIT), IRQ1 (KBD), IRQ2 (Cascade), IRQ5 (SB16)
+    // 1100 1000 = 0xC8
+    outb(PIC1_DATA, 0xC8);
+    
+    // PIC2: Разрешаем только IRQ12 (Mouse)
+    // 1110 1111 = 0xEF
+    outb(PIC2_DATA, 0xEF);
 }
 
 void pic_send_eoi(unsigned char irq) {

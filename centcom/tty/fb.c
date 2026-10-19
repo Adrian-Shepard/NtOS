@@ -125,3 +125,7 @@ void fb_fill_rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t c) {
         }
     }
 }
+void *fb_get_ptr(uint32_t x, uint32_t y) {
+    if (x >= g_w || y >= g_h) return 0;
+    return (void*)&g_fb[y * g_pitch_px + x];
+}

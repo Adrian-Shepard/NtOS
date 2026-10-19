@@ -248,6 +248,7 @@ void bootscreen_phase4(void) {
 //          ФАЗА 5: BINARY (С исправленной анимацией)
 // =============================================================
 void bootscreen_phase5(const bootinfo_t *bi) {
+    (void)bi;
     draw_header("5 - SYSTEM BINARY");
     
     char buf[64];

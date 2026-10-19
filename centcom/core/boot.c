@@ -19,6 +19,7 @@
 #include "../sound/cue.h"
 #include "../sched/sched.h"
 #include "../driver/ahci.h"
+#include "../driver/mouse.h"
 #include "panic.h"
 #include "gdt.h"
 #include "idt.h"
@@ -65,7 +66,7 @@ void centcom_boot(bootinfo_t *bi_unused) {
     isr_irq_init();
     pit_init(100);
     keyboard_init();
-
+    mouse_init();
     /* --- Шина событий, звук, подписки --- */
     ntsad_init();
     cue_init();

@@ -50,11 +50,11 @@ void keyboard_init(void) {
 }
 
 void keyboard_irq(void) {
+    uint8_t status = inb(0x64);
+    if (!(status & 0x01)) return; // Буфер пуст
     uint8_t sc = inb(0x60);
-
-    serial_puts("[KBD] sc=");
-    serial_puthex(sc);
-    serial_puts("\n");
+    
+    if (status & 0x20) return; // Если данные от мыши - игнорируем!
 
     if (sc == 0x2A || sc == 0x36) { g_shift = 1; return; }
     if (sc == 0xAA || sc == 0xB6) { g_shift = 0; return; }
@@ -62,26 +62,12 @@ void keyboard_irq(void) {
     if (sc >= 128) return;
 
     char c = g_shift ? kbd_shift[sc] : kbd_map[sc];
-    if (!c) {
-        serial_puts("[KBD] unmapped sc=");
-        serial_puthex(sc);
-        serial_puts("\n");
-        return;
-    }
+    if (!c) return;
 
     uint32_t next = (g_head + 1) % KBD_BUF_SIZE;
     if (next != g_tail) {
         g_buf[g_head] = c;
         g_head = next;
-        serial_puts("[KBD] pushed '");
-        serial_putc(c);
-        serial_puts("' head=");
-        serial_putdec(g_head);
-        serial_puts(" tail=");
-        serial_putdec(g_tail);
-        serial_puts("\n");
-    } else {
-        serial_puts("[KBD] buffer full!\n");
     }
 }
 
@@ -89,12 +75,5 @@ int keyboard_getchar(void) {
     if (g_head == g_tail) return 0;
     char c = g_buf[g_tail];
     g_tail = (g_tail + 1) % KBD_BUF_SIZE;
-    serial_puts("[KBD] popped '");
-    serial_putc(c);
-    serial_puts("' head=");
-    serial_putdec(g_head);
-    serial_puts(" tail=");
-    serial_putdec(g_tail);
-    serial_puts("\n");
     return (unsigned char)c;
 }

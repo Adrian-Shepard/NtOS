@@ -1,5 +1,6 @@
 #include "shell.h"
 #include "fb.h"
+#include "gui.h"           // <-- ДОБАВЛЕНО
 #include "../driver/keyboard.h"
 #include "../driver/sb16.h"
 #include "../driver/ahci.h"
@@ -40,6 +41,8 @@ static void print_hex(uint64_t v) {
     for (int i = 60; i >= 0; i -= 4) fb_putc(h[(v >> i) & 0xF], SH_DIM, SH_BG);
 }
 
+/* ============ тестовые kernel-потоки ============ */
+
 static void test_thread_a(void) {
     for (int i = 0; i < 20; i++) {
         serial_puts("[A]"); serial_putdec((uint64_t)i); serial_puts("\n");
@@ -47,6 +50,7 @@ static void test_thread_a(void) {
     }
     logi(S_SCH, "thrA done");
 }
+
 static void test_thread_b(void) {
     for (int i = 0; i < 20; i++) {
         serial_puts("[B]"); serial_putdec((uint64_t)i); serial_puts("\n");
@@ -55,16 +59,37 @@ static void test_thread_b(void) {
     logi(S_SCH, "thrB done");
 }
 
+/* ============ команды ============ */
+
 static void cmd_help(void) {
     sh_puts("commands:\n", SH_FG);
-    sh_puts("  help      - this message\n  mem       - memory statistics\n  heap      - heap statistics\n", SH_DIM);
-    sh_puts("  ticks     - PIT tick counter\n  fs        - list files in ntmem_fs\n  cat <n>   - hex dump of file by index\n", SH_DIM);
-    sh_puts("  disk      - read sector 0 from SATA drive\n  format    - format disk (NTRFS)\n  mount     - mount disk (NTRFS)\n", SH_DIM);
-    sh_puts("  dls       - list files on disk\n  dread <n> - read file from disk (hex)\n  dsave <i> <name> - copy ntmem file #i to disk\n", SH_DIM);
-    sh_puts("  spawn <n> [args] - start ELF in background\n  run <n>   [args] - start ELF and wait for exit\n  kill <pid>- terminate process (0 = panic)\n", SH_DIM);
-    sh_puts("  hello     - run hello.elf\n  procs     - list processes\n  threads   - spawn 2 kernel threads (test)\n", SH_DIM);
-    sh_puts("  chord     - play a C major chord (synth test)\n  melody    - play a short melody\n  cue <n>   - play a cue (0..7)\n", SH_DIM);
-    sh_puts("  beep f ms - SB16 tone (background)\n  sound [stop] - show status / stop sound\n  clear     - clear screen\n  panic     - trigger test panic\n  halt      - halt the CPU\n", SH_DIM);
+    sh_puts("  help      - this message\n", SH_DIM);
+    sh_puts("  mem       - memory statistics\n", SH_DIM);
+    sh_puts("  heap      - heap statistics\n", SH_DIM);
+    sh_puts("  ticks     - PIT tick counter\n", SH_DIM);
+    sh_puts("  fs        - list files in ntmem_fs\n", SH_DIM);
+    sh_puts("  cat <n>   - hex dump of file by index\n", SH_DIM);
+    sh_puts("  disk      - read sector 0 from SATA drive\n", SH_DIM);
+    sh_puts("  format    - format disk (NTRFS)\n", SH_DIM);
+    sh_puts("  mount     - mount disk (NTRFS)\n", SH_DIM);
+    sh_puts("  dls       - list files on disk\n", SH_DIM);
+    sh_puts("  dread <n> - read file from disk (hex)\n", SH_DIM);
+    sh_puts("  dsave <i> <name> - copy ntmem file #i to disk\n", SH_DIM);
+    sh_puts("  spawn <n> [args] - start ELF in background\n", SH_DIM);
+    sh_puts("  run <n>   [args] - start ELF and wait for exit\n", SH_DIM);
+    sh_puts("  kill <pid>- terminate process (0 = panic)\n", SH_DIM);
+    sh_puts("  hello     - run hello.elf\n", SH_DIM);
+    sh_puts("  procs     - list processes\n", SH_DIM);
+    sh_puts("  threads   - spawn 2 kernel threads (test)\n", SH_DIM);
+    sh_puts("  chord     - play a C major chord (synth test)\n", SH_DIM);
+    sh_puts("  melody    - play a short melody\n", SH_DIM);
+    sh_puts("  cue <n>   - play a cue (0..7)\n", SH_DIM);
+    sh_puts("  beep f ms - SB16 tone (background)\n", SH_DIM);
+    sh_puts("  sound [stop] - show status / stop sound\n", SH_DIM);
+    sh_puts("  gui       - launch graphical interface demo\n", SH_DIM); // <-- ДОБАВЛЕНО
+    sh_puts("  clear     - clear screen\n", SH_DIM);
+    sh_puts("  panic     - trigger test panic\n", SH_DIM);
+    sh_puts("  halt      - halt the CPU\n", SH_DIM);
 }
 
 static void cmd_mem(void) {
@@ -73,10 +98,12 @@ static void cmd_mem(void) {
     sh_puts("total RAM:   ", SH_FG); print_uint((pmm_total_pages() * 4) / 1024); sh_puts(" MiB\n", SH_FG);
     sh_puts("free RAM:    ", SH_FG); print_uint((pmm_free_pages()  * 4) / 1024); sh_puts(" MiB\n", SH_FG);
 }
+
 static void cmd_heap(void) {
     sh_puts("heap used:  ", SH_FG); print_uint(heap_used());  sh_puts(" bytes\n", SH_FG);
     sh_puts("heap total: ", SH_FG); print_uint(heap_total()); sh_puts(" bytes\n", SH_FG);
 }
+
 static void cmd_ticks(void) {
     sh_puts("ticks: ", SH_FG); print_uint(pit_ticks());
     sh_puts("  (~", SH_FG); print_uint(pit_ticks() / 100);
@@ -129,7 +156,6 @@ static void cmd_disk(void) {
     static uint8_t buf[512];
     sh_puts("disk: reading sector 0...\n", SH_DIM);
     
-    // Проверка на успешное чтение
     if (!ahci_read_sector(0, buf)) {
         sh_puts("error: failed to read sector (AHCI not ready? disk connected?)\n", SH_DIM);
         return;
@@ -151,11 +177,13 @@ static void cmd_format(void) {
     if (ntrfs_format()) sh_puts("ok: NTRFS formatted\n", SH_ACC);
     else sh_puts("error: format failed\n", SH_DIM);
 }
+
 static void cmd_mount(void) {
     sh_puts("mounting disk...\n", SH_DIM);
     if (ntrfs_mount()) sh_puts("ok: NTRFS mounted\n", SH_ACC);
     else sh_puts("error: mount failed (try 'format')\n", SH_DIM);
 }
+
 static void cmd_dls(void) {
     if (!ntrfs_is_mounted()) { sh_puts("not mounted\n", SH_DIM); return; }
     sh_puts("disk files:\n", SH_FG);
@@ -321,6 +349,7 @@ static void cmd_chord(void) {
     sh_puts("playing C major chord...\n", SH_ACC);
     sb16_play_pcm_async(pcm, samples);
 }
+
 static void cmd_melody(void) {
     static uint8_t pcm[65536];
     int offset = 0, note_len = 4000, release_len = 1500;
@@ -398,6 +427,7 @@ static void execute(void) {
     else if (starts_with(g_line, "cue "))   cmd_cue(g_line + 4);
     else if (starts_with(g_line, "beep "))  cmd_beep(g_line + 5);
     else if (starts_with(g_line, "sound"))  cmd_sound(g_line + 5);
+    else if (streq(g_line, "gui")) gui_demo(); // <-- ДОБАВЛЕНО
     else if (streq(g_line, "clear")) fb_clear(SH_BG);
     else if (streq(g_line, "panic")) __asm__ volatile("int $3");
     else if (streq(g_line, "halt")) {
