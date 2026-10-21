@@ -4,6 +4,7 @@
 #include "../log/log.h"
 #include "../tty/fb.h"
 #include "../tty/bootscreen.h"
+#include "../tty/gui.h"       // <-- ДОБАВЛЕНО
 #include "../tty/shell.h"
 #include "../mem/pmm.h"
 #include "../mem/vmm.h"
@@ -12,6 +13,7 @@
 #include "../irq/isr.h"
 #include "../time/pit.h"
 #include "../driver/keyboard.h"
+#include "../driver/mouse.h"  // <-- ДОБАВЛЕНО (для mouse_init)
 #include "../driver/sb16.h"
 #include "../fs/ntmem_fs.h"
 #include "../ntsad/ntsad.h"
@@ -19,7 +21,6 @@
 #include "../sound/cue.h"
 #include "../sched/sched.h"
 #include "../driver/ahci.h"
-#include "../driver/mouse.h"
 #include "panic.h"
 #include "gdt.h"
 #include "idt.h"
@@ -59,14 +60,17 @@ void centcom_boot(bootinfo_t *bi_unused) {
 
     /* ================ ФАЗА 3: MEMORY ================ */
     bootscreen_phase3();
+    
     /* --- v0.15: диск --- */
     ahci_init();
-    /* --- Прерывания, таймер, клавиатура --- */
+    
+    /* --- Прерывания, таймер, клавиатура, мышь --- */
     pic_init();
     isr_irq_init();
     pit_init(100);
     keyboard_init();
-    mouse_init();
+    mouse_init(); // <-- Инициализация мыши
+
     /* --- Шина событий, звук, подписки --- */
     ntsad_init();
     cue_init();
@@ -98,7 +102,7 @@ void centcom_boot(bootinfo_t *bi_unused) {
 
     /* --- Логи в serial (полный отчёт) --- */
     logi(S_BOO, "CENTCOM core online");
-    logi(S_BOO, "NtOS v0.14a boot sequence complete");
+    logi(S_BOO, "NtOS v0.15.2 boot sequence complete");
     logi(S_VMM, "framebuffer = %dx%d @ %x",
          bi->fb_width, bi->fb_height, bi->fb_addr);
     logi(S_PMM, "RAM: %d MiB total, %d MiB free",
@@ -108,6 +112,7 @@ void centcom_boot(bootinfo_t *bi_unused) {
          heap_used(), heap_total());
     logi(S_TMR, "PIT configured at 100 Hz");
     logi(S_KBD, "PS/2 keyboard ready");
+    logi(S_KBD, "PS/2 mouse ready");
     logi(S_NTM, "ntmem_fs: %d file(s)", ntmem_fs_count());
     logi(S_SCH, "scheduler: %d threads", process_count());
     logi(S_BOO, "boot complete. Trust the Corporation.");
@@ -117,8 +122,16 @@ void centcom_boot(bootinfo_t *bi_unused) {
     ntsad_state(NTSAD_CH_CORE, NTSAD_STATE_READY);
     ntsad_cue(NTSAD_CUE_BOOT);
 
-    /* --- Shell --- */
-    shell_run();
+    /* ================ ЗАПУСК GUI / SHELL ================ */
+    
+    // Запускаем графическую оболочку
+    int mode = gui_start();
+    
+    // Если пользователь выбрал "Classic Shell" в меню, запускаем текстовый шелл
+    if (mode == 1) {
+        shell_run();
+    }
 
+    // Если система завершила работу (shutdown)
     for (;;) __asm__ volatile("hlt");
 }

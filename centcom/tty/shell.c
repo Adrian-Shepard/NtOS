@@ -1,6 +1,6 @@
 #include "shell.h"
 #include "fb.h"
-#include "gui.h"           // <-- ДОБАВЛЕНО
+#include "gui.h"           // <-- ДОБАВЛЕНО (вместо gui_demo)
 #include "../driver/keyboard.h"
 #include "../driver/sb16.h"
 #include "../driver/ahci.h"
@@ -86,7 +86,7 @@ static void cmd_help(void) {
     sh_puts("  cue <n>   - play a cue (0..7)\n", SH_DIM);
     sh_puts("  beep f ms - SB16 tone (background)\n", SH_DIM);
     sh_puts("  sound [stop] - show status / stop sound\n", SH_DIM);
-    sh_puts("  gui       - launch graphical interface demo\n", SH_DIM); // <-- ДОБАВЛЕНО
+    sh_puts("  gui       - launch graphical interface\n", SH_DIM); // <-- ИСПРАВЛЕНО
     sh_puts("  clear     - clear screen\n", SH_DIM);
     sh_puts("  panic     - trigger test panic\n", SH_DIM);
     sh_puts("  halt      - halt the CPU\n", SH_DIM);
@@ -427,7 +427,11 @@ static void execute(void) {
     else if (starts_with(g_line, "cue "))   cmd_cue(g_line + 4);
     else if (starts_with(g_line, "beep "))  cmd_beep(g_line + 5);
     else if (starts_with(g_line, "sound"))  cmd_sound(g_line + 5);
-    else if (streq(g_line, "gui")) gui_demo(); // <-- ДОБАВЛЕНО
+    else if (streq(g_line, "gui")) {
+        if (gui_start() == 0) {
+            for (;;) __asm__ volatile("hlt"); // Если выбрали Shutdown
+        }
+    }
     else if (streq(g_line, "clear")) fb_clear(SH_BG);
     else if (streq(g_line, "panic")) __asm__ volatile("int $3");
     else if (streq(g_line, "halt")) {

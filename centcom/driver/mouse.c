@@ -48,7 +48,7 @@ void mouse_init(void) {
     
     status |= 0x02;  // Прерывание мыши
     status &= ~0x10; // Тактирование
-    status |= 0x40;  // Отключаем трансляцию (мышь сама шлет 3 байта)
+    status |= 0x40;  // Отключаем трансляцию
     
     mouse_wait(1); outb(PS2_COMMAND, 0x60);
     mouse_wait(1); outb(PS2_DATA, status);
@@ -60,7 +60,7 @@ void mouse_init(void) {
 
     g_mouse_x = fb_width() / 2;
     g_mouse_y = fb_height() / 2;
-    logi(S_KBD, "PS/2 Mouse ready");
+    logi(S_KBD, "PS/2 Mouse ready (1:1 precision)");
 }
 
 void mouse_irq(regs_t *r) {
@@ -69,9 +69,9 @@ void mouse_irq(regs_t *r) {
     if (!(status & 0x01)) return;
     
     uint8_t data = inb(PS2_DATA);
-    if (!(status & 0x20)) return; // Только данные мыши
+    if (!(status & 0x20)) return;
 
-    // Синхронизация: первый байт всегда имеет бит 3 (0x08)
+    // Строгая проверка синхронизации только для первого байта
     if (g_cycle == 0 && !(data & 0x08)) return; 
 
     g_packet[g_cycle] = data;
@@ -90,19 +90,9 @@ void mouse_irq(regs_t *r) {
         if (flags & 0x10) dx |= 0xFFFFFF00;
         if (flags & 0x20) dy |= 0xFFFFFF00;
 
-        // --- НАСТРОЙКА ЧУВСТВИТЕЛЬНОСТИ ---
-        // Если слишком быстро, поменяй dx / 2, если медленно, убери деление
-        int move_x = dx / 2;
-        int move_y = dy / 2;
-
-        // Компенсация для очень медленных движений (1 пиксель)
-        if (move_x == 0 && dx > 0) move_x = 1;
-        if (move_x == 0 && dx < 0) move_x = -1;
-        if (move_y == 0 && dy > 0) move_y = 1;
-        if (move_y == 0 && dy < 0) move_y = -1;
-
-        g_mouse_x += move_x;
-        g_mouse_y -= move_y; // Инверсия Y
+        // Прямое применение нативной дельты (без делений и потерь точности)
+        g_mouse_x += dx;
+        g_mouse_y -= dy; // Инверсия Y
 
         if (g_mouse_x < 0) g_mouse_x = 0;
         if (g_mouse_y < 0) g_mouse_y = 0;
