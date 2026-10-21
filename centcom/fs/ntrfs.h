@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-#define NTRFS_MAGIC      0x4652544EU   /* 'NTRF' */
+#define NTRFS_MAGIC      0x4652544EU
 #define NTRFS_VERSION    1
 #define NTRFS_BLOCK_SIZE 512
 #define NTRFS_INODE_MAX  256
@@ -13,7 +13,7 @@ typedef struct {
     uint32_t first_block;
     uint32_t block_count;
     uint8_t  type;
-    uint8_t  reserved[23];
+    uint8_t  reserved[19]; 
 } __attribute__((packed)) ntrfs_inode_t;
 
 typedef struct {

@@ -11,6 +11,7 @@
 
 #define USER_CODE_VADDR  0x0000010000000000ULL
 #define USER_STACK_VADDR 0x0000020000000000ULL
+#define STACK_PAGES 16
 
 extern void usermode_enter(uint64_t entry, uint64_t user_rsp);
 extern uint8_t stack_top[];
@@ -114,9 +115,9 @@ process_t *process_create_kernel(void (*entry)(void), const char *name) {
     return p;
 }
 
-static uint64_t build_user_stack(uint64_t stack_phys, int argc, const char **argv) {
-    uint8_t *base = (uint8_t*)stack_phys;
-    uint64_t offset = 0x1000;
+static uint64_t build_user_stack(uint64_t stack_phys_top, int argc, const char **argv) {
+    uint8_t *base = (uint8_t*)stack_phys_top;
+    uint64_t offset = 0x1000; // Начинаем с вершины страницы
     uint64_t argv_ptrs[16];
 
     if (argc > 16) argc = 16;
@@ -127,7 +128,8 @@ static uint64_t build_user_stack(uint64_t stack_phys, int argc, const char **arg
         uint64_t len = 0;
         while (s[len]) len++;
         offset -= (len + 1);
-        uint64_t vaddr = USER_STACK_VADDR + offset;
+        if (offset < 64) return 0; // Защита от переполнения стека
+        uint64_t vaddr = USER_STACK_VADDR - 0x1000 + offset;
         for (uint64_t j = 0; j <= len; j++) base[offset + j] = s[j];
         argv_ptrs[i] = vaddr;
     }
@@ -140,7 +142,7 @@ static uint64_t build_user_stack(uint64_t stack_phys, int argc, const char **arg
     }
     offset -= 8;
     *(uint64_t*)(base + offset) = (uint64_t)argc;
-    return USER_STACK_VADDR + offset;
+    return USER_STACK_VADDR - 0x1000 + offset;
 }
 
 static void user_entry_thunk(void) {
@@ -156,27 +158,40 @@ process_t *process_create_user(const uint8_t *elf, uint64_t elf_size,
 
     uint64_t new_cr3 = vmm_alloc_pml4();
     if (!new_cr3) return 0;
+    
     uint64_t old_cr3 = vmm_get_current_pml4();
     vmm_switch(new_cr3);
 
     uint64_t entry = elf_load(elf, elf_size);
-    if (!entry) { vmm_switch(old_cr3); return 0; }
+    if (!entry) { vmm_switch(old_cr3); pmm_free(new_cr3); return 0; }
 
-    // ИЗМЕНЕНО: Выделяем 16 страниц под стек (64 КБ)
-    uint64_t user_stack_phys = 0;
-    for (int i = 0; i < 16; i++) {
+    uint64_t top_stack_phys = 0;
+    for (int i = 0; i < STACK_PAGES; i++) {
         uint64_t phys = pmm_alloc();
-        if (!phys) { vmm_switch(old_cr3); return 0; }
-        vmm_map(USER_STACK_VADDR - (i * 0x1000), phys, PTE_PRESENT | PTE_WRITE | PTE_USER);
-        if (i == 0) user_stack_phys = phys;
+        if (!phys) {
+            // TODO: Освободить предыдущие страницы
+            vmm_switch(old_cr3); 
+            pmm_free(new_cr3);
+            return 0;
+        }
+        vmm_map(USER_STACK_VADDR - (i + 1) * 0x1000, phys, PTE_PRESENT | PTE_WRITE | PTE_USER);
+        if (i == 0) top_stack_phys = phys;
     }
 
-    uint64_t user_rsp = build_user_stack(user_stack_phys, argc, argv);
+    uint64_t user_rsp = build_user_stack(top_stack_phys, argc, argv);
+    if (!user_rsp) {
+        vmm_switch(old_cr3);
+        // TODO: Освободить все страницы
+        return 0;
+    }
 
     vmm_switch(old_cr3);
 
     uint64_t kstack_phys = pmm_alloc();
-    if (!kstack_phys) return 0;
+    if (!kstack_phys) {
+        // TODO: Освободить страницы
+        return 0;
+    }
 
     uint64_t *sp = (uint64_t*)(kstack_phys + 0x1000);
     *--sp = (uint64_t)process_exit;
@@ -187,7 +202,11 @@ process_t *process_create_user(const uint8_t *elf, uint64_t elf_size,
 
     uint64_t f = irq_save();
     process_t *p = alloc_slot();
-    if (!p) { irq_restore(f); return 0; }
+    if (!p) { 
+        irq_restore(f); 
+        pmm_free(kstack_phys);
+        return 0; 
+    }
 
     p->pid              = g_next_pid++;
     p->parent_pid       = 0;
@@ -196,8 +215,8 @@ process_t *process_create_user(const uint8_t *elf, uint64_t elf_size,
     p->cr3              = new_cr3;
     p->kernel_stack_top = kstack_phys + 0x1000;
     p->user_entry       = entry;
-    p->stack_phys       = user_stack_phys;
-    p->stack_size       = 0x1000 * 16;
+    p->stack_phys       = top_stack_phys;
+    p->stack_size       = STACK_PAGES * 0x1000;
     p->wake_tick        = 0;
     p->exit_code        = 0;
     p->state            = PROC_READY;
@@ -220,21 +239,17 @@ process_t *process_fork(process_t *parent, syscall_regs_t *r) {
     if (!child->cr3) { irq_restore(flags); return 0; }
 
     uint64_t kstack_phys = pmm_alloc();
-    if (!kstack_phys) { irq_restore(flags); return 0; }
+    if (!kstack_phys) { pmm_free(child->cr3); irq_restore(flags); return 0; }
 
     uint64_t *sp = (uint64_t*)(kstack_phys + 0x1000);
 
-    /* 1. Сначала 15 регистров syscall_regs_t */
     sp -= 15;
     syscall_regs_t *child_regs = (syscall_regs_t*)sp;
     *child_regs = *r;
     child_regs->rax = 0;
 
-    /* 2. Затем адрес возврата и rflags для context_switch */
     *--sp = (uint64_t)syscall_fork_ret;
     *--sp = 0x202;
-
-    /* 3. Остальные 6 регистров, которые pop'ает context_switch */
     *--sp = 0; // rbp
     *--sp = 0; // rbx
     *--sp = 0; // r12
@@ -246,7 +261,7 @@ process_t *process_fork(process_t *parent, syscall_regs_t *r) {
     child->rsp = (uint64_t)sp;
     child->user_rsp = syscall_get_user_rsp();
     child->user_entry = parent->user_entry;
-    child->stack_phys = 0;
+    child->stack_phys = parent->stack_phys; // Наследуем физическую страницу (TODO: Copy-on-write)
     child->stack_size = parent->stack_size;
     child->wake_tick = 0;
     child->exit_code = 0;
@@ -286,8 +301,13 @@ void process_kill(uint64_t pid) {
 
 void process_reap(process_t *p) {
     if (!p || p->state != PROC_ZOMBIE) return;
-    if (p->is_user && p->cr3) pmm_free(p->cr3);
-    if (p->is_user && p->stack_phys) pmm_free(p->stack_phys);
+    if (p->is_user && p->cr3) vmm_free_address_space(p->cr3);
+    if (p->is_user && p->stack_phys) {
+        for (int i = 0; i < STACK_PAGES; i++) {
+            uint64_t phys = p->stack_phys + i * 0x1000; // Упрощенно, так как мы выделяли по порядку
+            pmm_free(phys);
+        }
+    }
     if (p->kernel_stack_top && p->kernel_stack_top != (uint64_t)stack_top)
         pmm_free(p->kernel_stack_top - 0x1000);
     p->state = PROC_FREE;

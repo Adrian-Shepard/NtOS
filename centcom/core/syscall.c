@@ -26,7 +26,6 @@
 extern void syscall_entry(void);
 extern uint64_t user_rsp_save;
 
-// Для паники
 int g_last_syscall = -1;
 uint64_t g_last_syscall_arg = 0;
 
@@ -60,17 +59,30 @@ static int is_user_ptr(uint64_t addr, uint64_t len) {
     if (len == 0) return 1;
     uint64_t end = addr + len;
     if (end < addr) return 0;
-    // Учитываем 16 страниц под стек (64 КБ)
-    if (addr >= USER_CODE_VADDR && end <= USER_STACK_VADDR + 0x1000) return 1;
+    // Стек теперь находится до USER_STACK_VADDR
+    if (addr >= USER_CODE_VADDR && end <= USER_STACK_VADDR) return 1;
     return 0;
 }
 
 static uint64_t sys_write(uint64_t fd, uint64_t buf, uint64_t len) {
-    (void)fd;
     if (!is_user_ptr(buf, len)) return (uint64_t)-1;
-    const char *s = (const char*)buf;
-    for (uint64_t i = 0; i < len; i++) fb_putc(s[i], 0x00E0E0E0, 0x00101018);
-    return len;
+    
+    if (fd == 1 || fd == 2) { // stdout / stderr
+        const char *s = (const char*)buf;
+        for (uint64_t i = 0; i < len; i++) fb_putc(s[i], 0x00E0E0E0, 0x00101018);
+        return len;
+    }
+    
+    if (fd >= FD_MAX || !g_fds[fd].used) return (uint64_t)-1;
+    
+    // Простая запись в память (файл в ntrfs не поддерживает запись через fd)
+    ntmem_file_t *f = g_fds[fd].file;
+    if (g_fds[fd].offset + len > f->size) len = f->size - g_fds[fd].offset;
+    uint8_t *dst = (uint8_t*)f->data + g_fds[fd].offset; // ОПАСНО: f->data - это const
+    // На самом деле мы не должны писать в ntrfs через fd. 
+    // В реальной ОС fd для записи открывается флагом O_WRONLY.
+    // Здесь просто вернем ошибку.
+    return (uint64_t)-1;
 }
 
 static uint64_t sys_read(uint64_t fd, uint64_t buf, uint64_t len) {
@@ -156,7 +168,6 @@ static uint64_t sys_sleep(uint64_t ms) {
 static uint64_t sys_play_pcm(uint64_t buf, uint64_t samples) {
     if (!is_user_ptr(buf, samples)) return (uint64_t)-1;
     if (samples > 32768) samples = 32768;
-    // Без sb16_stop(), чтобы куски не прерывали друг друга
     int ok = sb16_play_pcm_async((const uint8_t*)buf, (uint32_t)samples);
     return ok ? samples : 0;
 }
@@ -213,13 +224,13 @@ static uint64_t exec_build_user_stack(uint64_t stack_phys) {
     const char *name = "user";
     uint64_t len = 4;
     offset -= (len + 1);
-    uint64_t name_vaddr = USER_STACK_VADDR + offset;
+    uint64_t name_vaddr = USER_STACK_VADDR - 0x1000 + offset;
     for (uint64_t i = 0; i <= len; i++) base[offset + i] = name[i];
     offset &= ~7ULL;
     offset -= 8;  *(uint64_t*)(base + offset) = 0;
     offset -= 8;  *(uint64_t*)(base + offset) = name_vaddr;
     offset -= 8;  *(uint64_t*)(base + offset) = 1;
-    return USER_STACK_VADDR + offset;
+    return USER_STACK_VADDR - 0x1000 + offset;
 }
 
 static uint64_t sys_exec_do(const uint8_t *elf, uint64_t elf_size) {
@@ -235,22 +246,28 @@ static uint64_t sys_exec_do(const uint8_t *elf, uint64_t elf_size) {
     uint64_t entry = elf_load(elf, elf_size);
     if (!entry) {
         vmm_switch(old_cr3);
+        pmm_free(new_cr3);
         return 0;
     }
 
-    // ИЗМЕНЕНО: Выделяем 16 страниц под стек (64 КБ)
     uint64_t new_stack_phys = 0;
     for (int i = 0; i < 16; i++) {
         uint64_t phys = pmm_alloc();
-        if (!phys) { vmm_switch(old_cr3); return 0; }
-        vmm_map(USER_STACK_VADDR - (i * 0x1000), phys, PTE_PRESENT | PTE_WRITE | PTE_USER);
+        if (!phys) {
+            vmm_switch(old_cr3);
+            // TODO: Free pages
+            return 0;
+        }
+        vmm_map(USER_STACK_VADDR - (i + 1) * 0x1000, phys, PTE_PRESENT | PTE_WRITE | PTE_USER);
         if (i == 0) new_stack_phys = phys;
     }
     
     uint64_t new_rsp = exec_build_user_stack(new_stack_phys);
 
-    if (p->cr3) pmm_free(p->cr3);
-    if (p->stack_phys) pmm_free(p->stack_phys);
+    if (p->cr3) vmm_free_address_space(p->cr3);
+    if (p->stack_phys) {
+        // TODO: Free old stack pages
+    }
 
     p->cr3 = new_cr3;
     p->user_entry = entry;
@@ -324,7 +341,6 @@ uint64_t syscall_dispatch(syscall_regs_t *r) {
                 p->exit_code = (int)r->rdi;
                 p->state = PROC_ZOMBIE;
                 
-                // Пробуждаем родителя
                 for (int i = 0; i < PROC_MAX; i++) {
                     process_t *pr = process_get(i);
                     if (pr && pr->state != PROC_FREE && pr->pid == p->parent_pid) {

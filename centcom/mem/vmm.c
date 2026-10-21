@@ -40,7 +40,6 @@ void vmm_switch(uint64_t pml4_phys) {
 
 void vmm_init(bootinfo_t *bi) {
     (void)bi;
-
     logi(S_VMM, "old CR3 = %x", vmm_get_cr3());
 
     g_pml4_phys = pmm_alloc();
@@ -54,18 +53,16 @@ void vmm_init(bootinfo_t *bi) {
         uint64_t pd_i   = (addr >> 21) & 0x1FF;
 
         uint64_t *pdpt = get_or_alloc(g_pml4, pml4_i);
-        if (!pdpt) { loge(S_VMM, "pdpt alloc failed at %x", addr); return; }
+        if (!pdpt) return;
         uint64_t *pd = get_or_alloc(pdpt, pdpt_i);
-        if (!pd) { loge(S_VMM, "pd alloc failed at %x", addr); return; }
+        if (!pd) return;
 
         pd[pd_i] = addr | PTE_PRESENT | PTE_WRITE | PTE_HUGE;
     }
 
     g_active_pml4 = g_pml4;
     g_active_cr3  = g_pml4_phys;
-
     __asm__ volatile("mov %0, %%cr3" :: "r"(g_pml4_phys) : "memory");
-
     logi(S_VMM, "new CR3 = %x", g_pml4_phys);
 }
 
@@ -74,7 +71,7 @@ uint64_t vmm_alloc_pml4(void) {
     if (!p) return 0;
     uint64_t *npml4 = phys_to_virt(p);
     for (int i = 0; i < 512; i++) npml4[i] = 0;
-    npml4[0] = g_pml4[0];
+    npml4[0] = g_pml4[0]; // Share kernel space
     return p;
 }
 
@@ -92,7 +89,6 @@ void vmm_map(uint64_t virt, uint64_t phys, uint64_t flags) {
     if (!pt) return;
 
     pt[pt_i] = (phys & ~0xFFFULL) | flags | PTE_PRESENT;
-
     __asm__ volatile("invlpg (%0)" :: "r"(virt) : "memory");
 }
 
@@ -139,6 +135,40 @@ uint64_t vmm_get_phys(uint64_t virt) {
     return (pt[pt_i] & ~0xFFFULL) | (virt & 0xFFF);
 }
 
+void vmm_free_address_space(uint64_t cr3) {
+    if (!cr3 || cr3 == g_pml4_phys) return;
+    uint64_t *pml4 = (uint64_t*)cr3;
+    
+    for (int i = 1; i < 512; i++) {
+        if (!(pml4[i] & PTE_PRESENT)) continue;
+        uint64_t *pdpt = (uint64_t*)(pml4[i] & ~0xFFFULL);
+        
+        for (int j = 0; j < 512; j++) {
+            if (!(pdpt[j] & PTE_PRESENT)) continue;
+            if (pdpt[j] & PTE_HUGE) continue; // 1GB pages not used in userspace
+            
+            uint64_t *pd = (uint64_t*)(pdpt[j] & ~0xFFFULL);
+            for (int k = 0; k < 512; k++) {
+                if (!(pd[k] & PTE_PRESENT)) continue;
+                if (pd[k] & PTE_HUGE) {
+                    pmm_free(pd[k] & ~0x1FFFFFULL);
+                    continue;
+                }
+                uint64_t *pt = (uint64_t*)(pd[k] & ~0xFFFULL);
+                for (int l = 0; l < 512; l++) {
+                    if (pt[l] & PTE_PRESENT) {
+                        pmm_free(pt[l] & ~0xFFFULL);
+                    }
+                }
+                pmm_free(pd[k] & ~0xFFFULL);
+            }
+            pmm_free(pdpt[j] & ~0xFFFULL);
+        }
+        pmm_free(pml4[i] & ~0xFFFULL);
+    }
+    pmm_free(cr3);
+}
+
 uint64_t vmm_clone_address_space(uint64_t src_cr3) {
     uint64_t dst_cr3 = vmm_alloc_pml4();
     if (!dst_cr3) return 0;
@@ -146,52 +176,59 @@ uint64_t vmm_clone_address_space(uint64_t src_cr3) {
     uint64_t *src_pml4 = (uint64_t*)src_cr3;
     uint64_t *dst_pml4 = (uint64_t*)dst_cr3;
 
-    dst_pml4[0] = src_pml4[0];
+    dst_pml4[0] = src_pml4[0]; // Kernel space shared
 
     for (int i = 1; i < 512; i++) {
-        if (src_pml4[i] & PTE_PRESENT) {
-            uint64_t dst_pdpt_phys = pmm_alloc();
-            if (!dst_pdpt_phys) return 0;
-            zero_page(dst_pdpt_phys);
-            dst_pml4[i] = dst_pdpt_phys | (src_pml4[i] & 0xFFF);
+        if (!(src_pml4[i] & PTE_PRESENT)) continue;
+        
+        uint64_t dst_pdpt_phys = pmm_alloc();
+        if (!dst_pdpt_phys) { vmm_free_address_space(dst_cr3); return 0; }
+        zero_page(dst_pdpt_phys);
+        dst_pml4[i] = dst_pdpt_phys | (src_pml4[i] & 0xFFF);
+        
+        uint64_t *src_pdpt = (uint64_t*)(src_pml4[i] & ~0xFFF);
+        uint64_t *dst_pdpt = (uint64_t*)dst_pdpt_phys;
+        
+        for (int j = 0; j < 512; j++) {
+            if (!(src_pdpt[j] & PTE_PRESENT)) continue;
+            if (src_pdpt[j] & PTE_HUGE) {
+                // Clone 1GB page (simplified: just share for now)
+                dst_pdpt[j] = src_pdpt[j];
+                continue;
+            }
             
-            uint64_t *src_pdpt = (uint64_t*)(src_pml4[i] & ~0xFFF);
-            uint64_t *dst_pdpt = (uint64_t*)dst_pdpt_phys;
+            uint64_t dst_pd_phys = pmm_alloc();
+            if (!dst_pd_phys) { vmm_free_address_space(dst_cr3); return 0; }
+            zero_page(dst_pd_phys);
+            dst_pdpt[j] = dst_pd_phys | (src_pdpt[j] & 0xFFF);
             
-            for (int j = 0; j < 512; j++) {
-                if (src_pdpt[j] & PTE_PRESENT) {
-                    uint64_t dst_pd_phys = pmm_alloc();
-                    if (!dst_pd_phys) return 0;
-                    zero_page(dst_pd_phys);
-                    dst_pdpt[j] = dst_pd_phys | (src_pdpt[j] & 0xFFF);
-                    
-                    uint64_t *src_pd = (uint64_t*)(src_pdpt[j] & ~0xFFF);
-                    uint64_t *dst_pd = (uint64_t*)dst_pd_phys;
-                    
-                    for (int k = 0; k < 512; k++) {
-                        if (src_pd[k] & PTE_PRESENT) {
-                            if (src_pd[k] & PTE_HUGE) continue;
-                            
-                            uint64_t dst_pt_phys = pmm_alloc();
-                            if (!dst_pt_phys) return 0;
-                            zero_page(dst_pt_phys);
-                            dst_pd[k] = dst_pt_phys | (src_pd[k] & 0xFFF);
-                            
-                            uint64_t *src_pt = (uint64_t*)(src_pd[k] & ~0xFFF);
-                            uint64_t *dst_pt = (uint64_t*)dst_pt_phys;
-                            
-                            for (int l = 0; l < 512; l++) {
-                                if (src_pt[l] & PTE_PRESENT) {
-                                    uint64_t new_page = pmm_alloc();
-                                    if (!new_page) return 0;
-                                    zero_page(new_page);
-                                    uint8_t *src_data = (uint8_t*)(src_pt[l] & ~0xFFF);
-                                    uint8_t *dst_data = (uint8_t*)new_page;
-                                    for (int m = 0; m < 4096; m++) dst_data[m] = src_data[m];
-                                    dst_pt[l] = new_page | (src_pt[l] & 0xFFF);
-                                }
-                            }
-                        }
+            uint64_t *src_pd = (uint64_t*)(src_pdpt[j] & ~0xFFF);
+            uint64_t *dst_pd = (uint64_t*)dst_pd_phys;
+            
+            for (int k = 0; k < 512; k++) {
+                if (!(src_pd[k] & PTE_PRESENT)) continue;
+                if (src_pd[k] & PTE_HUGE) {
+                    // Clone 2MB page (simplified: just share for now)
+                    dst_pd[k] = src_pd[k];
+                    continue;
+                }
+                
+                uint64_t dst_pt_phys = pmm_alloc();
+                if (!dst_pt_phys) { vmm_free_address_space(dst_cr3); return 0; }
+                zero_page(dst_pt_phys);
+                dst_pd[k] = dst_pt_phys | (src_pd[k] & 0xFFF);
+                
+                uint64_t *src_pt = (uint64_t*)(src_pd[k] & ~0xFFF);
+                uint64_t *dst_pt = (uint64_t*)dst_pt_phys;
+                
+                for (int l = 0; l < 512; l++) {
+                    if (src_pt[l] & PTE_PRESENT) {
+                        uint64_t new_page = pmm_alloc();
+                        if (!new_page) { vmm_free_address_space(dst_cr3); return 0; }
+                        uint8_t *src_data = (uint8_t*)(src_pt[l] & ~0xFFF);
+                        uint8_t *dst_data = (uint8_t*)new_page;
+                        for (int m = 0; m < 4096; m++) dst_data[m] = src_data[m];
+                        dst_pt[l] = new_page | (src_pt[l] & 0xFFF);
                     }
                 }
             }
