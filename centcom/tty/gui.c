@@ -13,21 +13,26 @@
 #include "../sound/cue.h"
 #include "../sound/synth.h"
 #include "../log/serial.h"
+#include "../core/panic.h"
 
-#define GUI_BG_DESKTOP 0x000A0A0C
-#define GUI_BAR_BG     0x00141A20
-#define GUI_BAR_ACCENT 0x00C8102E
-#define GUI_WIN_BG     0x00141A20
-#define GUI_WIN_BORDER 0x00AA2222
-#define GUI_WIN_TITLE  0x00AA2222
-#define GUI_TEXT       0x00D0D0D0
+// Цветовая палитра в стиле Windows 95 / Nanotrasen
+#define GUI_BG_DESKTOP 0x00008080
+#define GUI_BAR_BG     0x00C0C0C0
+#define GUI_BAR_ACCENT 0x00000080
+#define GUI_WIN_BG     0x00C0C0C0
+#define GUI_WIN_BORDER 0x00000000
+#define GUI_WIN_TITLE  0x00000080
+#define GUI_TITLE_INACTIVE 0x00808080
+#define GUI_TEXT       0x00000000
 #define GUI_TEXT_MUTED 0x00808080
 #define GUI_WHITE      0x00FFFFFF
-#define GUI_RED        0x00FF3333
-#define GUI_GREEN      0x0044FF88
-#define GUI_CYAN       0x0044DDFF
-#define GUI_ORANGE     0x00FFAA00
-#define GUI_BTN_BG     0x00303030
+#define GUI_RED        0x00FF0000
+#define GUI_GREEN      0x0000FF00
+#define GUI_CYAN       0x0000FFFF
+#define GUI_ORANGE     0x00FF8000
+#define GUI_BTN_BG     0x00A0A0A0
+#define GUI_TERM_BG    0x00000000
+#define GUI_TERM_FG    0x00C0C0C0
 
 #define MAX_WINDOWS 8
 #define TITLE_BAR_H 24
@@ -136,25 +141,40 @@ static int wm_create_window(const char *title, int x, int y, int w, int h,
 // ==========================================
 
 // --- 1. Terminal ---
-#define TERM_LINES 30
+#define TERM_LINES 200
 #define TERM_COLS 256
 static char g_term_lines[TERM_LINES][TERM_COLS];
 static int g_term_line_count = 0;
 static char g_term_input[256];
 static int g_term_input_len = 0;
 
-static void term_add_line(const char *s) {
+#define TERM_TYPE_CMD 0
+#define TERM_TYPE_OUT 1
+#define TERM_TYPE_ERR 2
+#define TERM_TYPE_HEADER 3
+
+static int g_term_line_types[TERM_LINES];
+
+static void term_add_line_ex(const char *s, int type) {
     if (g_term_line_count < TERM_LINES) {
-        copy_str(g_term_lines[g_term_line_count++], s, TERM_COLS);
+        copy_str(g_term_lines[g_term_line_count], s, TERM_COLS);
+        g_term_line_types[g_term_line_count] = type;
+        g_term_line_count++;
     } else {
-        for (int i = 0; i < TERM_LINES - 1; i++) copy_str(g_term_lines[i], g_term_lines[i+1], TERM_COLS);
+        for (int i = 0; i < TERM_LINES - 1; i++) {
+            copy_str(g_term_lines[i], g_term_lines[i+1], TERM_COLS);
+            g_term_line_types[i] = g_term_line_types[i+1];
+        }
         copy_str(g_term_lines[TERM_LINES - 1], s, TERM_COLS);
+        g_term_line_types[TERM_LINES - 1] = type;
     }
 }
 
+static void term_add_line(const char *s) { term_add_line_ex(s, TERM_TYPE_OUT); }
+
 static void term_hexdump(uint64_t addr, const uint8_t *data, int len) {
     char line[TERM_COLS];
-    for (int i = 0; i < len; i += 16) {
+    for (int i = 0; i < len; i += 8) {
         int p = 0;
         const char *hex = "0123456789abcdef";
         line[p++] = hex[(addr >> 28) & 0xF]; line[p++] = hex[(addr >> 24) & 0xF];
@@ -162,7 +182,7 @@ static void term_hexdump(uint64_t addr, const uint8_t *data, int len) {
         line[p++] = hex[(addr >> 12) & 0xF]; line[p++] = hex[(addr >> 8) & 0xF];
         line[p++] = hex[(addr >> 4) & 0xF]; line[p++] = hex[addr & 0xF];
         line[p++] = ':'; line[p++] = ' ';
-        for (int j = 0; j < 16; j++) {
+        for (int j = 0; j < 8; j++) {
             if (i + j < len) {
                 uint8_t b = data[i+j];
                 line[p++] = hex[(b >> 4) & 0xF]; line[p++] = hex[b & 0xF];
@@ -170,7 +190,7 @@ static void term_hexdump(uint64_t addr, const uint8_t *data, int len) {
             line[p++] = ' ';
         }
         line[p++] = '|';
-        for (int j = 0; j < 16; j++) {
+        for (int j = 0; j < 8; j++) {
             if (i + j < len) {
                 uint8_t b = data[i+j];
                 line[p++] = (b >= 32 && b < 127) ? b : '.';
@@ -178,7 +198,7 @@ static void term_hexdump(uint64_t addr, const uint8_t *data, int len) {
         }
         line[p++] = '|'; line[p] = 0;
         term_add_line(line);
-        addr += 16;
+        addr += 8;
     }
 }
 
@@ -190,16 +210,41 @@ static void term_execute(window_t *win) {
     int len = 9;
     for(int i=0; i < g_term_input_len && len < TERM_COLS-1; i++) cmd_buf[len++] = g_term_input[i];
     cmd_buf[len] = 0;
-    term_add_line(cmd_buf);
+    term_add_line_ex(cmd_buf, TERM_TYPE_CMD);
 
     char *arg = g_term_input;
     while (*arg == ' ') arg++;
 
     if (gui_strcmp(arg, "help") == 0) {
-        term_add_line(" help, mem, heap, ticks, fs, cat <n>");
-        term_add_line(" disk, format, mount, dls, dread <n>, dsave <i> <name>");
-        term_add_line(" run <name>, spawn <name>, kill <pid>, hello, procs");
-        term_add_line(" clear, panic, halt");
+        term_add_line_ex("--- SYSTEM ---", TERM_TYPE_HEADER);
+        term_add_line("  mem             - memory statistics");
+        term_add_line("  heap            - heap usage");
+        term_add_line("  ticks           - PIT tick counter");
+        term_add_line_ex("--- FILESYSTEM ---", TERM_TYPE_HEADER);
+        term_add_line("  fs              - list files in initramfs (ntmem_fs)");
+        term_add_line("  cat <n>         - hex dump of initramfs file by index");
+        term_add_line("  disk            - read sector 0 from SATA drive");
+        term_add_line("  format          - format disk (NTRFS)");
+        term_add_line("  mount           - mount disk (NTRFS)");
+        term_add_line("  dls             - list files on disk");
+        term_add_line("  dread <name>    - hex dump of disk file");
+        term_add_line("  dsave <i> <name>- save initramfs file to disk");
+        term_add_line_ex("--- PROCESSES ---", TERM_TYPE_HEADER);
+        term_add_line("  run <name>      - run ELF and wait for exit");
+        term_add_line("  spawn <name>    - start ELF in background");
+        term_add_line("  kill <pid>      - terminate process (0 = panic)");
+        term_add_line("  hello           - run hello.elf");
+        term_add_line("  procs           - list running processes");
+        term_add_line_ex("--- AUDIO ---", TERM_TYPE_HEADER);
+        term_add_line("  chord           - play a C major chord");
+        term_add_line("  melody          - play a short melody");
+        term_add_line("  cue <n>         - play a cue (1..7)");
+        term_add_line("  beep <f> <ms>   - SB16 tone");
+        term_add_line("  sound [stop]    - show status or stop sound");
+        term_add_line_ex("--- MISC ---", TERM_TYPE_HEADER);
+        term_add_line("  clear           - clear terminal");
+        term_add_line("  panic           - trigger kernel panic");
+        term_add_line("  halt            - halt the CPU");
     } 
     else if (gui_strcmp(arg, "mem") == 0) {
         char b[64]; copy_str(b, " total RAM: ", 64); int p = 12;
@@ -236,26 +281,26 @@ static void term_execute(window_t *win) {
     else if (gui_strncmp(arg, "cat ", 4) == 0) {
         int idx = 0; char *p = arg + 4; while(*p >= '0' && *p <= '9') { idx = idx*10 + (*p - '0'); p++; }
         ntmem_file_t *f = ntmem_fs_get(idx);
-        if (!f) { term_add_line(" no such file"); return; }
-        term_add_line(" --- hex dump ---");
+        if (!f) { term_add_line_ex(" no such file", TERM_TYPE_ERR); return; }
+        term_add_line_ex(" --- hex dump ---", TERM_TYPE_HEADER);
         term_hexdump(0, f->data, f->size > 128 ? 128 : f->size);
     }
     else if (gui_strcmp(arg, "disk") == 0) {
         static uint8_t buf[512];
-        term_add_line(" disk: reading sector 0...");
+        term_add_line_ex(" disk: reading sector 0...", TERM_TYPE_HEADER);
         if (ahci_read_sector(0, buf)) term_hexdump(0, buf, 64);
-        else term_add_line(" disk read: FAILED");
+        else term_add_line_ex(" disk read: FAILED", TERM_TYPE_ERR);
     }
     else if (gui_strcmp(arg, "format") == 0) {
         if (ntrfs_format()) term_add_line(" NTRFS formatted");
-        else term_add_line(" format failed");
+        else term_add_line_ex(" format failed", TERM_TYPE_ERR);
     }
     else if (gui_strcmp(arg, "mount") == 0) {
         if (ntrfs_mount()) term_add_line(" NTRFS mounted");
-        else term_add_line(" mount failed");
+        else term_add_line_ex(" mount failed", TERM_TYPE_ERR);
     }
     else if (gui_strcmp(arg, "dls") == 0) {
-        if (!ntrfs_is_mounted()) { term_add_line(" not mounted"); }
+        if (!ntrfs_is_mounted()) { term_add_line_ex(" not mounted", TERM_TYPE_ERR); }
         else {
             int count = 0;
             for (int i = 0; ; i++) {
@@ -268,28 +313,28 @@ static void term_execute(window_t *win) {
         }
     }
     else if (gui_strncmp(arg, "dread ", 6) == 0) {
-        if (!ntrfs_is_mounted()) { term_add_line(" not mounted"); return; }
+        if (!ntrfs_is_mounted()) { term_add_line_ex(" not mounted", TERM_TYPE_ERR); return; }
         static uint8_t buf[8192];
         int n = ntrfs_read(arg + 6, buf, sizeof(buf));
-        if (n < 0) { term_add_line(" not found"); return; }
-        term_add_line(" --- disk hex dump ---");
+        if (n < 0) { term_add_line_ex(" not found", TERM_TYPE_ERR); return; }
+        term_add_line_ex(" --- disk hex dump ---", TERM_TYPE_HEADER);
         term_hexdump(0, buf, n > 128 ? 128 : n);
     }
     else if (gui_strncmp(arg, "dsave ", 6) == 0) {
-        if (!ntrfs_is_mounted()) { term_add_line(" not mounted"); return; }
+        if (!ntrfs_is_mounted()) { term_add_line_ex(" not mounted", TERM_TYPE_ERR); return; }
         int idx = 0; char *p = arg + 6; while(*p >= '0' && *p <= '9') { idx = idx*10 + (*p - '0'); p++; }
         while(*p == ' ') p++;
-        if (!*p) { term_add_line(" usage: dsave <i> <name>"); return; }
+        if (!*p) { term_add_line_ex(" usage: dsave <i> <name>", TERM_TYPE_ERR); return; }
         ntmem_file_t *f = ntmem_fs_get(idx);
-        if (!f) { term_add_line(" no such ntmem file"); return; }
+        if (!f) { term_add_line_ex(" no such ntmem file", TERM_TYPE_ERR); return; }
         if (ntrfs_create(p, f->data, f->size)) term_add_line(" saved to disk");
-        else term_add_line(" save failed");
+        else term_add_line_ex(" save failed", TERM_TYPE_ERR);
     }
     else if (gui_strncmp(arg, "spawn ", 6) == 0) {
         char *p = arg + 6; while(*p==' ')p++;
         ntmem_file_t *f = ntmem_fs_find(p);
         if (f) { term_add_line(" starting app..."); process_create_user(f->data, f->size, 1, (const char**)&p); }
-        else term_add_line(" file not found");
+        else term_add_line_ex(" file not found", TERM_TYPE_ERR);
     }
     else if (gui_strncmp(arg, "run ", 4) == 0) {
         char *p = arg + 4; while(*p==' ')p++;
@@ -302,7 +347,7 @@ static void term_execute(window_t *win) {
                 term_add_line(" app exited");
                 process_reap(p2);
             }
-        } else term_add_line(" file not found");
+        } else term_add_line_ex(" file not found", TERM_TYPE_ERR);
     }
     else if (gui_strcmp(arg, "hello") == 0) {
         char *cmd = "hello.elf";
@@ -317,7 +362,11 @@ static void term_execute(window_t *win) {
     }
     else if (gui_strncmp(arg, "kill ", 5) == 0) {
         int pid = 0; char *p = arg + 5; while(*p >= '0' && *p <= '9') { pid = pid*10 + (*p - '0'); p++; }
-        if (pid == 0) term_add_line(" You monster.");
+        if (pid == 0) {
+            term_add_line_ex(" Why did you killed 0? you are monster.", TERM_TYPE_ERR);
+            __asm__ volatile("int $3");
+            centcom_panic();
+        }
         else { process_kill((uint64_t)pid); term_add_line(" killed"); }
     }
     else if (gui_strcmp(arg, "procs") == 0) {
@@ -327,7 +376,9 @@ static void term_execute(window_t *win) {
                 char b[64]; copy_str(b, "  ", 64);
                 int idx = 2;
                 uint64_t id = pr->pid;
-                char rev[16]; int r = 0; while(id) { rev[r++]='0'+(id%10); id/=10; }
+                char rev[16]; int r = 0; 
+                if (id == 0) rev[r++] = '0'; // <-- ФИКС ДЛЯ PID=0
+                else while(id) { rev[r++]='0'+(id%10); id/=10; }
                 while(r--) b[idx++] = rev[r];
                 b[idx++] = ' '; copy_str(b+idx, pr->name, 64-idx);
                 term_add_line(b);
@@ -368,7 +419,7 @@ static void term_execute(window_t *win) {
         int idx = 0; char *p = arg + 4; while(*p >= '0' && *p <= '9') { idx = idx*10 + (*p - '0'); p++; }
         if (idx == 0) { cue_stop(); term_add_line(" cue stopped"); }
         else if (idx >= 1 && idx <= 7) { cue_play((uint8_t)idx); term_add_line(" playing cue"); }
-        else term_add_line(" cue code 1..7");
+        else term_add_line_ex(" cue code 1..7", TERM_TYPE_ERR);
     }
     else if (gui_strncmp(arg, "beep ", 5) == 0) {
         int freq = 0, ms = 0; char *p = arg + 5;
@@ -376,7 +427,7 @@ static void term_execute(window_t *win) {
         while(*p == ' ') p++;
         while(*p >= '0' && *p <= '9') { ms = ms*10 + (*p - '0'); p++; }
         if (freq > 0 && ms > 0) { sb16_play_tone_async(freq, ms); term_add_line(" beep started"); }
-        else term_add_line(" usage: beep <freq> <ms>");
+        else term_add_line_ex(" usage: beep <freq> <ms>", TERM_TYPE_ERR);
     }
     else if (gui_strncmp(arg, "sound", 5) == 0) {
         if (gui_strcmp(arg + 5, " stop") == 0) { sb16_stop(); term_add_line(" sound stopped"); }
@@ -386,9 +437,12 @@ static void term_execute(window_t *win) {
         }
     }
     else if (gui_strcmp(arg, "clear") == 0) g_term_line_count = 0;
-    else if (gui_strcmp(arg, "panic") == 0) __asm__ volatile("int $3");
-    else if (gui_strcmp(arg, "halt") == 0) { term_add_line(" system halted."); for(;;) __asm__ volatile("hlt"); }
-    else if (g_term_input_len > 0) term_add_line(" unknown command");
+    else if (gui_strcmp(arg, "panic") == 0) {
+        __asm__ volatile("int $3");
+        centcom_panic();
+    }
+    else if (gui_strcmp(arg, "halt") == 0) { term_add_line_ex(" system halted.", TERM_TYPE_ERR); for(;;) __asm__ volatile("hlt"); }
+    else if (g_term_input_len > 0) term_add_line_ex(" unknown command", TERM_TYPE_ERR);
 
     for (int i = 0; i < 256; i++) g_term_input[i] = 0;
     g_term_input_len = 0;
@@ -399,34 +453,59 @@ static void app_term_draw(window_t *win) {
     int max_chars = (win->w - 16) / 8;
     int start_x = win->x + 8;
     int start_y = win->y + TITLE_BAR_H + 4;
-    int cy = start_y;
+    
+    fb_fill_rect(win->x + 1, win->y + TITLE_BAR_H, win->w - 2, win->h - TITLE_BAR_H - 1, GUI_TERM_BG);
 
-    for (int i = 0; i < g_term_line_count; i++) {
+    int max_visible_lines = (win->h - TITLE_BAR_H - 4 - 20) / 10;
+    if (max_visible_lines < 1) max_visible_lines = 1;
+
+    int start_idx = 0;
+    if (g_term_line_count > max_visible_lines) {
+        start_idx = g_term_line_count - max_visible_lines;
+    }
+
+    int cy = start_y;
+    for (int i = start_idx; i < g_term_line_count; i++) {
         const char *s = g_term_lines[i];
         int cx = start_x;
         int chars = 0;
+        
+        uint32_t line_fg = GUI_TERM_FG;
+        if (g_term_line_types[i] == TERM_TYPE_ERR) line_fg = GUI_RED;
+        else if (g_term_line_types[i] == TERM_TYPE_HEADER) line_fg = GUI_ORANGE;
+        else if (g_term_line_types[i] == TERM_TYPE_OUT) line_fg = GUI_WHITE;
+
         while (*s) {
-            if (cy > win->y + win->h - 12) break;
-            fb_set_cursor(cx, cy);
-            fb_putc(*s++, GUI_GREEN, GUI_WIN_BG);
-            cx += 8;
-            chars++;
             if (chars >= max_chars) {
                 cx = start_x;
                 cy += 10;
                 chars = 0;
             }
+            
+            if (cy > win->y + win->h - 20) break; 
+
+            fb_set_cursor(cx, cy);
+            
+            uint32_t fg = line_fg;
+            if (g_term_line_types[i] == TERM_TYPE_CMD) {
+                fg = (chars < 9) ? GUI_GREEN : GUI_WHITE;
+            }
+            
+            fb_putc(*s++, fg, GUI_TERM_BG);
+            cx += 8;
+            chars++;
         }
         cy += 10;
+        
+        if (cy > win->y + win->h - 20) break;
     }
 
-    int cx = start_x;
-    int chars = 0;
     if (cy <= win->y + win->h - 12) {
-        fb_fill_rect(win->x + 8, cy, win->w - 16, (win->y + win->h) - cy, GUI_WIN_BG);
-
+        int cx = start_x;
+        int chars = 0;
+        
         fb_set_cursor(cx, cy);
-        put_str("centcom> ", GUI_CYAN, GUI_WIN_BG);
+        put_str("centcom> ", GUI_GREEN, GUI_TERM_BG);
         cx += 9 * 8;
         chars = 9;
 
@@ -438,7 +517,7 @@ static void app_term_draw(window_t *win) {
                 if (cy > win->y + win->h - 12) break;
             }
             fb_set_cursor(cx, cy);
-            fb_putc(g_term_input[i], GUI_WHITE, GUI_WIN_BG);
+            fb_putc(g_term_input[i], GUI_WHITE, GUI_TERM_BG);
             cx += 8;
             chars++;
         }
@@ -471,11 +550,13 @@ static void app_term_key(window_t *win, int c) {
 
 // --- 2. Task Manager ---
 static void app_taskman_draw(window_t *win) {
+    fb_fill_rect(win->x + 1, win->y + TITLE_BAR_H, win->w - 2, win->h - TITLE_BAR_H - 1, GUI_WIN_BG);
+
     fb_set_cursor(win->x + 16, win->y + 40);
-    put_str("TASK MANAGER", GUI_CYAN, GUI_WIN_BG);
+    put_str("TASK MANAGER", GUI_WIN_TITLE, GUI_WIN_BG);
     fb_fill_rect(win->x + 16, win->y + 56, win->w - 32, 1, GUI_TEXT_MUTED);
     fb_set_cursor(win->x + 16, win->y + 72);
-    put_str("PID  NAME", GUI_WHITE, GUI_WIN_BG);
+    put_str("PID  NAME", GUI_TEXT, GUI_WIN_BG);
     
     int y = win->y + 88;
     for (int i = 0; i < PROC_MAX && y < win->y + win->h - 20; i++) {
@@ -498,20 +579,20 @@ static void app_taskman_draw(window_t *win) {
 static void draw_top_bar(void) {
     uint32_t w = fb_width();
     fb_fill_rect(0, 0, w, 24, GUI_BAR_BG);
-    fb_fill_rect(0, 24, w, 2, GUI_BAR_ACCENT);
+    fb_fill_rect(0, 24, w, 2, GUI_TEXT_MUTED);
     fb_fill_rect(0, 0, 120, 24, GUI_BAR_ACCENT); 
     fb_set_cursor(16, 8);
     put_str("NANOTRASEN", GUI_WHITE, GUI_BAR_ACCENT);
     
     fb_set_cursor(w - 100, 8);
-    put_str("UPTIME: ", GUI_TEXT_MUTED, GUI_BAR_BG);
+    put_str("UPTIME: ", GUI_TEXT, GUI_BAR_BG);
     uint64_t sec = pit_ticks() / 100;
     char time_str[16];
     time_str[0] = '0' + (sec / 100) % 10;
     time_str[1] = '0' + (sec / 10) % 10;
     time_str[2] = '0' + (sec % 10);
     time_str[3] = 's'; time_str[4] = 0;
-    put_str(time_str, GUI_GREEN, GUI_BAR_BG);
+    put_str(time_str, GUI_TEXT, GUI_BAR_BG);
 }
 
 static void draw_start_menu(void) {
@@ -519,8 +600,8 @@ static void draw_start_menu(void) {
     fb_draw_box(0, 26, 200, 100, GUI_WIN_BORDER);
     fb_set_cursor(10, 36); put_str("TERMINAL", GUI_TEXT, GUI_WIN_BG);
     fb_set_cursor(10, 56); put_str("TASK MANAGER", GUI_TEXT, GUI_WIN_BG);
-    fb_set_cursor(10, 76); put_str("CLASSIC SHELL", GUI_ORANGE, GUI_WIN_BG);
-    fb_set_cursor(10, 96); put_str("SHUTDOWN", GUI_RED, GUI_WIN_BG);
+    fb_set_cursor(10, 76); put_str("CLASSIC SHELL", GUI_TEXT, GUI_WIN_BG);
+    fb_set_cursor(10, 96); put_str("SHUTDOWN", GUI_TEXT, GUI_WIN_BG);
 }
 
 static void draw_windows(void) {
@@ -534,14 +615,15 @@ static void draw_windows(void) {
         uint32_t border = (win->id == g_active_win_id) ? GUI_WIN_BORDER : GUI_TEXT_MUTED;
         fb_draw_box(win->x, win->y, win->w, win->h, border);
         
-        uint32_t title_bg = (win->id == g_active_win_id) ? GUI_WIN_TITLE : GUI_BTN_BG;
+        uint32_t title_bg = (win->id == g_active_win_id) ? GUI_WIN_TITLE : GUI_TITLE_INACTIVE;
         fb_fill_rect(win->x + 1, win->y + 1, win->w - 2, TITLE_BAR_H - 4, title_bg);
         fb_set_cursor(win->x + 8, win->y + 8);
         put_str(win->title, GUI_WHITE, title_bg);
         
-        fb_fill_rect(win->x + win->w - 20, win->y + 4, 16, 16, GUI_RED);
+        fb_fill_rect(win->x + win->w - 20, win->y + 4, 16, 16, GUI_BTN_BG);
+        fb_draw_box(win->x + win->w - 20, win->y + 4, 16, 16, GUI_WIN_BORDER);
         fb_set_cursor(win->x + win->w - 16, win->y + 8);
-        put_str("X", GUI_WHITE, GUI_RED);
+        put_str("X", GUI_TEXT, GUI_BTN_BG);
 
         if (win->draw_content) win->draw_content(win);
     }
@@ -588,7 +670,7 @@ int gui_start(void) {
 
     for (int i = 0; i < MAX_WINDOWS; i++) g_windows[i].is_open = 0;
     g_term_line_count = 0;
-    term_add_line("NtOS v0.15.2 - GUI Shell");
+    term_add_line_ex("NtOS v0.15.2 - GUI Shell", TERM_TYPE_HEADER);
     term_add_line("Type 'help' for commands.");
 
     wm_create_window("CENTCOM TERMINAL", 50, 100, 500, 350, app_term_draw, 0, app_term_key);
