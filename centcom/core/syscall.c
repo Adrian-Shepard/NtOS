@@ -13,6 +13,7 @@
 #include "../mem/vmm.h"
 #include "../mem/pmm.h"
 #include "../elf/elf.h"
+#include "../ipc/ipc.h"   // <-- ДОБАВЛЕНО
 
 #define MSR_EFER  0xC0000080
 #define MSR_STAR  0xC0000081
@@ -72,7 +73,6 @@ static uint64_t sys_write(uint64_t fd, uint64_t buf, uint64_t len) {
         for (uint64_t i = 0; i < len; i++) fb_putc(s[i], 0x00E0E0E0, 0x00101018);
         return len;
     }
-    
     return (uint64_t)-1; // Запись в файлы через sys_write пока не поддерживается
 }
 
@@ -209,6 +209,23 @@ static uint64_t sys_ntrfs_write(uint64_t name_ptr, uint64_t buf_ptr, uint64_t le
     return (uint64_t)ntrfs_create(name, (const uint8_t*)buf_ptr, (uint32_t)len);
 }
 
+// === IPC SYSCALLS ===
+static uint64_t sys_ipc_create(void) {
+    process_t *p = process_current();
+    if (!p) return (uint64_t)-1;
+    return (uint64_t)ipc_create_port(p->pid);
+}
+
+static uint64_t sys_ipc_send(uint64_t port_id, uint64_t buf_ptr, uint64_t len) {
+    if (!is_user_ptr(buf_ptr, len)) return (uint64_t)-1;
+    return (uint64_t)ipc_send_to_port(port_id, (const uint8_t*)buf_ptr, (uint32_t)len);
+}
+
+static uint64_t sys_ipc_recv(uint64_t port_id, uint64_t buf_ptr, uint64_t max) {
+    if (!is_user_ptr(buf_ptr, max)) return (uint64_t)-1;
+    return (uint64_t)ipc_recv_from_port(port_id, (uint8_t*)buf_ptr, (uint32_t)max, 1);
+}
+
 static uint64_t exec_build_user_stack(uint64_t stack_phys) {
     uint8_t *base = (uint8_t*)stack_phys;
     uint64_t offset = 0x1000;
@@ -260,20 +277,10 @@ static uint64_t sys_exec_do(const uint8_t *elf, uint64_t elf_size) {
     
     uint64_t new_rsp = exec_build_user_stack(new_stack_phys);
 
-    // ИСПРАВЛЕНО: Освобождаем старые ресурсы полностью
     if (p->cr3) {
         vmm_free_address_space(p->cr3);
     }
-    if (p->stack_phys) {
-        // Старый стек занимал STACK_PAGES страниц вниз от USER_STACK_VADDR
-        // Но в старом адресном пространстве их физические адреса были разными.
-        // Мы не можем просто взять p->stack_phys + i*0x1000, так как это только верхняя страница.
-        // Приходится полагаться на vmm_free_address_space, который освободит их,
-        // если они были в p->cr3. Но p->stack_phys указывал только на верхнюю страницу.
-        // Для чистоты нужно отслеживать все страницы стека, но пока просто освободим
-        // все страницы, которые могли быть в старом address space (это делает vmm_free_address_space).
-        // Дополнительно освобождать p->stack_phys не нужно, чтобы не было двойного free.
-    }
+    // p->stack_phys освобождается внутри vmm_free_address_space
 
     p->cr3 = new_cr3;
     p->user_entry = entry;
@@ -390,6 +397,11 @@ uint64_t syscall_dispatch(syscall_regs_t *r) {
         case SYS_NTRFS_LIST: return sys_ntrfs_list(r->rdi, r->rsi);
         case SYS_NTRFS_READ: return sys_ntrfs_read(r->rdi, r->rsi, r->rdx);
         case SYS_NTRFS_WRITE:return sys_ntrfs_write(r->rdi, r->rsi, r->rdx);
+        
+        // === IPC ===
+        case SYS_IPC_CREATE: return sys_ipc_create();
+        case SYS_IPC_SEND:   return sys_ipc_send(r->rdi, r->rsi, r->rdx);
+        case SYS_IPC_RECV:   return sys_ipc_recv(r->rdi, r->rsi, r->rdx);
 
         default:
             logw(S_SYC, "unknown syscall %d", r->rax);

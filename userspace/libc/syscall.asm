@@ -15,6 +15,9 @@ global ntrfs_write
 global exec
 global fork
 global sys_wait
+global ipc_create
+global ipc_send
+global ipc_recv
 
 section .text
 
@@ -96,5 +99,20 @@ fork:
 
 sys_wait:
     mov rax, 15
+    syscall
+    ret
+
+ipc_create:
+    mov rax, 16
+    syscall
+    ret
+
+ipc_send:
+    mov rax, 17
+    syscall
+    ret
+
+ipc_recv:
+    mov rax, 18
     syscall
     ret

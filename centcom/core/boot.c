@@ -21,6 +21,7 @@
 #include "../sound/cue.h"
 #include "../sched/sched.h"
 #include "../driver/ahci.h"
+#include "../ipc/ipc.h"      // <-- ДОБАВЛЕНО
 #include "panic.h"
 #include "gdt.h"
 #include "idt.h"
@@ -68,13 +69,10 @@ void centcom_boot(bootinfo_t *bi_unused) {
     int has_sb16 = sb16_init();
 
     /* --- PIC с правильной маской --- */
-    // PIC1: IRQ0 (PIT), IRQ1 (KBD), IRQ2 (Cascade) = 0xC8
-    // Если SB16 есть — добавляем IRQ5
-    uint8_t master_mask = 0xC8;
-    if (has_sb16) master_mask &= ~0x20; // Снимаем IRQ5
+    uint8_t master_mask = 0xC8; // IRQ0, IRQ1, IRQ2 (cascade)
+    if (has_sb16) master_mask &= ~0x20; // Снимаем маску с IRQ5
 
-    // PIC2: только IRQ12 (Mouse) = 0xEF
-    pic_init(master_mask, 0xEF);
+    pic_init(master_mask, 0xEF); // PIC2: только IRQ12 (mouse)
 
     /* --- IRQ, таймер, клавиатура, мышь --- */
     isr_irq_init();
@@ -82,8 +80,9 @@ void centcom_boot(bootinfo_t *bi_unused) {
     keyboard_init();
     mouse_init();
 
-    /* --- Шина событий, звук, подписки --- */
+    /* --- Шина событий, IPC, звук, подписки --- */
     ntsad_init();
+    ipc_init();               // <-- ДОБАВЛЕНО (IPC)
     cue_init();
 
     /* ================ ФАЗА 4: PERIPHERALS ================ */
@@ -124,6 +123,7 @@ void centcom_boot(bootinfo_t *bi_unused) {
     logi(S_NTM, "ntmem_fs: %d file(s)", ntmem_fs_count());
     logi(S_SCH, "scheduler: %d threads", process_count());
     logi(S_DRV, "SB16 %s", has_sb16 ? "detected (IRQ5 enabled)" : "not found (IRQ5 masked)");
+    logi(S_SYC, "IPC subsystem online");
     logi(S_BOO, "boot complete. Trust the Corporation.");
     logi(S_SEC, "access level: %d/10", 1);
 

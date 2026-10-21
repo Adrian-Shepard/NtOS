@@ -25,7 +25,7 @@ CC_CFLAGS := -ffreestanding -fno-stack-protector -fno-stack-check \
              -I centcom/irq -I centcom/mem -I centcom/time \
              -I centcom/driver -I centcom/elf -I centcom/fs \
              -I centcom/ntsad -I centcom/sound -I centcom/sched \
-             -I centcom/store -I centcom/bus -I .
+             -I centcom/store -I centcom/bus -I centcom/ipc -I .
 
 CC_LDFLAGS := -nostdlib -static -T centcom/centcom.ld -z max-page-size=0x1000
 
@@ -68,6 +68,7 @@ COBJS := $(BUILD)/entry.o \
          $(BUILD)/kv.o \
          $(BUILD)/sched.o \
          $(BUILD)/context.o \
+         $(BUILD)/ipc.o \
          $(BUILD)/initrd.o
 
 all: ntos.img
@@ -135,6 +136,7 @@ $(BUILD)/ahci.o:         centcom/driver/ahci.c      ; @mkdir -p $(BUILD); $(CC) 
 $(BUILD)/kv.o:           centcom/store/kv.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/sched.o:        centcom/sched/sched.c      ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/context.o:      centcom/sched/context.asm  ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
+$(BUILD)/ipc.o:          centcom/ipc/ipc.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 
 $(BUILD)/centcom.elf: $(COBJS) centcom/centcom.ld
 	$(LD) $(CC_LDFLAGS) $(COBJS) -o $@

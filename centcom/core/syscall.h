@@ -26,6 +26,9 @@ uint64_t syscall_dispatch(syscall_regs_t *r);
 #define SYS_EXEC        13
 #define SYS_FORK        14
 #define SYS_WAIT        15
+#define SYS_IPC_CREATE  16
+#define SYS_IPC_SEND    17
+#define SYS_IPC_RECV    18
 
 /* Для планировщика (per-process стеки) */
 uint64_t syscall_get_kstack(void);

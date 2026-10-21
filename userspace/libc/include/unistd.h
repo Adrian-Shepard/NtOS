@@ -20,7 +20,7 @@ struct ntrfs_inode_user {
     unsigned int first_block;
     unsigned int block_count;
     unsigned char type;
-    unsigned char reserved[23];
+    unsigned char reserved[19];
 };
 
 int  ntrfs_list(int idx, struct ntrfs_inode_user *out);
@@ -30,5 +30,9 @@ int  ntrfs_write(const char *name, const void *buf, unsigned long len);
 int  exec(const char *path);
 int  fork(void);
 int  sys_wait(int pid, int *status);
+
+long ipc_create(void);
+long ipc_send(long port, const void *buf, unsigned long len);
+long ipc_recv(long port, void *buf, unsigned long max);
 
 #define O_RDONLY 0

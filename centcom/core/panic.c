@@ -74,11 +74,16 @@ static const char *get_syscall_name(int n) {
         case 10: return "NTRFS_LIST"; case 11: return "NTRFS_READ";
         case 12: return "NTRFS_WRITE"; case 13: return "EXEC";
         case 14: return "FORK";     case 15: return "WAIT";
+        case 16: return "IPC_CREATE"; case 17: return "IPC_SEND";
+        case 18: return "IPC_RECV";
         default: return "UNKNOWN";
     }
 }
 
 void panic_exception(regs_t *r) {
+    // КРИТИЧЕСКИЙ ФИКС: Отключаем двойную буферизацию, чтобы паника была видна
+    fb_set_buffer(0);
+
     ntsad_error(NTSAD_CH_CORE, r->int_no);
     cue_play(NTSAD_CUE_PANIC);
 
@@ -225,7 +230,6 @@ void panic_exception(regs_t *r) {
     put_str("HEAP:   ", COL_MUTED, COL_PANEL); put_dec(heap_used(), COL_TEXT, COL_PANEL); put_str(" / ", COL_MUTED, COL_PANEL); put_dec(heap_total(), COL_TEXT, COL_PANEL); put_str(" bytes", COL_MUTED, COL_PANEL);
     cy += 12;
 
-    // ИСПРАВЛЕНО: Корректный цикл подсчёта процессов
     int running = 0, blocked = 0, zombie = 0;
     for (int i = 0; i < PROC_MAX; i++) {
         process_t *pr = process_get(i);
@@ -299,6 +303,9 @@ void panic_unknown(regs_t *r) {
 }
 
 void centcom_panic(void) {
+    // КРИТИЧЕСКИЙ ФИКС: Отключаем двойную буферизацию
+    fb_set_buffer(0);
+
     cue_play(NTSAD_CUE_PANIC);
     fb_set_scale(1);
     fb_clear(COL_BG);
