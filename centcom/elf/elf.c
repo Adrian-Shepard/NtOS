@@ -35,34 +35,35 @@ uint64_t elf_load(const uint8_t *data, uint64_t size) {
     logi(S_ELF, "ELF64 entry=%x phdrs=%d", h->e_entry, h->e_phnum);
 
     for (int i = 0; i < h->e_phnum; i++) {
-        // Проверка границ заголовка
-        if (h->e_phoff + (uint64_t)i * h->e_phentsize + sizeof(elf64_phdr_t) > size) {
+        // ЗАЩИТА: проверка границ заголовка программы
+        uint64_t phdr_off = h->e_phoff + (uint64_t)i * h->e_phentsize;
+        if (phdr_off + sizeof(elf64_phdr_t) < phdr_off) {
+            loge(S_ELF, "phdr offset overflow");
+            return 0;
+        }
+        if (phdr_off + sizeof(elf64_phdr_t) > size) {
             loge(S_ELF, "phdr out of bounds");
             return 0;
         }
 
-        const elf64_phdr_t *ph = (const elf64_phdr_t*)
-            (data + h->e_phoff + (uint64_t)i * h->e_phentsize);
+        const elf64_phdr_t *ph = (const elf64_phdr_t*)(data + phdr_off);
 
         if (ph->p_type != PT_LOAD) continue;
 
-        // Проверка границ сегмента
+        // ЗАЩИТА: проверка границ данных сегмента
+        if (ph->p_offset + ph->p_filesz < ph->p_offset) {
+            loge(S_ELF, "p_offset + p_filesz overflow");
+            return 0;
+        }
         if (ph->p_offset + ph->p_filesz > size) {
-            loge(S_ELF, "segment out of file bounds");
+            loge(S_ELF, "segment out of file bounds (offset=%x filesz=%x size=%x)",
+                 ph->p_offset, ph->p_filesz, size);
             return 0;
         }
 
-        // Проверка на переполнение vaddr + memsz
+        // ЗАЩИТА: проверка переполнения при vaddr + memsz
         if (ph->p_vaddr + ph->p_memsz < ph->p_vaddr) {
             loge(S_ELF, "vaddr + memsz overflow");
-            return 0;
-        }
-
-        // Проверка выравнивания (должно быть кратно странице)
-        if (ph->p_vaddr & 0xFFF) {
-            loge(S_ELF, "vaddr not page aligned: %x", ph->p_vaddr);
-            // Мы можем просто выровнять вниз и скопировать со смещением, 
-            // но для простоты пока просто отклоним.
             return 0;
         }
 

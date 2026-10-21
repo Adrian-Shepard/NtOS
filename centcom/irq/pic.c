@@ -8,7 +8,7 @@
 
 static inline void io_wait(void) { outb(0x80, 0); }
 
-void pic_init(void) {
+void pic_init(uint8_t master_mask, uint8_t slave_mask) {
     outb(PIC1_CMD, 0x11); io_wait();
     outb(PIC2_CMD, 0x11); io_wait();
     outb(PIC1_DATA, 0x20); io_wait();
@@ -18,13 +18,8 @@ void pic_init(void) {
     outb(PIC1_DATA, 0x01); io_wait();
     outb(PIC2_DATA, 0x01); io_wait();
 
-    // PIC1: Разрешаем IRQ0 (PIT), IRQ1 (KBD), IRQ2 (Cascade), IRQ5 (SB16)
-    // 1100 1000 = 0xC8
-    outb(PIC1_DATA, 0xC8);
-    
-    // PIC2: Разрешаем только IRQ12 (Mouse)
-    // 1110 1111 = 0xEF
-    outb(PIC2_DATA, 0xEF);
+    outb(PIC1_DATA, master_mask);
+    outb(PIC2_DATA, slave_mask);
 }
 
 void pic_send_eoi(unsigned char irq) {

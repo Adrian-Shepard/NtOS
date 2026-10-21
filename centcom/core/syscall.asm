@@ -9,6 +9,8 @@ section .text
 syscall_entry:
     mov [rel user_rsp_save], rsp
     mov rsp, [rel g_current_kstack_top]
+    test rsp, rsp
+    jz .bad_kstack    ; Если kstack_top == 0, это критическая ошибка
 
     push r15
     push r14
@@ -48,6 +50,15 @@ syscall_entry:
 
     mov rsp, [rel user_rsp_save]
     db 0x48, 0x0f, 0x07    ; sysretq
+
+.bad_kstack:
+    ; Если стек ядра не инициализирован, нельзя продолжать
+    ; Возвращаемся к пользователю и убиваем его, но без стека это сложно
+    ; Поэтому просто крутимся
+    cli
+.hang:
+    hlt
+    jmp .hang
 
 syscall_fork_ret:
     add rsp, 8      ; Пропускаем RAX

@@ -4,7 +4,7 @@
 #include "../log/log.h"
 #include "../tty/fb.h"
 #include "../tty/bootscreen.h"
-#include "../tty/gui.h"       // <-- ДОБАВЛЕНО
+#include "../tty/gui.h"
 #include "../tty/shell.h"
 #include "../mem/pmm.h"
 #include "../mem/vmm.h"
@@ -13,7 +13,7 @@
 #include "../irq/isr.h"
 #include "../time/pit.h"
 #include "../driver/keyboard.h"
-#include "../driver/mouse.h"  // <-- ДОБАВЛЕНО (для mouse_init)
+#include "../driver/mouse.h"
 #include "../driver/sb16.h"
 #include "../fs/ntmem_fs.h"
 #include "../ntsad/ntsad.h"
@@ -37,10 +37,10 @@ void centcom_boot(bootinfo_t *bi_unused) {
         for (;;) __asm__ volatile("hlt");
     }
 
-    /* --- Framebuffer: нужен для вывода --- */
+    /* --- Framebuffer --- */
     fb_init(bi);
 
-    /* --- Спикер: чтобы можно было пищать уже с первой фазы --- */
+    /* --- Спикер --- */
     speaker_init();
 
     /* ================ ФАЗА 1: HANDOFF ================ */
@@ -61,22 +61,30 @@ void centcom_boot(bootinfo_t *bi_unused) {
     /* ================ ФАЗА 3: MEMORY ================ */
     bootscreen_phase3();
     
-    /* --- v0.15: диск --- */
+    /* --- Диск --- */
     ahci_init();
     
-    /* --- Прерывания, таймер, клавиатура, мышь --- */
-    pic_init();
+    /* --- Инициализация SB16 ДО PIC (чтобы знать, включать IRQ5 или нет) --- */
+    int has_sb16 = sb16_init();
+
+    /* --- PIC с правильной маской --- */
+    // PIC1: IRQ0 (PIT), IRQ1 (KBD), IRQ2 (Cascade) = 0xC8
+    // Если SB16 есть — добавляем IRQ5
+    uint8_t master_mask = 0xC8;
+    if (has_sb16) master_mask &= ~0x20; // Снимаем IRQ5
+
+    // PIC2: только IRQ12 (Mouse) = 0xEF
+    pic_init(master_mask, 0xEF);
+
+    /* --- IRQ, таймер, клавиатура, мышь --- */
     isr_irq_init();
     pit_init(100);
     keyboard_init();
-    mouse_init(); // <-- Инициализация мыши
+    mouse_init();
 
     /* --- Шина событий, звук, подписки --- */
     ntsad_init();
     cue_init();
-
-    /* --- SB16 --- */
-    sb16_init();
 
     /* ================ ФАЗА 4: PERIPHERALS ================ */
     bootscreen_phase4();
@@ -90,17 +98,17 @@ void centcom_boot(bootinfo_t *bi_unused) {
     /* --- Syscall --- */
     syscall_init();
 
-    /* --- v0.14a: планировщик --- */
+    /* --- Планировщик --- */
     sched_init();
 
     /* ================ ФАЗА 5: BINARY ================ */
     bootscreen_phase5(bi);
 
-    /* --- Включаем прерывания: теперь тикает PIT и работает scheduler --- */
+    /* --- Включаем прерывания --- */
     __asm__ volatile("sti");
     logi(S_CPU, "interrupts enabled");
 
-    /* --- Логи в serial (полный отчёт) --- */
+    /* --- Логи --- */
     logi(S_BOO, "CENTCOM core online");
     logi(S_BOO, "NtOS v0.15.2 boot sequence complete");
     logi(S_VMM, "framebuffer = %dx%d @ %x",
@@ -115,23 +123,19 @@ void centcom_boot(bootinfo_t *bi_unused) {
     logi(S_KBD, "PS/2 mouse ready");
     logi(S_NTM, "ntmem_fs: %d file(s)", ntmem_fs_count());
     logi(S_SCH, "scheduler: %d threads", process_count());
+    logi(S_DRV, "SB16 %s", has_sb16 ? "detected (IRQ5 enabled)" : "not found (IRQ5 masked)");
     logi(S_BOO, "boot complete. Trust the Corporation.");
     logi(S_SEC, "access level: %d/10", 1);
 
-    /* --- Финальный сигнал через NTSAD --- */
+    /* --- Финальный сигнал --- */
     ntsad_state(NTSAD_CH_CORE, NTSAD_STATE_READY);
     ntsad_cue(NTSAD_CUE_BOOT);
 
     /* ================ ЗАПУСК GUI / SHELL ================ */
-    
-    // Запускаем графическую оболочку
     int mode = gui_start();
-    
-    // Если пользователь выбрал "Classic Shell" в меню, запускаем текстовый шелл
     if (mode == 1) {
         shell_run();
     }
 
-    // Если система завершила работу (shutdown)
     for (;;) __asm__ volatile("hlt");
 }

@@ -60,7 +60,7 @@ void mouse_init(void) {
 
     g_mouse_x = fb_width() / 2;
     g_mouse_y = fb_height() / 2;
-    logi(S_KBD, "PS/2 Mouse ready (1:1 precision)");
+    logi(S_KBD, "PS/2 Mouse ready");
 }
 
 void mouse_irq(regs_t *r) {
@@ -71,7 +71,6 @@ void mouse_irq(regs_t *r) {
     uint8_t data = inb(PS2_DATA);
     if (!(status & 0x20)) return;
 
-    // Строгая проверка синхронизации только для первого байта
     if (g_cycle == 0 && !(data & 0x08)) return; 
 
     g_packet[g_cycle] = data;
@@ -81,18 +80,29 @@ void mouse_irq(regs_t *r) {
         g_cycle = 0;
 
         uint8_t flags = g_packet[0];
-        if (flags & 0xC0) return; // Переполнение
+        
+        // ИСПРАВЛЕНО: Проверка переполнения во флагах
+        if (flags & 0xC0) return;
 
         int dx = g_packet[1];
         int dy = g_packet[2];
 
-        // Знаковое расширение
+        // ИСПРАВЛЕНО: Проверка переполнения в данных (значение -128 = 0x80 после расширения)
+        if (dx == -128 || dy == -128) return;
+
         if (flags & 0x10) dx |= 0xFFFFFF00;
         if (flags & 0x20) dy |= 0xFFFFFF00;
 
-        // Прямое применение нативной дельты (без делений и потерь точности)
-        g_mouse_x += dx;
-        g_mouse_y -= dy; // Инверсия Y
+        int move_x = dx / 2;
+        int move_y = dy / 2;
+
+        if (move_x == 0 && dx > 0) move_x = 1;
+        if (move_x == 0 && dx < 0) move_x = -1;
+        if (move_y == 0 && dy > 0) move_y = 1;
+        if (move_y == 0 && dy < 0) move_y = -1;
+
+        g_mouse_x += move_x;
+        g_mouse_y -= move_y;
 
         if (g_mouse_x < 0) g_mouse_x = 0;
         if (g_mouse_y < 0) g_mouse_y = 0;

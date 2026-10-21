@@ -10,7 +10,6 @@
 #include "../sound/cue.h"
 #include "../ntsad/ntsad.h"
 
-// Цветовая палитра
 #define COL_BG      0x000A0A0C
 #define COL_PANEL   0x00141A20
 #define COL_BORDER  0x00AA2222
@@ -48,7 +47,7 @@ static void draw_panel(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const cha
     fb_draw_box(x, y, w, h, COL_BORDER);
     
     fb_set_cursor(x + 4, y);
-    put_str("=[ ", COL_RED, COL_PANEL); // Исправлено на ASCII
+    put_str("=[ ", COL_RED, COL_PANEL);
     put_str(title, COL_ORANGE, COL_PANEL);
     put_str(" ]", COL_RED, COL_PANEL);
 }
@@ -226,13 +225,14 @@ void panic_exception(regs_t *r) {
     put_str("HEAP:   ", COL_MUTED, COL_PANEL); put_dec(heap_used(), COL_TEXT, COL_PANEL); put_str(" / ", COL_MUTED, COL_PANEL); put_dec(heap_total(), COL_TEXT, COL_PANEL); put_str(" bytes", COL_MUTED, COL_PANEL);
     cy += 12;
 
-    int running=0, blocked=0, zombie=0;
-    for(int i=0; i<PROC_MAX; i++) {
+    // ИСПРАВЛЕНО: Корректный цикл подсчёта процессов
+    int running = 0, blocked = 0, zombie = 0;
+    for (int i = 0; i < PROC_MAX; i++) {
         process_t *pr = process_get(i);
-        if(!pr || pr->state == PROC_FREE) continue;
-        if(pr->state == PROC_RUNNING) running++;
-        else if(pr->state == PROC_BLOCKED) blocked++;
-        else if(pr->state == PROC_ZOMBIE) zombie++;
+        if (!pr || pr->state == PROC_FREE) continue;
+        if (pr->state == PROC_RUNNING) running++;
+        else if (pr->state == PROC_BLOCKED) blocked++;
+        else if (pr->state == PROC_ZOMBIE) zombie++;
     }
     fb_set_cursor(cx + 8, cy); 
     put_str("PROCS:  ", COL_MUTED, COL_PANEL); put_dec(process_count(), COL_TEXT, COL_PANEL); put_str(" active (", COL_MUTED, COL_PANEL);

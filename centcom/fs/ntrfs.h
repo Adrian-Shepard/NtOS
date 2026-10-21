@@ -13,8 +13,12 @@ typedef struct {
     uint32_t first_block;
     uint32_t block_count;
     uint8_t  type;
-    uint8_t  reserved[19]; 
+    uint8_t  reserved[19];  /* 32 + 4 + 4 + 4 + 1 + 19 = 64 байта */
 } __attribute__((packed)) ntrfs_inode_t;
+
+/* Проверка размера: 8 inode на сектор 512 байт */
+_Static_assert(sizeof(ntrfs_inode_t) == 64,
+               "ntrfs_inode_t must be exactly 64 bytes!");
 
 typedef struct {
     uint32_t magic;

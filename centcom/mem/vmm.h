@@ -18,3 +18,4 @@ uint64_t vmm_alloc_pml4(void);
 void     vmm_switch(uint64_t pml4_phys);
 uint64_t vmm_get_current_pml4(void);
 uint64_t vmm_clone_address_space(uint64_t src_cr3);
+void     vmm_free_address_space(uint64_t cr3); // <-- ДОБАВЛЕНО

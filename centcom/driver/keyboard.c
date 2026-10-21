@@ -51,10 +51,10 @@ void keyboard_init(void) {
 
 void keyboard_irq(void) {
     uint8_t status = inb(0x64);
-    if (!(status & 0x01)) return; // Буфер пуст
+    if (!(status & 0x01)) return;
     uint8_t sc = inb(0x60);
     
-    if (status & 0x20) return; // Если данные от мыши - игнорируем!
+    if (status & 0x20) return; // Данные от мыши — игнорируем
 
     if (sc == 0x2A || sc == 0x36) { g_shift = 1; return; }
     if (sc == 0xAA || sc == 0xB6) { g_shift = 0; return; }
@@ -76,4 +76,8 @@ int keyboard_getchar(void) {
     char c = g_buf[g_tail];
     g_tail = (g_tail + 1) % KBD_BUF_SIZE;
     return (unsigned char)c;
+}
+
+int keyboard_has_char(void) {
+    return g_head != g_tail;
 }

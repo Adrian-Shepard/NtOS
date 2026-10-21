@@ -1,5 +1,6 @@
 #include "ntmem_fs.h"
 #include "tar.h"
+#include "../mem/heap.h"
 #include "../log/log.h"
 
 static ntmem_file_t g_files[NTMEM_MAX_FILES];
@@ -24,7 +25,17 @@ static void on_file(const char *name, const uint8_t *data, uint64_t size) {
     }
     ntmem_file_t *f = &g_files[g_count];
     copy_name(f->name, name);
-    f->data = data;
+
+    /* Копируем данные в кучу, чтобы не зависеть от tar_data */
+    uint8_t *copy = (uint8_t*)kmalloc(size + 1);
+    if (!copy) {
+        logw(S_NTM, "kmalloc failed for %s (%d bytes)", name, size);
+        return;
+    }
+    for (uint64_t i = 0; i < size; i++) copy[i] = data[i];
+    copy[size] = 0;
+
+    f->data = copy;
     f->size = size;
     g_count++;
 }
@@ -41,8 +52,7 @@ void ntmem_fs_init(const uint8_t *tar_data, uint64_t tar_size) {
 
     logi(S_NTM, "ntmem_fs: %d files mounted", g_count);
     for (int i = 0; i < g_count; i++) {
-        logi(S_NTM, "  %s (%d bytes)",
-             g_files[i].name, g_files[i].size);
+        logi(S_NTM, "  %s (%d bytes)", g_files[i].name, g_files[i].size);
     }
 }
 

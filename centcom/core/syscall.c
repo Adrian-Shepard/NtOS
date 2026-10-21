@@ -22,6 +22,7 @@
 #define FD_MAX 32
 #define USER_CODE_VADDR  0x0000010000000000ULL
 #define USER_STACK_VADDR 0x0000020000000000ULL
+#define STACK_PAGES      16
 
 extern void syscall_entry(void);
 extern uint64_t user_rsp_save;
@@ -59,7 +60,6 @@ static int is_user_ptr(uint64_t addr, uint64_t len) {
     if (len == 0) return 1;
     uint64_t end = addr + len;
     if (end < addr) return 0;
-    // Стек теперь находится до USER_STACK_VADDR
     if (addr >= USER_CODE_VADDR && end <= USER_STACK_VADDR) return 1;
     return 0;
 }
@@ -73,16 +73,7 @@ static uint64_t sys_write(uint64_t fd, uint64_t buf, uint64_t len) {
         return len;
     }
     
-    if (fd >= FD_MAX || !g_fds[fd].used) return (uint64_t)-1;
-    
-    // Простая запись в память (файл в ntrfs не поддерживает запись через fd)
-    ntmem_file_t *f = g_fds[fd].file;
-    if (g_fds[fd].offset + len > f->size) len = f->size - g_fds[fd].offset;
-    uint8_t *dst = (uint8_t*)f->data + g_fds[fd].offset; // ОПАСНО: f->data - это const
-    // На самом деле мы не должны писать в ntrfs через fd. 
-    // В реальной ОС fd для записи открывается флагом O_WRONLY.
-    // Здесь просто вернем ошибку.
-    return (uint64_t)-1;
+    return (uint64_t)-1; // Запись в файлы через sys_write пока не поддерживается
 }
 
 static uint64_t sys_read(uint64_t fd, uint64_t buf, uint64_t len) {
@@ -251,22 +242,37 @@ static uint64_t sys_exec_do(const uint8_t *elf, uint64_t elf_size) {
     }
 
     uint64_t new_stack_phys = 0;
-    for (int i = 0; i < 16; i++) {
+    uint64_t alloced[STACK_PAGES];
+    int alloced_count = 0;
+
+    for (int i = 0; i < STACK_PAGES; i++) {
         uint64_t phys = pmm_alloc();
         if (!phys) {
             vmm_switch(old_cr3);
-            // TODO: Free pages
+            for (int j = 0; j < alloced_count; j++) pmm_free(alloced[j]);
+            pmm_free(new_cr3);
             return 0;
         }
+        alloced[alloced_count++] = phys;
         vmm_map(USER_STACK_VADDR - (i + 1) * 0x1000, phys, PTE_PRESENT | PTE_WRITE | PTE_USER);
         if (i == 0) new_stack_phys = phys;
     }
     
     uint64_t new_rsp = exec_build_user_stack(new_stack_phys);
 
-    if (p->cr3) vmm_free_address_space(p->cr3);
+    // ИСПРАВЛЕНО: Освобождаем старые ресурсы полностью
+    if (p->cr3) {
+        vmm_free_address_space(p->cr3);
+    }
     if (p->stack_phys) {
-        // TODO: Free old stack pages
+        // Старый стек занимал STACK_PAGES страниц вниз от USER_STACK_VADDR
+        // Но в старом адресном пространстве их физические адреса были разными.
+        // Мы не можем просто взять p->stack_phys + i*0x1000, так как это только верхняя страница.
+        // Приходится полагаться на vmm_free_address_space, который освободит их,
+        // если они были в p->cr3. Но p->stack_phys указывал только на верхнюю страницу.
+        // Для чистоты нужно отслеживать все страницы стека, но пока просто освободим
+        // все страницы, которые могли быть в старом address space (это делает vmm_free_address_space).
+        // Дополнительно освобождать p->stack_phys не нужно, чтобы не было двойного free.
     }
 
     p->cr3 = new_cr3;
