@@ -35,7 +35,6 @@ uint64_t elf_load(const uint8_t *data, uint64_t size) {
     logi(S_ELF, "ELF64 entry=%x phdrs=%d", h->e_entry, h->e_phnum);
 
     for (int i = 0; i < h->e_phnum; i++) {
-        // ЗАЩИТА: проверка границ заголовка программы
         uint64_t phdr_off = h->e_phoff + (uint64_t)i * h->e_phentsize;
         if (phdr_off + sizeof(elf64_phdr_t) < phdr_off) {
             loge(S_ELF, "phdr offset overflow");
@@ -50,20 +49,25 @@ uint64_t elf_load(const uint8_t *data, uint64_t size) {
 
         if (ph->p_type != PT_LOAD) continue;
 
-        // ЗАЩИТА: проверка границ данных сегмента
+        // Границы данных сегмента в файле
         if (ph->p_offset + ph->p_filesz < ph->p_offset) {
             loge(S_ELF, "p_offset + p_filesz overflow");
             return 0;
         }
         if (ph->p_offset + ph->p_filesz > size) {
-            loge(S_ELF, "segment out of file bounds (offset=%x filesz=%x size=%x)",
-                 ph->p_offset, ph->p_filesz, size);
+            loge(S_ELF, "segment out of file bounds");
             return 0;
         }
 
-        // ЗАЩИТА: проверка переполнения при vaddr + memsz
+        // Переполнение vaddr + memsz
         if (ph->p_vaddr + ph->p_memsz < ph->p_vaddr) {
             loge(S_ELF, "vaddr + memsz overflow");
+            return 0;
+        }
+
+        // КРИТИЧЕСКИ ВАЖНО: проверка выравнивания p_vaddr
+        if (ph->p_vaddr & 0xFFF) {
+            loge(S_ELF, "vaddr not page-aligned: %x", ph->p_vaddr);
             return 0;
         }
 
