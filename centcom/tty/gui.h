@@ -1,6 +1,7 @@
 #pragma once
+#include <stdint.h>
 
-// Запускает графическую оболочку.
-// Возвращает 1, если пользователь выбрал "Classic Shell".
-// Возвращает 0, если система была выключена (halt).
+extern int g_gui_active;
+
 int gui_start(void);
+void gui_write(const char *s, uint64_t len);

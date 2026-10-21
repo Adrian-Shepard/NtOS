@@ -3,6 +3,7 @@
 #include "../log/log.h"
 #include "../log/serial.h"
 #include "../tty/fb.h"
+#include "../tty/gui.h"          // <-- ДОБАВЛЕНО
 #include "../fs/ntmem_fs.h"
 #include "../fs/ntrfs.h"
 #include "../sched/sched.h"
@@ -13,7 +14,7 @@
 #include "../mem/vmm.h"
 #include "../mem/pmm.h"
 #include "../elf/elf.h"
-#include "../ipc/ipc.h"   // <-- ДОБАВЛЕНО
+#include "../ipc/ipc.h"
 
 #define MSR_EFER  0xC0000080
 #define MSR_STAR  0xC0000081
@@ -69,11 +70,17 @@ static uint64_t sys_write(uint64_t fd, uint64_t buf, uint64_t len) {
     if (!is_user_ptr(buf, len)) return (uint64_t)-1;
     
     if (fd == 1 || fd == 2) { // stdout / stderr
-        const char *s = (const char*)buf;
-        for (uint64_t i = 0; i < len; i++) fb_putc(s[i], 0x00E0E0E0, 0x00101018);
+        if (g_gui_active) {
+            // Если GUI запущен, перенаправляем в терминал
+            gui_write((const char*)buf, len);
+        } else {
+            // Иначе пишем прямо в консоль (для классического shell)
+            const char *s = (const char*)buf;
+            for (uint64_t i = 0; i < len; i++) fb_putc(s[i], 0x00E0E0E0, 0x00101018);
+        }
         return len;
     }
-    return (uint64_t)-1; // Запись в файлы через sys_write пока не поддерживается
+    return (uint64_t)-1;
 }
 
 static uint64_t sys_read(uint64_t fd, uint64_t buf, uint64_t len) {
@@ -209,7 +216,6 @@ static uint64_t sys_ntrfs_write(uint64_t name_ptr, uint64_t buf_ptr, uint64_t le
     return (uint64_t)ntrfs_create(name, (const uint8_t*)buf_ptr, (uint32_t)len);
 }
 
-// === IPC SYSCALLS ===
 static uint64_t sys_ipc_create(void) {
     process_t *p = process_current();
     if (!p) return (uint64_t)-1;
@@ -280,7 +286,6 @@ static uint64_t sys_exec_do(const uint8_t *elf, uint64_t elf_size) {
     if (p->cr3) {
         vmm_free_address_space(p->cr3);
     }
-    // p->stack_phys освобождается внутри vmm_free_address_space
 
     p->cr3 = new_cr3;
     p->user_entry = entry;

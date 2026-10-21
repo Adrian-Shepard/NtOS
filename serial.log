@@ -10,7 +10,7 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [6] preparing memory map...
 [7] final GetMemoryMap + ExitBootServices...
 [DRV] PC speaker ready
-[CPU] GDT loaded: 7 entries, TSS at 0x000000000408c420
+[CPU] GDT loaded: 7 entries, TSS at 0x0000000004094380
 [CPU] IDT loaded: 256 vectors (int3 DPL=3)
 [PMM] total RAM: 510 MB
 [PMM] free pages: 115466 (451 MB)
@@ -35,8 +35,10 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [LOG] NTSAD bus online (queue=128, subs=16)
 [SYC] IPC subsystem initialized (32 ports)
 [DRV] cue subsystem ready
-[NTM] tar: 10 files parsed
-[NTM] ntmem_fs: 10 files mounted
+[NTM] tar: 12 files parsed
+[NTM] ntmem_fs: 12 files mounted
+[NTM]   audio_server.elf (12024 bytes)
+[NTM]   audio_test.elf (9280 bytes)
 [NTM]   cat.elf (9192 bytes)
 [NTM]   echo.elf (9024 bytes)
 [NTM]   hello.elf (9304 bytes)
@@ -47,7 +49,7 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [NTM]   sleep.elf (9072 bytes)
 [NTM]   synth.elf (17888 bytes)
 [NTM]   test.mid (1485 bytes)
-[SYC] syscall enabled: STAR=0x0010000800000000 LSTAR=0x000000000400d1b0
+[SYC] syscall enabled: STAR=0x0010000800000000 LSTAR=0x000000000400d7b0
 [SCH] scheduler initialized, main pid=0 cr3=0x0000000000400000
 [IRQ] got irq=12
 [CPU] interrupts enabled
@@ -55,11 +57,11 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [BOO] NtOS v0.15.2 boot sequence complete
 [VMM] framebuffer = 1280x800 @ 0x0000000080000000
 [PMM] RAM: 510 MiB total, 434 MiB free
-[HEP] heap: 103006/16777216 bytes used
+[HEP] heap: 124334/16777216 bytes used
 [TMR] PIT configured at 100 Hz
 [KBD] PS/2 keyboard ready
 [KBD] PS/2 mouse ready
-[NTM] ntmem_fs: 10 file(s)
+[NTM] ntmem_fs: 12 file(s)
 [SCH] scheduler: 1 threads
 [DRV] SB16 detected (IRQ5 enabled)
 [SYC] IPC subsystem online
@@ -175,716 +177,5952 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [tick] 10800
 [tick] 10900
 [tick] 11000
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
 [tick] 11100
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
 [tick] 11200
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
 [tick] 11300
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
 [tick] 11400
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
-[IRQ] got irq=12
 [tick] 11500
 [tick] 11600
+[tick] 11700
+[tick] 11800
+[tick] 11900
+[tick] 12000
+[tick] 12100
+[tick] 12200
+[tick] 12300
+[tick] 12400
+[tick] 12500
+[tick] 12600
+[tick] 12700
+[tick] 12800
+[tick] 12900
+[tick] 13000
+[tick] 13100
+[tick] 13200
+[tick] 13300
+[tick] 13400
+[tick] 13500
+[tick] 13600
+[tick] 13700
+[tick] 13800
+[tick] 13900
+[tick] 14000
+[tick] 14100
+[tick] 14200
+[tick] 14300
+[tick] 14400
+[tick] 14500
+[tick] 14600
+[tick] 14700
+[tick] 14800
+[tick] 14900
+[tick] 15000
+[tick] 15100
+[tick] 15200
+[tick] 15300
+[tick] 15400
+[tick] 15500
+[tick] 15600
+[tick] 15700
+[tick] 15800
+[tick] 15900
+[tick] 16000
+[tick] 16100
+[tick] 16200
+[tick] 16300
+[tick] 16400
+[tick] 16500
+[tick] 16600
+[tick] 16700
+[tick] 16800
+[tick] 16900
+[tick] 17000
+[tick] 17100
+[tick] 17200
+[tick] 17300
+[tick] 17400
+[tick] 17500
+[tick] 17600
+[tick] 17700
+[tick] 17800
+[tick] 17900
+[tick] 18000
+[tick] 18100
+[tick] 18200
+[tick] 18300
+[tick] 18400
+[tick] 18500
+[tick] 18600
+[tick] 18700
+[tick] 18800
+[tick] 18900
+[tick] 19000
+[tick] 19100
+[tick] 19200
+[tick] 19300
+[tick] 19400
+[tick] 19500
+[tick] 19600
+[tick] 19700
+[tick] 19800
+[tick] 19900
+[tick] 20000
+[tick] 20100
+[tick] 20200
+[tick] 20300
+[tick] 20400
+[tick] 20500
+[tick] 20600
+[tick] 20700
+[tick] 20800
+[tick] 20900
+[tick] 21000
+[tick] 21100
+[tick] 21200
+[tick] 21300
+[tick] 21400
+[tick] 21500
+[tick] 21600
+[tick] 21700
+[tick] 21800
+[tick] 21900
+[tick] 22000
+[tick] 22100
+[tick] 22200
+[tick] 22300
+[tick] 22400
+[tick] 22500
+[tick] 22600
+[tick] 22700
+[tick] 22800
+[tick] 22900
+[tick] 23000
+[tick] 23100
+[tick] 23200
+[tick] 23300
+[tick] 23400
+[tick] 23500
+[tick] 23600
+[tick] 23700
+[tick] 23800
+[tick] 23900
+[tick] 24000
+[tick] 24100
+[tick] 24200
+[tick] 24300
+[tick] 24400
+[tick] 24500
+[tick] 24600
+[tick] 24700
+[tick] 24800
+[tick] 24900
+[tick] 25000
+[tick] 25100
+[tick] 25200
+[tick] 25300
+[tick] 25400
+[tick] 25500
+[tick] 25600
+[tick] 25700
+[tick] 25800
+[tick] 25900
+[tick] 26000
+[tick] 26100
+[tick] 26200
+[tick] 26300
+[tick] 26400
+[tick] 26500
+[tick] 26600
+[tick] 26700
+[tick] 26800
+[tick] 26900
+[tick] 27000
+[tick] 27100
+[tick] 27200
+[tick] 27300
+[tick] 27400
+[tick] 27500
+[tick] 27600
+[tick] 27700
+[tick] 27800
+[tick] 27900
+[tick] 28000
+[tick] 28100
+[tick] 28200
+[tick] 28300
+[tick] 28400
+[tick] 28500
+[tick] 28600
+[tick] 28700
+[tick] 28800
+[tick] 28900
+[tick] 29000
+[tick] 29100
+[tick] 29200
+[tick] 29300
+[tick] 29400
+[tick] 29500
+[tick] 29600
+[tick] 29700
+[tick] 29800
+[tick] 29900
+[tick] 30000
+[tick] 30100
+[tick] 30200
+[tick] 30300
+[tick] 30400
+[tick] 30500
+[tick] 30600
+[tick] 30700
+[tick] 30800
+[tick] 30900
+[tick] 31000
+[tick] 31100
+[tick] 31200
+[tick] 31300
+[tick] 31400
+[tick] 31500
+[tick] 31600
+[tick] 31700
+[tick] 31800
+[tick] 31900
+[tick] 32000
+[tick] 32100
+[tick] 32200
+[tick] 32300
+[tick] 32400
+[tick] 32500
+[tick] 32600
+[tick] 32700
+[tick] 32800
+[tick] 32900
+[tick] 33000
+[tick] 33100
+[tick] 33200
+[tick] 33300
+[tick] 33400
+[tick] 33500
+[tick] 33600
+[tick] 33700
+[tick] 33800
+[tick] 33900
+[tick] 34000
+[tick] 34100
+[tick] 34200
+[tick] 34300
+[tick] 34400
+[tick] 34500
+[tick] 34600
+[tick] 34700
+[tick] 34800
+[tick] 34900
+[tick] 35000
+[tick] 35100
+[tick] 35200
+[tick] 35300
+[tick] 35400
+[tick] 35500
+[tick] 35600
+[tick] 35700
+[tick] 35800
+[tick] 35900
+[tick] 36000
+[tick] 36100
+[tick] 36200
+[tick] 36300
+[tick] 36400
+[tick] 36500
+[tick] 36600
+[tick] 36700
+[tick] 36800
+[tick] 36900
+[tick] 37000
+[tick] 37100
+[tick] 37200
+[tick] 37300
+[tick] 37400
+[tick] 37500
+[tick] 37600
+[tick] 37700
+[tick] 37800
+[tick] 37900
+[tick] 38000
+[tick] 38100
+[tick] 38200
+[tick] 38300
+[tick] 38400
+[tick] 38500
+[tick] 38600
+[tick] 38700
+[tick] 38800
+[tick] 38900
+[tick] 39000
+[tick] 39100
+[tick] 39200
+[tick] 39300
+[tick] 39400
+[tick] 39500
+[tick] 39600
+[tick] 39700
+[tick] 39800
+[tick] 39900
+[tick] 40000
+[tick] 40100
+[tick] 40200
+[tick] 40300
+[tick] 40400
+[tick] 40500
+[tick] 40600
+[tick] 40700
+[tick] 40800
+[tick] 40900
+[tick] 41000
+[tick] 41100
+[tick] 41200
+[tick] 41300
+[tick] 41400
+[tick] 41500
+[tick] 41600
+[tick] 41700
+[tick] 41800
+[tick] 41900
+[tick] 42000
+[tick] 42100
+[tick] 42200
+[tick] 42300
+[tick] 42400
+[tick] 42500
+[tick] 42600
+[tick] 42700
+[tick] 42800
+[tick] 42900
+[tick] 43000
+[tick] 43100
+[tick] 43200
+[tick] 43300
+[tick] 43400
+[tick] 43500
+[tick] 43600
+[tick] 43700
+[tick] 43800
+[tick] 43900
+[tick] 44000
+[tick] 44100
+[tick] 44200
+[tick] 44300
+[tick] 44400
+[tick] 44500
+[tick] 44600
+[tick] 44700
+[tick] 44800
+[tick] 44900
+[tick] 45000
+[tick] 45100
+[tick] 45200
+[tick] 45300
+[tick] 45400
+[tick] 45500
+[tick] 45600
+[tick] 45700
+[tick] 45800
+[tick] 45900
+[tick] 46000
+[tick] 46100
+[tick] 46200
+[tick] 46300
+[tick] 46400
+[tick] 46500
+[tick] 46600
+[tick] 46700
+[tick] 46800
+[tick] 46900
+[tick] 47000
+[tick] 47100
+[tick] 47200
+[tick] 47300
+[tick] 47400
+[tick] 47500
+[tick] 47600
+[tick] 47700
+[tick] 47800
+[tick] 47900
+[tick] 48000
+[tick] 48100
+[tick] 48200
+[tick] 48300
+[tick] 48400
+[tick] 48500
+[tick] 48600
+[tick] 48700
+[tick] 48800
+[tick] 48900
+[tick] 49000
+[tick] 49100
+[tick] 49200
+[tick] 49300
+[tick] 49400
+[tick] 49500
+[tick] 49600
+[tick] 49700
+[tick] 49800
+[tick] 49900
+[tick] 50000
+[tick] 50100
+[tick] 50200
+[tick] 50300
+[tick] 50400
+[tick] 50500
+[tick] 50600
+[tick] 50700
+[tick] 50800
+[tick] 50900
+[tick] 51000
+[tick] 51100
+[tick] 51200
+[tick] 51300
+[tick] 51400
+[tick] 51500
+[tick] 51600
+[tick] 51700
+[tick] 51800
+[tick] 51900
+[tick] 52000
+[tick] 52100
+[tick] 52200
+[tick] 52300
+[tick] 52400
+[tick] 52500
+[tick] 52600
+[tick] 52700
+[tick] 52800
+[tick] 52900
+[tick] 53000
+[tick] 53100
+[tick] 53200
+[tick] 53300
+[tick] 53400
+[tick] 53500
+[tick] 53600
+[tick] 53700
+[tick] 53800
+[tick] 53900
+[tick] 54000
+[tick] 54100
+[tick] 54200
+[tick] 54300
+[tick] 54400
+[tick] 54500
+[tick] 54600
+[tick] 54700
+[tick] 54800
+[tick] 54900
+[tick] 55000
+[tick] 55100
+[tick] 55200
+[tick] 55300
+[tick] 55400
+[tick] 55500
+[tick] 55600
+[tick] 55700
+[tick] 55800
+[tick] 55900
+[tick] 56000
+[tick] 56100
+[tick] 56200
+[tick] 56300
+[tick] 56400
+[tick] 56500
+[tick] 56600
+[tick] 56700
+[tick] 56800
+[tick] 56900
+[tick] 57000
+[tick] 57100
+[tick] 57200
+[tick] 57300
+[tick] 57400
+[tick] 57500
+[tick] 57600
+[tick] 57700
+[tick] 57800
+[tick] 57900
+[tick] 58000
+[tick] 58100
+[tick] 58200
+[tick] 58300
+[tick] 58400
+[tick] 58500
+[tick] 58600
+[tick] 58700
+[tick] 58800
+[tick] 58900
+[tick] 59000
+[tick] 59100
+[tick] 59200
+[tick] 59300
+[tick] 59400
+[tick] 59500
+[tick] 59600
+[tick] 59700
+[tick] 59800
+[tick] 59900
+[tick] 60000
+[tick] 60100
+[tick] 60200
+[tick] 60300
+[tick] 60400
+[tick] 60500
+[tick] 60600
+[tick] 60700
+[tick] 60800
+[tick] 60900
+[tick] 61000
+[tick] 61100
+[tick] 61200
+[tick] 61300
+[tick] 61400
+[tick] 61500
+[tick] 61600
+[tick] 61700
+[tick] 61800
+[tick] 61900
+[tick] 62000
+[tick] 62100
+[tick] 62200
+[tick] 62300
+[tick] 62400
+[tick] 62500
+[tick] 62600
+[tick] 62700
+[tick] 62800
+[tick] 62900
+[tick] 63000
+[tick] 63100
+[tick] 63200
+[tick] 63300
+[tick] 63400
+[tick] 63500
+[tick] 63600
+[tick] 63700
+[tick] 63800
+[tick] 63900
+[tick] 64000
+[tick] 64100
+[tick] 64200
+[tick] 64300
+[tick] 64400
+[tick] 64500
+[tick] 64600
+[tick] 64700
+[tick] 64800
+[tick] 64900
+[tick] 65000
+[tick] 65100
+[tick] 65200
+[tick] 65300
+[tick] 65400
+[tick] 65500
+[tick] 65600
+[tick] 65700
+[tick] 65800
+[tick] 65900
+[tick] 66000
+[tick] 66100
+[tick] 66200
+[tick] 66300
+[tick] 66400
+[tick] 66500
+[tick] 66600
+[tick] 66700
+[tick] 66800
+[tick] 66900
+[tick] 67000
+[tick] 67100
+[tick] 67200
+[tick] 67300
+[tick] 67400
+[tick] 67500
+[tick] 67600
+[tick] 67700
+[tick] 67800
+[tick] 67900
+[tick] 68000
+[tick] 68100
+[tick] 68200
+[tick] 68300
+[tick] 68400
+[tick] 68500
+[tick] 68600
+[tick] 68700
+[tick] 68800
+[tick] 68900
+[tick] 69000
+[tick] 69100
+[tick] 69200
+[tick] 69300
+[tick] 69400
+[tick] 69500
+[tick] 69600
+[tick] 69700
+[tick] 69800
+[tick] 69900
+[tick] 70000
+[tick] 70100
+[tick] 70200
+[tick] 70300
+[tick] 70400
+[tick] 70500
+[tick] 70600
+[tick] 70700
+[tick] 70800
+[tick] 70900
+[tick] 71000
+[tick] 71100
+[tick] 71200
+[tick] 71300
+[tick] 71400
+[tick] 71500
+[tick] 71600
+[tick] 71700
+[tick] 71800
+[tick] 71900
+[tick] 72000
+[tick] 72100
+[tick] 72200
+[tick] 72300
+[tick] 72400
+[tick] 72500
+[tick] 72600
+[tick] 72700
+[tick] 72800
+[tick] 72900
+[tick] 73000
+[tick] 73100
+[tick] 73200
+[tick] 73300
+[tick] 73400
+[tick] 73500
+[tick] 73600
+[tick] 73700
+[tick] 73800
+[tick] 73900
+[tick] 74000
+[tick] 74100
+[tick] 74200
+[tick] 74300
+[tick] 74400
+[tick] 74500
+[tick] 74600
+[tick] 74700
+[tick] 74800
+[tick] 74900
+[tick] 75000
+[tick] 75100
+[tick] 75200
+[tick] 75300
+[tick] 75400
+[tick] 75500
+[tick] 75600
+[tick] 75700
+[tick] 75800
+[tick] 75900
+[tick] 76000
+[tick] 76100
+[tick] 76200
+[tick] 76300
+[tick] 76400
+[tick] 76500
+[tick] 76600
+[tick] 76700
+[tick] 76800
+[tick] 76900
+[tick] 77000
+[tick] 77100
+[tick] 77200
+[tick] 77300
+[tick] 77400
+[tick] 77500
+[tick] 77600
+[tick] 77700
+[tick] 77800
+[tick] 77900
+[tick] 78000
+[tick] 78100
+[tick] 78200
+[tick] 78300
+[tick] 78400
+[tick] 78500
+[tick] 78600
+[tick] 78700
+[tick] 78800
+[tick] 78900
+[tick] 79000
+[tick] 79100
+[tick] 79200
+[tick] 79300
+[tick] 79400
+[tick] 79500
+[tick] 79600
+[tick] 79700
+[tick] 79800
+[tick] 79900
+[tick] 80000
+[tick] 80100
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 80200
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 80300
+[tick] 80400
+[tick] 80500
+[tick] 80600
+[NTM] formatted: 256 inodes, 32735 blocks free
+[tick] 80700
+[tick] 80800
+[tick] 80900
+[tick] 81000
+[NTM] mounted: 256 inodes, 32735 blocks free
+[tick] 81100
+[tick] 81200
+[tick] 81300
+[tick] 81400
+[tick] 81500
+[tick] 81600
+[tick] 81700
+[tick] 81800
+[tick] 81900
+[tick] 82000
+[tick] 82100
+[tick] 82200
+[tick] 82300
+[tick] 82400
+[tick] 82500
+[tick] 82600
+[tick] 82700
+[tick] 82800
+[tick] 82900
+[tick] 83000
+[tick] 83100
+[tick] 83200
+[tick] 83300
+[tick] 83400
+[tick] 83500
+[tick] 83600
+[tick] 83700
+[tick] 83800
+[tick] 83900
+[tick] 84000
+[tick] 84100
+[tick] 84200
+[tick] 84300
+[tick] 84400
+[tick] 84500
+[tick] 84600
+[tick] 84700
+[tick] 84800
+[tick] 84900
+[tick] 85000
+[tick] 85100
+[tick] 85200
+[tick] 85300
+[tick] 85400
+[tick] 85500
+[tick] 85600
+[tick] 85700
+[tick] 85800
+[tick] 85900
+[tick] 86000
+[tick] 86100
+[tick] 86200
+[tick] 86300
+[tick] 86400
+[tick] 86500
+[tick] 86600
+[tick] 86700
+[tick] 86800
+[tick] 86900
+[tick] 87000
+[tick] 87100
+[tick] 87200
+[tick] 87300
+[tick] 87400
+[tick] 87500
+[tick] 87600
+[tick] 87700
+[tick] 87800
+[tick] 87900
+[tick] 88000
+[tick] 88100
+[tick] 88200
+[tick] 88300
+[tick] 88400
+[tick] 88500
+[tick] 88600
+[tick] 88700
+[tick] 88800
+[tick] 88900
+[tick] 89000
+[tick] 89100
+[tick] 89200
+[tick] 89300
+[tick] 89400
+[tick] 89500
+[tick] 89600
+[tick] 89700
+[tick] 89800
+[tick] 89900
+[tick] 90000
+[tick] 90100
+[tick] 90200
+[tick] 90300
+[tick] 90400
+[tick] 90500
+[tick] 90600
+[tick] 90700
+[tick] 90800
+[tick] 90900
+[tick] 91000
+[tick] 91100
+[tick] 91200
+[tick] 91300
+[tick] 91400
+[tick] 91500
+[tick] 91600
+[tick] 91700
+[tick] 91800
+[tick] 91900
+[tick] 92000
+[tick] 92100
+[tick] 92200
+[tick] 92300
+[tick] 92400
+[tick] 92500
+[tick] 92600
+[tick] 92700
+[tick] 92800
+[tick] 92900
+[tick] 93000
+[tick] 93100
+[tick] 93200
+[tick] 93300
+[tick] 93400
+[tick] 93500
+[tick] 93600
+[tick] 93700
+[tick] 93800
+[tick] 93900
+[tick] 94000
+[tick] 94100
+[tick] 94200
+[tick] 94300
+[tick] 94400
+[tick] 94500
+[tick] 94600
+[tick] 94700
+[tick] 94800
+[tick] 94900
+[tick] 95000
+[tick] 95100
+[tick] 95200
+[tick] 95300
+[tick] 95400
+[tick] 95500
+[tick] 95600
+[tick] 95700
+[tick] 95800
+[tick] 95900
+[tick] 96000
+[tick] 96100
+[tick] 96200
+[tick] 96300
+[tick] 96400
+[tick] 96500
+[tick] 96600
+[tick] 96700
+[tick] 96800
+[tick] 96900
+[tick] 97000
+[tick] 97100
+[tick] 97200
+[tick] 97300
+[tick] 97400
+[tick] 97500
+[tick] 97600
+[tick] 97700
+[tick] 97800
+[tick] 97900
+[tick] 98000
+[tick] 98100
+[tick] 98200
+[tick] 98300
+[tick] 98400
+[tick] 98500
+[tick] 98600
+[tick] 98700
+[tick] 98800
+[tick] 98900
+[tick] 99000
+[tick] 99100
+[tick] 99200
+[tick] 99300
+[tick] 99400
+[tick] 99500
+[tick] 99600
+[tick] 99700
+[tick] 99800
+[tick] 99900
+[tick] 100000
+[tick] 100100
+[tick] 100200
+[tick] 100300
+[tick] 100400
+[tick] 100500
+[tick] 100600
+[tick] 100700
+[tick] 100800
+[tick] 100900
+[tick] 101000
+[tick] 101100
+[tick] 101200
+[tick] 101300
+[tick] 101400
+[tick] 101500
+[tick] 101600
+[tick] 101700
+[tick] 101800
+[tick] 101900
+[tick] 102000
+[tick] 102100
+[tick] 102200
+[tick] 102300
+[tick] 102400
+[tick] 102500
+[tick] 102600
+[tick] 102700
+[tick] 102800
+[tick] 102900
+[tick] 103000
+[tick] 103100
+[tick] 103200
+[tick] 103300
+[tick] 103400
+[tick] 103500
+[tick] 103600
+[tick] 103700
+[tick] 103800
+[tick] 103900
+[tick] 104000
+[tick] 104100
+[tick] 104200
+[tick] 104300
+[tick] 104400
+[tick] 104500
+[tick] 104600
+[tick] 104700
+[tick] 104800
+[tick] 104900
+[tick] 105000
+[tick] 105100
+[tick] 105200
+[tick] 105300
+[tick] 105400
+[tick] 105500
+[tick] 105600
+[tick] 105700
+[tick] 105800
+[tick] 105900
+[tick] 106000
+[tick] 106100
+[tick] 106200
+[tick] 106300
+[tick] 106400
+[tick] 106500
+[tick] 106600
+[tick] 106700
+[tick] 106800
+[tick] 106900
+[tick] 107000
+[tick] 107100
+[tick] 107200
+[tick] 107300
+[tick] 107400
+[tick] 107500
+[tick] 107600
+[tick] 107700
+[tick] 107800
+[tick] 107900
+[tick] 108000
+[tick] 108100
+[tick] 108200
+[tick] 108300
+[tick] 108400
+[tick] 108500
+[tick] 108600
+[tick] 108700
+[tick] 108800
+[tick] 108900
+[tick] 109000
+[tick] 109100
+[tick] 109200
+[tick] 109300
+[tick] 109400
+[tick] 109500
+[tick] 109600
+[tick] 109700
+[tick] 109800
+[tick] 109900
+[tick] 110000
+[tick] 110100
+[tick] 110200
+[tick] 110300
+[tick] 110400
+[tick] 110500
+[tick] 110600
+[tick] 110700
+[tick] 110800
+[tick] 110900
+[tick] 111000
+[tick] 111100
+[tick] 111200
+[tick] 111300
+[tick] 111400
+[tick] 111500
+[tick] 111600
+[tick] 111700
+[tick] 111800
+[tick] 111900
+[tick] 112000
+[tick] 112100
+[tick] 112200
+[tick] 112300
+[tick] 112400
+[tick] 112500
+[tick] 112600
+[tick] 112700
+[tick] 112800
+[tick] 112900
+[tick] 113000
+[tick] 113100
+[tick] 113200
+[tick] 113300
+[tick] 113400
+[tick] 113500
+[tick] 113600
+[tick] 113700
+[tick] 113800
+[tick] 113900
+[tick] 114000
+[tick] 114100
+[tick] 114200
+[tick] 114300
+[tick] 114400
+[tick] 114500
+[tick] 114600
+[tick] 114700
+[tick] 114800
+[tick] 114900
+[tick] 115000
+[tick] 115100
+[tick] 115200
+[tick] 115300
+[tick] 115400
+[tick] 115500
+[tick] 115600
+[tick] 115700
+[tick] 115800
+[tick] 115900
+[tick] 116000
+[tick] 116100
+[tick] 116200
+[tick] 116300
+[tick] 116400
+[tick] 116500
+[tick] 116600
+[tick] 116700
+[tick] 116800
+[tick] 116900
+[tick] 117000
+[tick] 117100
+[tick] 117200
+[tick] 117300
+[tick] 117400
+[tick] 117500
+[tick] 117600
+[tick] 117700
+[tick] 117800
+[tick] 117900
+[tick] 118000
+[tick] 118100
+[tick] 118200
+[tick] 118300
+[tick] 118400
+[tick] 118500
+[tick] 118600
+[tick] 118700
+[tick] 118800
+[tick] 118900
+[tick] 119000
+[tick] 119100
+[tick] 119200
+[tick] 119300
+[tick] 119400
+[tick] 119500
+[tick] 119600
+[tick] 119700
+[tick] 119800
+[tick] 119900
+[tick] 120000
+[tick] 120100
+[tick] 120200
+[tick] 120300
+[tick] 120400
+[tick] 120500
+[tick] 120600
+[tick] 120700
+[tick] 120800
+[tick] 120900
+[tick] 121000
+[tick] 121100
+[tick] 121200
+[tick] 121300
+[tick] 121400
+[tick] 121500
+[tick] 121600
+[tick] 121700
+[tick] 121800
+[tick] 121900
+[tick] 122000
+[tick] 122100
+[tick] 122200
+[tick] 122300
+[tick] 122400
+[tick] 122500
+[tick] 122600
+[tick] 122700
+[tick] 122800
+[tick] 122900
+[tick] 123000
+[tick] 123100
+[tick] 123200
+[tick] 123300
+[tick] 123400
+[tick] 123500
+[tick] 123600
+[tick] 123700
+[tick] 123800
+[tick] 123900
+[tick] 124000
+[tick] 124100
+[tick] 124200
+[tick] 124300
+[tick] 124400
+[tick] 124500
+[tick] 124600
+[tick] 124700
+[tick] 124800
+[tick] 124900
+[tick] 125000
+[tick] 125100
+[tick] 125200
+[tick] 125300
+[tick] 125400
+[tick] 125500
+[tick] 125600
+[tick] 125700
+[tick] 125800
+[tick] 125900
+[tick] 126000
+[tick] 126100
+[tick] 126200
+[tick] 126300
+[tick] 126400
+[tick] 126500
+[tick] 126600
+[tick] 126700
+[tick] 126800
+[tick] 126900
+[tick] 127000
+[tick] 127100
+[tick] 127200
+[tick] 127300
+[tick] 127400
+[tick] 127500
+[tick] 127600
+[tick] 127700
+[tick] 127800
+[tick] 127900
+[tick] 128000
+[tick] 128100
+[tick] 128200
+[tick] 128300
+[tick] 128400
+[tick] 128500
+[tick] 128600
+[tick] 128700
+[tick] 128800
+[tick] 128900
+[tick] 129000
+[tick] 129100
+[tick] 129200
+[tick] 129300
+[tick] 129400
+[tick] 129500
+[tick] 129600
+[tick] 129700
+[tick] 129800
+[tick] 129900
+[tick] 130000
+[tick] 130100
+[tick] 130200
+[tick] 130300
+[tick] 130400
+[tick] 130500
+[tick] 130600
+[tick] 130700
+[tick] 130800
+[tick] 130900
+[tick] 131000
+[tick] 131100
+[tick] 131200
+[tick] 131300
+[tick] 131400
+[tick] 131500
+[tick] 131600
+[tick] 131700
+[tick] 131800
+[tick] 131900
+[tick] 132000
+[tick] 132100
+[tick] 132200
+[tick] 132300
+[tick] 132400
+[tick] 132500
+[tick] 132600
+[tick] 132700
+[tick] 132800
+[tick] 132900
+[tick] 133000
+[tick] 133100
+[tick] 133200
+[tick] 133300
+[tick] 133400
+[tick] 133500
+[tick] 133600
+[tick] 133700
+[tick] 133800
+[tick] 133900
+[tick] 134000
+[tick] 134100
+[tick] 134200
+[tick] 134300
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 134400
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 134500
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 134600
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 134700
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 134800
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 134900
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 135000
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 135100
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 135200
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 135300
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 135400
+[tick] 135500
+[tick] 135600
+[tick] 135700
+[tick] 135800
+[tick] 135900
+[tick] 136000
+[tick] 136100
+[tick] 136200
+[tick] 136300
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=3468 memsz=3468
+[SCH] user process: pid=1 name=audio_test.elf entry=0x0000010000000000 cr3=0x000000000040a000
+[tick] 136400
+[tick] 136500
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 136600
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 136700
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 136800
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 136900
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 137000
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 137100
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[IRQ] got irq=12
+[tick] 137200
+[tick] 137300
+[tick] 137400
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=3492 memsz=3492
+[SCH] user process: pid=2 name=hello.elf entry=0x0000010000000000 cr3=0x000000000040a000
+[tick] 137500
+[tick] 137600
+[tick] 137700
+[tick] 137800
+[tick] 137900
+[tick] 138000
+[tick] 138100
+[DRV] synth initialized (8 voices)
+[tick] 138200
+[IRQ] got irq=5
+[tick] 138300
+[tick] 138400
+[tick] 138500
+[tick] 138600
+[tick] 138700
+[tick] 138800
+[tick] 138900
+[tick] 139000
+[tick] 139100
+[tick] 139200
+[tick] 139300
+[tick] 139400
 
 *** CENTCOM CORE BOOT FAULT ***
