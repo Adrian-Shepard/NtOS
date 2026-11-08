@@ -19,7 +19,7 @@ BOOT_CFLAGS := -ffreestanding -fno-stack-protector -fno-stack-check \
 
 CC_CFLAGS := -ffreestanding -fno-stack-protector -fno-stack-check \
              -fno-lto -fno-PIE -mno-red-zone -mcmodel=kernel \
-             -mno-sse -mno-sse2 -mno-mmx \
+             -mno-sse -mno-sse2 -mno-mmx -MMD -MP \
              -Wall -Wextra -O2 \
              -I centcom -I centcom/core -I centcom/log -I centcom/tty \
              -I centcom/irq -I centcom/mem -I centcom/time \
@@ -65,11 +65,15 @@ COBJS := $(BUILD)/entry.o \
          $(BUILD)/sb16.o \
          $(BUILD)/pci.o \
          $(BUILD)/ahci.o \
+		 $(BUILD)/e1000.o \
          $(BUILD)/kv.o \
          $(BUILD)/sched.o \
          $(BUILD)/context.o \
          $(BUILD)/ipc.o \
          $(BUILD)/initrd.o
+
+DEPS := $(COBJS:.o=.d)
+-include $(DEPS)
 
 all: ntos.img
 
@@ -98,45 +102,29 @@ $(BUILD)/entry.o: centcom/core/entry.asm
 	@mkdir -p $(BUILD)
 	$(NASM) -f elf64 $< -o $@
 
-$(BUILD)/boot.o:         centcom/core/boot.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/panic.o:        centcom/core/panic.c       ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/gdt.o:          centcom/core/gdt.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/idt.o:          centcom/core/idt.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/usermode.o:     centcom/core/usermode.c    ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/usermode_asm.o: centcom/core/usermode.asm  ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
-$(BUILD)/syscall.o:      centcom/core/syscall.c     ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/syscall_asm.o:  centcom/core/syscall.asm   ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
-$(BUILD)/log.o:          centcom/log/log.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/serial.o:       centcom/log/serial.c       ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/fb.o:           centcom/tty/fb.c           ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/bootscreen.o:   centcom/tty/bootscreen.c   ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/gui.o:          centcom/tty/gui.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/shell.o:        centcom/tty/shell.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/isr_c.o:        centcom/irq/isr.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/isr_asm.o:      centcom/irq/isr.asm        ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
-$(BUILD)/pic.o:          centcom/irq/pic.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/pmm.o:          centcom/mem/pmm.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/vmm.o:          centcom/mem/vmm.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/heap.o:         centcom/mem/heap.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/pit.o:          centcom/time/pit.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/keyboard.o:     centcom/driver/keyboard.c  ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/mouse.o:        centcom/driver/mouse.c     ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/elf.o:          centcom/elf/elf.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/tar.o:          centcom/fs/tar.c           ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/ntmem_fs.o:     centcom/fs/ntmem_fs.c      ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/ntrfs.o:        centcom/fs/ntrfs.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/ntsad.o:        centcom/ntsad/ntsad.c      ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/speaker.o:      centcom/sound/speaker.c    ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/cue.o:          centcom/sound/cue.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/synth.o:        centcom/sound/synth.c      ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/dma.o:          centcom/driver/dma.c       ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/sb16.o:         centcom/driver/sb16.c      ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/pci.o:          centcom/bus/pci.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/ahci.o:         centcom/driver/ahci.c      ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/kv.o:           centcom/store/kv.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/sched.o:        centcom/sched/sched.c      ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/context.o:      centcom/sched/context.asm  ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
-$(BUILD)/ipc.o:          centcom/ipc/ipc.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+# Явные правила для файлов, имена которых не совпадают с исходниками
+$(BUILD)/isr_c.o: centcom/irq/isr.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/isr_asm.o: centcom/irq/isr.asm     ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
+$(BUILD)/syscall_asm.o: centcom/core/syscall.asm ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
+$(BUILD)/usermode_asm.o: centcom/core/usermode.asm ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
+
+# Шаблонные правила для всех остальных .c и .asm
+$(BUILD)/%.o: centcom/core/%.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/log/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/tty/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/irq/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/mem/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/time/%.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/driver/%.c      ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/elf/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/fs/%.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/ntsad/%.c       ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/sound/%.c       ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/sched/%.c       ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/sched/%.asm     ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
+$(BUILD)/%.o: centcom/store/%.c       ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/bus/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/ipc/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 
 $(BUILD)/centcom.elf: $(COBJS) centcom/centcom.ld
 	$(LD) $(CC_LDFLAGS) $(COBJS) -o $@
@@ -165,6 +153,8 @@ run: ntos.img disk.img
 	    -audiodev sdl,id=snd0 \
 	    -machine pcspk-audiodev=snd0 \
 	    -device sb16,audiodev=snd0 \
+	    -netdev user,id=net0 \
+	    -device e1000,netdev=net0 \
 	    -drive if=pflash,format=raw,readonly=on,file=$(OVMF_CODE) \
 	    -drive if=pflash,format=raw,file=$(OVMF_VARS) \
 	    -drive format=raw,file=$(IMG_WIN) \
@@ -174,20 +164,8 @@ run: ntos.img disk.img
 	    -serial file:$(SERIAL_WIN) \
 	    -display sdl &
 
-run-quiet: ntos.img disk.img
-	@echo "Запускаю QEMU (без звука)..."
-	@$(QEMU) -M pc -m 512 \
-	    -drive if=pflash,format=raw,readonly=on,file=$(OVMF_CODE) \
-	    -drive if=pflash,format=raw,file=$(OVMF_VARS) \
-	    -drive format=raw,file=$(IMG_WIN) \
-	    -device ahci,id=ahci \
-	    -drive id=disk0,format=raw,file=$(DISK_WIN),if=none \
-	    -device ide-hd,drive=disk0,bus=ahci.0 \
-	    -serial file:$(SERIAL_WIN) \
-	    -display sdl &
-
 log:
-	@tail -f /mnt/x/NtOS/serial.log
+	@tail -f /mnt/x/NtOS/NtOS/serial.log
 
 stop:
 	@taskkill.exe /IM qemu-system-x86_64.exe /F 2>/dev/null || true
@@ -195,5 +173,6 @@ stop:
 clean:
 	$(MAKE) -C userspace clean
 	rm -rf $(BUILD) ntos.img disk.img serial.log
+	@echo "Cleaned root build."
 
-.PHONY: all run run-quiet log stop clean
+.PHONY: all run log stop clean FORCE

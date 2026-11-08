@@ -5,10 +5,11 @@
 #include "../log/serial.h"
 #include "../time/pit.h"
 #include "../driver/keyboard.h"
+#include "../driver/mouse.h"
 #include "../sound/cue.h"
 #include "../ntsad/ntsad.h"
 #include "../sched/sched.h"
-#include "../driver/mouse.h"
+
 static irq_handler_t g_handlers[16] = {0};
 static volatile uint64_t g_tick_count = 0;
 
@@ -43,7 +44,7 @@ void isr_irq_init(void) {
     irq_register(0, irq0_handler);
     irq_register(1, irq1_handler);
     irq_register(12, mouse_irq);
-    logi(S_IRQ, "IRQ handlers registered: 0 (PIT), 1 (keyboard)");
+    logi(S_IRQ, "IRQ handlers registered: 0 (PIT), 1 (KBD), 12 (mouse)");
 }
 
 void isr_dispatch(regs_t *r) {
@@ -53,12 +54,6 @@ void isr_dispatch(regs_t *r) {
     }
     if (r->int_no >= 32 && r->int_no < 48) {
         int irq = r->int_no - 32;
-
-        if (irq != 0 && irq != 1) {
-            serial_puts("[IRQ] got irq=");
-            serial_putdec((uint64_t)irq);
-            serial_puts("\n");
-        }
 
         if (g_handlers[irq]) g_handlers[irq](r);
 

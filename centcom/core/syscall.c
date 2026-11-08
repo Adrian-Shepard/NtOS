@@ -3,16 +3,18 @@
 #include "../log/log.h"
 #include "../log/serial.h"
 #include "../tty/fb.h"
-#include "../tty/gui.h"          // <-- ДОБАВЛЕНО
+#include "../tty/gui.h"
 #include "../fs/ntmem_fs.h"
 #include "../fs/ntrfs.h"
 #include "../sched/sched.h"
 #include "../time/pit.h"
 #include "../driver/sb16.h"
 #include "../driver/keyboard.h"
+#include "../driver/e1000.h"    // <-- для net_send/net_recv
 #include "../store/kv.h"
 #include "../mem/vmm.h"
 #include "../mem/pmm.h"
+#include "../mem/heap.h"
 #include "../elf/elf.h"
 #include "../ipc/ipc.h"
 
@@ -71,10 +73,8 @@ static uint64_t sys_write(uint64_t fd, uint64_t buf, uint64_t len) {
     
     if (fd == 1 || fd == 2) { // stdout / stderr
         if (g_gui_active) {
-            // Если GUI запущен, перенаправляем в терминал
             gui_write((const char*)buf, len);
         } else {
-            // Иначе пишем прямо в консоль (для классического shell)
             const char *s = (const char*)buf;
             for (uint64_t i = 0; i < len; i++) fb_putc(s[i], 0x00E0E0E0, 0x00101018);
         }
@@ -216,6 +216,14 @@ static uint64_t sys_ntrfs_write(uint64_t name_ptr, uint64_t buf_ptr, uint64_t le
     return (uint64_t)ntrfs_create(name, (const uint8_t*)buf_ptr, (uint32_t)len);
 }
 
+static uint64_t sys_ntrfs_format(void) {
+    return ntrfs_format() ? 1 : 0;
+}
+
+static uint64_t sys_ntrfs_mount(void) {
+    return ntrfs_mount() ? 1 : 0;
+}
+
 static uint64_t sys_ipc_create(void) {
     process_t *p = process_current();
     if (!p) return (uint64_t)-1;
@@ -230,6 +238,18 @@ static uint64_t sys_ipc_send(uint64_t port_id, uint64_t buf_ptr, uint64_t len) {
 static uint64_t sys_ipc_recv(uint64_t port_id, uint64_t buf_ptr, uint64_t max) {
     if (!is_user_ptr(buf_ptr, max)) return (uint64_t)-1;
     return (uint64_t)ipc_recv_from_port(port_id, (uint8_t*)buf_ptr, (uint32_t)max, 1);
+}
+
+static uint64_t sys_net_send(uint64_t buf_ptr, uint64_t len) {
+    if (!is_user_ptr(buf_ptr, len)) return (uint64_t)-1;
+    if (len > 2048) len = 2048;
+    e1000_send_packet((const uint8_t*)buf_ptr, (uint16_t)len);
+    return len;
+}
+
+static uint64_t sys_net_recv(uint64_t buf_ptr, uint64_t max) {
+    if (!is_user_ptr(buf_ptr, max)) return (uint64_t)-1;
+    return (uint64_t)e1000_receive_packet((uint8_t*)buf_ptr, (uint16_t)max);
 }
 
 static uint64_t exec_build_user_stack(uint64_t stack_phys) {
@@ -305,11 +325,16 @@ static uint64_t sys_exec(uint64_t path_ptr) {
     ntmem_file_t *f = ntmem_fs_find(name);
     if (f) return sys_exec_do(f->data, f->size);
 
-    static uint8_t elf_buf[65536];
-    int r = ntrfs_read(name, elf_buf, sizeof(elf_buf));
-    if (r > 0) return sys_exec_do(elf_buf, r);
+    /* Динамический буфер вместо статического (экономит 64 KB .bss) */
+    uint8_t *elf_buf = (uint8_t*)kmalloc(65536);
+    if (!elf_buf) return 0;
 
-    return 0;
+    int r = ntrfs_read(name, elf_buf, 65536);
+    uint64_t entry = 0;
+    if (r > 0) entry = sys_exec_do(elf_buf, r);
+
+    kfree(elf_buf);
+    return entry;
 }
 
 static uint64_t sys_fork(syscall_regs_t *r) {
@@ -402,11 +427,16 @@ uint64_t syscall_dispatch(syscall_regs_t *r) {
         case SYS_NTRFS_LIST: return sys_ntrfs_list(r->rdi, r->rsi);
         case SYS_NTRFS_READ: return sys_ntrfs_read(r->rdi, r->rsi, r->rdx);
         case SYS_NTRFS_WRITE:return sys_ntrfs_write(r->rdi, r->rsi, r->rdx);
+        case SYS_NTRFS_FORMAT:return sys_ntrfs_format();
+        case SYS_NTRFS_MOUNT: return sys_ntrfs_mount();
         
-        // === IPC ===
         case SYS_IPC_CREATE: return sys_ipc_create();
         case SYS_IPC_SEND:   return sys_ipc_send(r->rdi, r->rsi, r->rdx);
         case SYS_IPC_RECV:   return sys_ipc_recv(r->rdi, r->rsi, r->rdx);
+
+        // --- СЕТЬ ---
+        case SYS_NET_SEND:   return sys_net_send(r->rdi, r->rsi);
+        case SYS_NET_RECV:   return sys_net_recv(r->rdi, r->rsi);
 
         default:
             logw(S_SYC, "unknown syscall %d", r->rax);

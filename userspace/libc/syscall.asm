@@ -12,12 +12,16 @@ global kv_read
 global ntrfs_list
 global ntrfs_read
 global ntrfs_write
+global ntrfs_format
+global ntrfs_mount
 global exec
 global fork
 global sys_wait
 global ipc_create
 global ipc_send
 global ipc_recv
+global net_send
+global net_recv
 
 section .text
 
@@ -114,5 +118,25 @@ ipc_send:
 
 ipc_recv:
     mov rax, 18
+    syscall
+    ret
+
+ntrfs_format:
+    mov rax, 19
+    syscall
+    ret
+
+ntrfs_mount:
+    mov rax, 20
+    syscall
+    ret
+
+net_send:
+    mov rax, 21
+    syscall
+    ret
+
+net_recv:
+    mov rax, 22
     syscall
     ret

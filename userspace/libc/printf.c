@@ -5,7 +5,7 @@
 
 #define OUTBUF_SIZE 512
 
-static int fmt_int(char *buf, int is_signed, long v, int base, int upper) {
+static int fmt_int(char *buf, int is_signed, long v, int base, int upper, int width, char pad) {
     char tmp[32];
     int i = 0;
     int neg = 0;
@@ -31,6 +31,11 @@ static int fmt_int(char *buf, int is_signed, long v, int base, int upper) {
     }
 
     int n = 0;
+    int total = i + neg;
+    while (total < width) {
+        buf[n++] = pad;
+        total++;
+    }
     if (neg) buf[n++] = '-';
     while (i--) buf[n++] = tmp[i];
     buf[n] = 0;
@@ -42,6 +47,11 @@ int vsprintf(char *buf, const char *fmt, va_list ap) {
     while (*fmt) {
         if (*fmt != '%') { buf[n++] = *fmt++; continue; }
         fmt++;
+
+        char pad = ' ';
+        int width = 0;
+        if (*fmt == '0') { pad = '0'; fmt++; }
+        while (*fmt >= '0' && *fmt <= '9') { width = width * 10 + (*fmt - '0'); fmt++; }
 
         char c = *fmt++;
         char tmp[256];
@@ -63,28 +73,28 @@ int vsprintf(char *buf, const char *fmt, va_list ap) {
             case 'd':
             case 'i': {
                 int v = va_arg(ap, int);
-                len = fmt_int(tmp, 1, (long)v, 10, 0);
+                len = fmt_int(tmp, 1, (long)v, 10, 0, width, pad);
                 break;
             }
             case 'u': {
                 unsigned int v = va_arg(ap, unsigned int);
-                len = fmt_int(tmp, 0, (long)v, 10, 0);
+                len = fmt_int(tmp, 0, (long)v, 10, 0, width, pad);
                 break;
             }
             case 'x': {
                 unsigned int v = va_arg(ap, unsigned int);
-                len = fmt_int(tmp, 0, (long)v, 16, 0);
+                len = fmt_int(tmp, 0, (long)v, 16, 0, width, pad);
                 break;
             }
             case 'X': {
                 unsigned int v = va_arg(ap, unsigned int);
-                len = fmt_int(tmp, 0, (long)v, 16, 1);
+                len = fmt_int(tmp, 0, (long)v, 16, 1, width, pad);
                 break;
             }
             case 'p': {
                 unsigned long v = va_arg(ap, unsigned long);
                 tmp[0] = '0'; tmp[1] = 'x';
-                int hl = fmt_int(tmp + 2, 0, (long)v, 16, 0);
+                int hl = fmt_int(tmp + 2, 0, (long)v, 16, 0, width ? width : 1, pad);
                 len = 2 + hl;
                 break;
             }

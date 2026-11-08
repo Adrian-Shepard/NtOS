@@ -61,10 +61,8 @@ static int g_exit_to_shell = 0;
 static int g_shutdown = 0;
 static int g_start_menu_open = 0;
 
-// --- Флаг для sys_write ---
 int g_gui_active = 0;
 
-// Терминал
 #define TERM_LINES 200
 #define TERM_COLS 256
 static char g_term_lines[TERM_LINES][TERM_COLS];
@@ -101,7 +99,6 @@ static const uint8_t cursor_bitmap[16][16] = {
 static uint32_t saved_bg[16][16];
 static int last_mx = -100, last_my = -100;
 
-// --- Вспомогательные ---
 static void put_str(const char *s, uint32_t fg, uint32_t bg) { 
     while (*s) fb_putc(*s++, fg, bg); 
 }
@@ -141,33 +138,29 @@ static void term_add_line_ex(const char *s, int type) {
 
 static void term_add_line(const char *s) { term_add_line_ex(s, TERM_TYPE_OUT); }
 
-// Вызывается из sys_write для перенаправления вывода в терминал
 void gui_write(const char *s, uint64_t len) {
-    char line[256];
-    int l = 0;
+    // Если терминал пуст, создаем первую строку
+    if (g_term_line_count == 0) {
+        term_add_line_ex("", TERM_TYPE_OUT);
+    }
+
     for (uint64_t i = 0; i < len; i++) {
         if (s[i] == '\n') {
-            line[l] = 0;
-            if (l > 0) term_add_line(line);
-            l = 0;
+            // При встрече с \n создаем новую пустую строку
+            term_add_line_ex("", TERM_TYPE_OUT);
         } else {
-            line[l++] = s[i];
-            if (l >= 255) {
-                line[l] = 0;
-                term_add_line(line);
-                l = 0;
+            // Иначе дописываем символ в конец текущей (последней) строки
+            int idx = g_term_line_count - 1;
+            int l = 0;
+            while (g_term_lines[idx][l] && l < TERM_COLS - 2) l++;
+
+            if (l < TERM_COLS - 1) {
+                g_term_lines[idx][l] = s[i];
+                g_term_lines[idx][l+1] = 0;
             }
         }
     }
-    if (l > 0) {
-        line[l] = 0;
-        term_add_line(line);
-    }
 }
-
-// ==========================================
-//            ОКОННЫЙ МЕНЕДЖЕР
-// ==========================================
 
 static void wm_bring_to_front(int idx) {
     if (idx == MAX_WINDOWS - 1) return;
@@ -194,10 +187,6 @@ static int wm_create_window(const char *title, int x, int y, int w, int h,
     }
     return -1;
 }
-
-// ==========================================
-//            ПРИЛОЖЕНИЯ (APPS)
-// ==========================================
 
 static void term_hexdump(uint64_t addr, const uint8_t *data, int len) {
     char line[TERM_COLS];
@@ -271,6 +260,8 @@ static void term_execute(window_t *win) {
         term_add_line_ex("--- HYBRID IPC ---", TERM_TYPE_HEADER);
         term_add_line("  audio_start     - start userspace audio_server");
         term_add_line("  audio_test      - send notes via IPC to server");
+        term_add_line("  vfs_start       - start userspace vfs_server");
+        term_add_line("  vfs_test        - test VFS via IPC");
         term_add_line_ex("--- MISC ---", TERM_TYPE_HEADER);
         term_add_line("  clear           - clear terminal");
         term_add_line("  panic           - trigger kernel panic");
@@ -290,17 +281,15 @@ static void term_execute(window_t *win) {
         char b[64]; copy_str(b, " heap used: ", 64); int p = 11;
         uint64_t u = heap_used();
         char rev[24]; int r = 0; if(!u){rev[r++]='0';} while(u){rev[r++]='0'+(u%10);u/=10;}
-                while(r--) b[p++]=rev[r];
-        b[p] = 0;
-        term_add_line(b);
+        while(r--) b[p++]=rev[r]; 
+        b[p]=0; term_add_line(b);
     }
     else if (gui_strcmp(arg, "ticks") == 0) {
         char b[64]; copy_str(b, " ticks: ", 64); int p = 8;
         uint64_t t = pit_ticks();
         char rev[24]; int r = 0; if(!t){rev[r++]='0';} while(t){rev[r++]='0'+(t%10);t/=10;}
-                while(r--) b[p++]=rev[r];
-        b[p] = 0;
-        term_add_line(b);
+        while(r--) b[p++]=rev[r]; 
+        b[p]=0; term_add_line(b);
     }
     else if (gui_strcmp(arg, "fs") == 0) {
         int n = ntmem_fs_count();
@@ -417,6 +406,29 @@ static void term_execute(window_t *win) {
             }
         } else term_add_line_ex(" audio_test.elf not found", TERM_TYPE_ERR);
     }
+    else if (gui_strcmp(arg, "vfs_start") == 0) {
+        char *cmd = "vfs_server.elf";
+        ntmem_file_t *f = ntmem_fs_find(cmd);
+        if (f) {
+            process_t *p2 = process_create_user(f->data, f->size, 1, (const char**)&cmd);
+            if (p2) {
+                term_add_line(" vfs_server spawned in background");
+            }
+        } else term_add_line_ex(" vfs_server.elf not found", TERM_TYPE_ERR);
+    }
+    else if (gui_strcmp(arg, "vfs_test") == 0) {
+        char *cmd = "vfs_test.elf";
+        ntmem_file_t *f = ntmem_fs_find(cmd);
+        if (f) {
+            term_add_line(" running vfs_test...");
+            process_t *p2 = process_create_user(f->data, f->size, 1, (const char**)&cmd);
+            if (p2) {
+                while (p2->state != PROC_ZOMBIE) { __asm__ volatile("hlt"); }
+                term_add_line(" vfs_test finished");
+                process_reap(p2);
+            }
+        } else term_add_line_ex(" vfs_test.elf not found", TERM_TYPE_ERR);
+    }
     else if (gui_strncmp(arg, "kill ", 5) == 0) {
         int pid = 0; char *p = arg + 5; while(*p >= '0' && *p <= '9') { pid = pid*10 + (*p - '0'); p++; }
         if (pid == 0) {
@@ -427,17 +439,31 @@ static void term_execute(window_t *win) {
         else { process_kill((uint64_t)pid); term_add_line(" killed"); }
     }
     else if (gui_strcmp(arg, "procs") == 0) {
+        term_add_line_ex("PID  STATE     NAME", TERM_TYPE_HEADER);
         for(int i=0; i<PROC_MAX; i++) {
             process_t *pr = process_get(i);
             if (pr && pr->state != PROC_FREE) {
                 char b[64]; copy_str(b, "  ", 64);
                 int idx = 2;
+
+                // PID
                 uint64_t id = pr->pid;
-                char rev[16]; int r = 0; 
+                char rev[16]; int r = 0;
                 if (id == 0) rev[r++] = '0';
                 else while(id) { rev[r++]='0'+(id%10); id/=10; }
                 while(r--) b[idx++] = rev[r];
-                b[idx++] = ' '; copy_str(b+idx, pr->name, 64-idx);
+                while (idx < 7) b[idx++] = ' ';
+
+                // STATE
+                const char *st = "READY";
+                if (pr->state == PROC_RUNNING) st = "RUNNING";
+                else if (pr->state == PROC_BLOCKED) st = "BLOCKED";
+                else if (pr->state == PROC_ZOMBIE) st = "ZOMBIE";
+                int sl = 0; while (st[sl] && idx < 17) b[idx++] = st[sl++];
+                while (idx < 17) b[idx++] = ' ';
+
+                // NAME
+                copy_str(b+idx, pr->name, 64-idx);
                 term_add_line(b);
             }
         }
@@ -533,7 +559,7 @@ static void app_term_draw(window_t *win) {
         else if (g_term_line_types[i] == TERM_TYPE_OUT) line_fg = GUI_WHITE;
 
         while (*s) {
-            if (chars >= max_chars) {
+            if (chars >= max_chars || cx + 8 > win->x + win->w - 2) {
                 cx = start_x;
                 cy += 10;
                 chars = 0;
@@ -567,7 +593,7 @@ static void app_term_draw(window_t *win) {
         chars = 9;
 
         for (int i = 0; i < g_term_input_len; i++) {
-            if (chars >= max_chars) {
+            if (chars >= max_chars || cx + 8 > win->x + win->w - 2) {
                 cx = start_x;
                 cy += 10;
                 chars = 0;
@@ -580,7 +606,7 @@ static void app_term_draw(window_t *win) {
         }
 
         if (cy <= win->y + win->h - 12) {
-            if (chars >= max_chars) {
+            if (chars >= max_chars || cx + 8 > win->x + win->w - 2) {
                 cx = start_x;
                 cy += 10;
             }
@@ -605,7 +631,6 @@ static void app_term_key(window_t *win, int c) {
     }
 }
 
-// --- 2. Task Manager ---
 static void app_taskman_draw(window_t *win) {
     fb_fill_rect(win->x + 1, win->y + TITLE_BAR_H, win->w - 2, win->h - TITLE_BAR_H - 1, GUI_WIN_BG);
 
@@ -629,10 +654,6 @@ static void app_taskman_draw(window_t *win) {
     }
 }
 
-// ==========================================
-//            ОТРИСОВКА
-// ==========================================
-
 static void draw_top_bar(void) {
     uint32_t w = fb_width();
     fb_fill_rect(0, 0, w, 24, GUI_BAR_BG);
@@ -641,7 +662,6 @@ static void draw_top_bar(void) {
     fb_set_cursor(16, 8);
     put_str("NANOTRASEN", GUI_WHITE, GUI_BAR_ACCENT);
     
-    // Формируем строку таймера вручную
     char time_str[80];
     int idx = 0;
     const char *prefix = "UPTIME: ";
@@ -654,12 +674,10 @@ static void draw_top_bar(void) {
     uint64_t minutes = (total_sec / 60) % 60;
     uint64_t seconds = total_sec % 60;
 
-    // Вспомогательная функция для добавления числа с ведущими нулями
-    // (просто вручную, чтобы не плодить лишние функции)
     char num_buf[24];
     int n;
 
-    // Годы (без ведущих нулей, но минимум 1 цифра)
+    // Годы
     n = 0;
     if (years == 0) { num_buf[n++] = '0'; }
     else {
@@ -671,7 +689,7 @@ static void draw_top_bar(void) {
     for (int i = 0; i < n; i++) time_str[idx++] = num_buf[i];
     time_str[idx++] = ':';
 
-    // Дни (3 цифры с ведущими нулями)
+    // Дни (3 цифры)
     n = 0;
     if (days == 0) { num_buf[n++] = '0'; }
     else {
@@ -684,26 +702,20 @@ static void draw_top_bar(void) {
     for (int i = 0; i < n; i++) time_str[idx++] = num_buf[i];
     time_str[idx++] = ':';
 
-    // Часы (2 цифры)
+    // Часы, минуты, секунды
     time_str[idx++] = '0' + (hours / 10) % 10;
     time_str[idx++] = '0' + (hours % 10);
     time_str[idx++] = ':';
-
-    // Минуты (2 цифры)
     time_str[idx++] = '0' + (minutes / 10) % 10;
     time_str[idx++] = '0' + (minutes % 10);
     time_str[idx++] = ':';
-
-    // Секунды (2 цифры)
     time_str[idx++] = '0' + (seconds / 10) % 10;
     time_str[idx++] = '0' + (seconds % 10);
-
     time_str[idx] = 0;
 
-    // Выравнивание по правому краю
     int len = idx;
-    int x = w - (len * 8) - 16; // 16 пикселей отступ справа
-    if (x < 130) x = 130; // чтобы не залезть на логотип
+    int x = w - (len * 8) - 16;
+    if (x < 130) x = 130;
     fb_set_cursor(x, 8);
     put_str(time_str, GUI_TEXT, GUI_BAR_BG);
 }
@@ -772,16 +784,12 @@ static void redraw_gui(int mx, int my) {
     draw_cursor_direct(mx, my); 
 }
 
-// ==========================================
-//            ГЛАВНЫЙ ЦИКЛ
-// ==========================================
-
 int gui_start(void) {
     uint32_t buf_size = fb_width() * fb_height() * 4;
     uint32_t *gui_buf = (uint32_t*)kmalloc(buf_size);
     if (gui_buf) fb_set_buffer(gui_buf);
 
-    g_gui_active = 1; // <-- ВКЛЮЧАЕМ ПЕРЕНАПРАВЛЕНИЕ ВЫВОДА
+    g_gui_active = 1;
 
     for (int i = 0; i < MAX_WINDOWS; i++) g_windows[i].is_open = 0;
     g_term_line_count = 0;
@@ -911,7 +919,10 @@ int gui_start(void) {
     fb_set_cursor(0, 0);
     __asm__ volatile("sti");
     
-    g_gui_active = 0; // <-- ОТКЛЮЧАЕМ ПЕРЕНАПРАВЛЕНИЕ ПЕРЕД ВЫХОДОМ
+    g_gui_active = 0;
+
+    /* Освобождаем 4 MB буфера GUI — можно запускать GUI бесконечно */
+    if (gui_buf) kfree(gui_buf);
 
     return g_exit_to_shell;
 }

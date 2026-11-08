@@ -26,6 +26,8 @@ struct ntrfs_inode_user {
 int  ntrfs_list(int idx, struct ntrfs_inode_user *out);
 long ntrfs_read(const char *name, void *buf, unsigned long max);
 int  ntrfs_write(const char *name, const void *buf, unsigned long len);
+int  ntrfs_format(void);
+int  ntrfs_mount(void);
 
 int  exec(const char *path);
 int  fork(void);
@@ -34,5 +36,9 @@ int  sys_wait(int pid, int *status);
 long ipc_create(void);
 long ipc_send(long port, const void *buf, unsigned long len);
 long ipc_recv(long port, void *buf, unsigned long max);
+
+// --- ДОБАВЛЕНО: СЕТЬ ---
+long net_send(const void *buf, unsigned long len);
+long net_recv(void *buf, unsigned long max);
 
 #define O_RDONLY 0

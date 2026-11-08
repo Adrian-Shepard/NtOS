@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 #define IPC_MAX_PORTS 32
-#define IPC_MSG_MAX   256
+#define IPC_MSG_MAX   1024  // <-- ИЗМЕНЕНО С 256 НА 1024
 #define IPC_QUEUE_MAX 16
 
 typedef struct {

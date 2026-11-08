@@ -43,3 +43,12 @@ int memcmp(const void *a, const void *b, size_t n) {
     }
     return 0;
 }
+char *strncpy(char *dst, const char *src, size_t n) {
+    char *d = dst;
+    while (n && *src) {
+        *d++ = *src++;
+        n--;
+    }
+    while (n--) *d++ = 0;
+    return dst;
+}

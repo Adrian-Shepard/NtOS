@@ -8,6 +8,9 @@ static uint8_t  g_bitmap[BITMAP_LEN];
 static uint64_t g_total_pages = 0;
 static uint64_t g_free_pages  = 0;
 
+/* Оптимизация: hint для быстрого поиска свободной страницы */
+static uint64_t g_last_alloc_hint = 0;
+
 static inline void bit_set(uint64_t i)   { g_bitmap[i >> 3] |=  (1 << (i & 7)); }
 static inline void bit_clear(uint64_t i) { g_bitmap[i >> 3] &= ~(1 << (i & 7)); }
 static inline int  bit_test(uint64_t i)  { return g_bitmap[i >> 3] & (1 << (i & 7)); }
@@ -36,6 +39,7 @@ void pmm_init(bootinfo_t *bi) {
     for (uint64_t i = 0; i < BITMAP_LEN; i++) g_bitmap[i] = 0xFF;
     g_total_pages = 0;
     g_free_pages  = 0;
+    g_last_alloc_hint = 0;
 
     EFI_MEMORY_DESCRIPTOR *d = (EFI_MEMORY_DESCRIPTOR*)bi->mmap_addr;
     uint64_t n = bi->mmap_size / bi->mmap_desc_size;
@@ -61,10 +65,21 @@ void pmm_init(bootinfo_t *bi) {
 }
 
 uint64_t pmm_alloc(void) {
-    for (uint64_t i = 0; i < MAX_PAGES; i++) {
+    /* 1. Поиск с hint до конца */
+    for (uint64_t i = g_last_alloc_hint; i < MAX_PAGES; i++) {
         if (!bit_test(i)) {
             bit_set(i);
             g_free_pages--;
+            g_last_alloc_hint = i + 1;
+            return i * PAGE_SIZE;
+        }
+    }
+    /* 2. Если дошли до конца — с начала до hint */
+    for (uint64_t i = 0; i < g_last_alloc_hint && i < MAX_PAGES; i++) {
+        if (!bit_test(i)) {
+            bit_set(i);
+            g_free_pages--;
+            g_last_alloc_hint = i + 1;
             return i * PAGE_SIZE;
         }
     }
@@ -74,7 +89,12 @@ uint64_t pmm_alloc(void) {
 void pmm_free(uint64_t phys) {
     uint64_t p = phys / PAGE_SIZE;
     if (p >= MAX_PAGES) return;
-    if (bit_test(p)) { bit_clear(p); g_free_pages++; }
+    if (bit_test(p)) {
+        bit_clear(p);
+        g_free_pages++;
+        /* Если освободили страницу ДО hint — обновим его для быстрого возврата */
+        if (p < g_last_alloc_hint) g_last_alloc_hint = p;
+    }
 }
 
 void pmm_reserve(uint64_t base, uint64_t size) {

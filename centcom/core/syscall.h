@@ -26,13 +26,16 @@ uint64_t syscall_dispatch(syscall_regs_t *r);
 #define SYS_EXEC        13
 #define SYS_FORK        14
 #define SYS_WAIT        15
+
 #define SYS_IPC_CREATE  16
 #define SYS_IPC_SEND    17
 #define SYS_IPC_RECV    18
+#define SYS_NTRFS_FORMAT 19
+#define SYS_NTRFS_MOUNT  20
+#define SYS_NET_SEND    21
+#define SYS_NET_RECV    22
 
-/* Для планировщика (per-process стеки) */
 uint64_t syscall_get_kstack(void);
 void     syscall_set_kstack(uint64_t top);
-
 uint64_t syscall_get_user_rsp(void);
 void     syscall_set_user_rsp(uint64_t rsp);

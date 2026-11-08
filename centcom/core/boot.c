@@ -15,13 +15,14 @@
 #include "../driver/keyboard.h"
 #include "../driver/mouse.h"
 #include "../driver/sb16.h"
+#include "../driver/ahci.h"
+#include "../driver/e1000.h"      // <-- ДОБАВЛЕНО
 #include "../fs/ntmem_fs.h"
 #include "../ntsad/ntsad.h"
 #include "../sound/speaker.h"
 #include "../sound/cue.h"
 #include "../sched/sched.h"
-#include "../driver/ahci.h"
-#include "../ipc/ipc.h"      // <-- ДОБАВЛЕНО
+#include "../ipc/ipc.h"
 #include "panic.h"
 #include "gdt.h"
 #include "idt.h"
@@ -65,14 +66,13 @@ void centcom_boot(bootinfo_t *bi_unused) {
     /* --- Диск --- */
     ahci_init();
     
-    /* --- Инициализация SB16 ДО PIC (чтобы знать, включать IRQ5 или нет) --- */
+    /* --- Инициализация SB16 ДО PIC --- */
     int has_sb16 = sb16_init();
 
     /* --- PIC с правильной маской --- */
-    uint8_t master_mask = 0xC8; // IRQ0, IRQ1, IRQ2 (cascade)
-    if (has_sb16) master_mask &= ~0x20; // Снимаем маску с IRQ5
-
-    pic_init(master_mask, 0xEF); // PIC2: только IRQ12 (mouse)
+    uint8_t master_mask = 0xC8;
+    if (has_sb16) master_mask &= ~0x20;
+    pic_init(master_mask, 0xEF);
 
     /* --- IRQ, таймер, клавиатура, мышь --- */
     isr_irq_init();
@@ -82,11 +82,14 @@ void centcom_boot(bootinfo_t *bi_unused) {
 
     /* --- Шина событий, IPC, звук, подписки --- */
     ntsad_init();
-    ipc_init();               // <-- ДОБАВЛЕНО (IPC)
+    ipc_init();
     cue_init();
 
     /* ================ ФАЗА 4: PERIPHERALS ================ */
     bootscreen_phase4();
+
+    /* --- Сеть --- */
+    e1000_init();             // <-- ДОБАВЛЕНО
 
     /* --- Файловая система --- */
     extern const uint8_t initrd_start[];
