@@ -11,7 +11,11 @@ void fb_init(bootinfo_t *bi) {
     g_fb = (uint32_t*)bi->fb_addr;
     g_w = bi->fb_width;
     g_h = bi->fb_height;
-    g_pitch_px = bi->fb_pitch / 4;
+    
+    // Защита: pitch в байтах делим на 4, чтобы получить pitch в пикселях
+    g_pitch_px = bi->fb_pitch / 4; 
+    if (g_pitch_px < g_w) g_pitch_px = g_w; // Если pitch неверный, приравниваем к ширине
+
     g_cx = g_cy = 0;
     g_scale = 1;
     g_back_buffer = g_fb; 

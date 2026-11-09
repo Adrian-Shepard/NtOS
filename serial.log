@@ -1,20 +1,15 @@
-[2J[01;01H[=3h[2J[01;01H[2J[01;01H[=3h[2J[01;01H[2J[01;01H[=3h[2J[01;01HBdsDxe: failed to load Boot0001 "UEFI QEMU HARDDISK QM00013 " from PciRoot(0x0)/Pci(0x3,0x0)/Sata(0x0,0xFFFF,0x0): Not Found
-BdsDxe: loading Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x0,0xFFFF,0x0)
-BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x0,0xFFFF,0x0)
-[2J[01;01HNtOS/CENTCOM: Nanotrasen Secure Boot
-[1] locating GOP...
-[2] reading centcom.bin...
-[3] allocating kernel + bootinfo page...
-[4] copying kernel...
-[5] filling bootinfo at fixed addr...
-[6] preparing memory map...
-[7] final ExitBootServices...
-[DRV] PC speaker ready
-[CPU] GDT loaded: 7 entries, TSS at 0x00000000040a6860
+[2J[01;01H[=3h[2J[01;01H[2J[01;01H[=3h[2J[01;01H[2J[01;01H[=3h[2J[01;01HBdsDxe: loading Boot0001 "UEFI QEMU DVD-ROM QM00005 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x2,0xFFFF,0x0)
+BdsDxe: starting Boot0001 "UEFI QEMU DVD-ROM QM00005 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x2,0xFFFF,0x0)
+[0m[30m[40m[2J[01;01H[0m[37m[40m[02;40HGNU GRUB  version 2.14
+
+[04;02H┌────────────────────────────────────────────────────────────────────────────────────────────────┐[05;02H││[06;02H││[07;02H││[08;02H││[09;02H││[10;02H││[11;02H││[12;02H││[13;02H││[14;02H││[15;02H││[16;02H││[17;02H││[18;02H││[19;02H││[20;02H││[21;02H││[22;02H││[23;02H││[24;02H└────────────────────────────────────────────────────────────────────────────────────────────────┘[25;02H[26;02H     Use the ▲ and ▼ keys to select which entry is highlighted.                              
+      Press enter to boot the selected OS, `e' to edit the commands before booting or `c' for 
+      a command-line.                                                                          [0m[30m[47m[05;03H*NtOS (DualBoot)                                                                                [0m[37m[40m[06;03H                                                                                                [07;03H                                                                                                [08;03H                                                                                                [09;03H                                                                                                [10;03H                                                                                                [11;03H                                                                                                [12;03H                                                                                                [13;03H                                                                                                [14;03H                                                                                                [15;03H                                                                                                [16;03H                                                                                                [17;03H                                                                                                [18;03H                                                                                                [19;03H                                                                                                [20;03H                                                                                                [21;03H                                                                                                [22;03H                                                                                                [23;03H                                                                                                 [29;01H   The highlighted entry will be executed automatically in 3s.                                     [29;01H   The highlighted entry will be executed automatically in 2s.                                     [29;01H   The highlighted entry will be executed automatically in 1s.                                     [29;01H   The highlighted entry will be executed automatically in 0s.                                     [0m[30m[40m[2J[01;01H[0m[37m[40m[DRV] PC speaker ready
+[CPU] GDT loaded: 7 entries, TSS at 0x00000000001a7500
 [CPU] IDT loaded: 256 vectors (int3 DPL=3)
 [PMM] total RAM: 510 MB
-[PMM] free pages: 115679 (451 MB)
-[VMM] old CR3 = 0x000000001f801000
+[PMM] free pages: 127267 (497 MB)
+[VMM] old CR3 = 0x0000000000200000
 [VMM] new CR3 = 0x0000000000400000
 [HEP] heap ready: 0x0000000005000000..0x0000000006000000 (16 MB) [free-list]
 [DRV] AHCI PCI: vendor=0x0000000000008086 dev=0x0000000000002922 bar5=0x0000000081031000
@@ -58,13 +53,13 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [NTM]   udp_test.elf (10832 bytes)
 [NTM]   vfs_server.elf (10528 bytes)
 [NTM]   vfs_test.elf (10496 bytes)
-[SYC] syscall enabled: STAR=0x0010000800000000 LSTAR=0x000000000400dd10
+[SYC] syscall enabled: STAR=0x0010000800000000 LSTAR=0x000000000010df90
 [SCH] scheduler initialized, main pid=0 cr3=0x0000000000400000
 [CPU] interrupts enabled
 [BOO] CENTCOM core online
 [BOO] NtOS v0.15.2 boot sequence complete
-[VMM] framebuffer = 1280x800 @ 0x0000000080000000
-[PMM] RAM: 510 MiB total, 435 MiB free
+[VMM] framebuffer = 1024x768 @ 0x0000000080000000
+[PMM] RAM: 510 MiB total, 480 MiB free
 [HEP] heap: 197584/16777216 bytes used
 [TMR] PIT configured at 100 Hz
 [KBD] PS/2 keyboard ready
@@ -241,6 +236,9 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [tick] 16400
 [tick] 16500
 [tick] 16600
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=4760 memsz=4760
+[SCH] user process: pid=1 name=udp_test.elf entry=0x0000010000000000 cr3=0x000000000044c000
 [tick] 16700
 [tick] 16800
 [tick] 16900
@@ -257,206 +255,5 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [tick] 18000
 [tick] 18100
 [tick] 18200
-[tick] 18300
-[tick] 18400
-[tick] 18500
-[tick] 18600
-[tick] 18700
-[tick] 18800
-[tick] 18900
-[tick] 19000
-[tick] 19100
-[tick] 19200
-[tick] 19300
-[tick] 19400
-[tick] 19500
-[tick] 19600
-[tick] 19700
-[tick] 19800
-[tick] 19900
-[tick] 20000
-[tick] 20100
-[tick] 20200
-[tick] 20300
-[tick] 20400
-[tick] 20500
-[tick] 20600
-[tick] 20700
-[tick] 20800
-[tick] 20900
-[tick] 21000
-[tick] 21100
-[tick] 21200
-[tick] 21300
-[tick] 21400
-[tick] 21500
-[tick] 21600
-[tick] 21700
-[tick] 21800
-[tick] 21900
-[tick] 22000
-[tick] 22100
-[tick] 22200
-[tick] 22300
-[tick] 22400
-[tick] 22500
-[tick] 22600
-[tick] 22700
-[tick] 22800
-[tick] 22900
-[tick] 23000
-[tick] 23100
-[tick] 23200
-[tick] 23300
-[tick] 23400
-[tick] 23500
-[tick] 23600
-[tick] 23700
-[tick] 23800
-[tick] 23900
-[tick] 24000
-[tick] 24100
-[tick] 24200
-[tick] 24300
-[tick] 24400
-[tick] 24500
-[tick] 24600
-[tick] 24700
-[tick] 24800
-[tick] 24900
-[tick] 25000
-[tick] 25100
-[tick] 25200
-[tick] 25300
-[tick] 25400
-[tick] 25500
-[tick] 25600
-[tick] 25700
-[tick] 25800
-[tick] 25900
-[tick] 26000
-[tick] 26100
-[tick] 26200
-[tick] 26300
-[tick] 26400
-[tick] 26500
-[tick] 26600
-[tick] 26700
-[tick] 26800
-[tick] 26900
-[tick] 27000
-[tick] 27100
-[tick] 27200
-[tick] 27300
-[tick] 27400
-[tick] 27500
-[tick] 27600
-[tick] 27700
-[tick] 27800
-[tick] 27900
-[tick] 28000
-[tick] 28100
-[tick] 28200
-[tick] 28300
-[tick] 28400
-[tick] 28500
-[tick] 28600
-[tick] 28700
-[tick] 28800
-[tick] 28900
-[tick] 29000
-[tick] 29100
-[tick] 29200
-[tick] 29300
-[tick] 29400
-[tick] 29500
-[tick] 29600
-[tick] 29700
-[tick] 29800
-[tick] 29900
-[tick] 30000
-[tick] 30100
-[tick] 30200
-[tick] 30300
-[tick] 30400
-[tick] 30500
-[tick] 30600
-[tick] 30700
-[tick] 30800
-[tick] 30900
-[tick] 31000
-[tick] 31100
-[tick] 31200
-[tick] 31300
-[tick] 31400
-[tick] 31500
-[tick] 31600
-[tick] 31700
-[tick] 31800
-[tick] 31900
-[tick] 32000
-[tick] 32100
-[tick] 32200
-[tick] 32300
-[tick] 32400
-[tick] 32500
-[tick] 32600
-[tick] 32700
-[tick] 32800
-[tick] 32900
-[tick] 33000
-[tick] 33100
-[tick] 33200
-[tick] 33300
-[tick] 33400
-[tick] 33500
-[tick] 33600
-[tick] 33700
-[tick] 33800
-[tick] 33900
-[tick] 34000
-[tick] 34100
-[tick] 34200
-[tick] 34300
-[tick] 34400
-[tick] 34500
-[tick] 34600
-[tick] 34700
-[tick] 34800
-[tick] 34900
-[tick] 35000
-[tick] 35100
-[tick] 35200
-[tick] 35300
-[tick] 35400
-[tick] 35500
-[tick] 35600
-[tick] 35700
-[tick] 35800
-[tick] 35900
-[tick] 36000
-[tick] 36100
-[tick] 36200
-[tick] 36300
-[tick] 36400
-[tick] 36500
-[tick] 36600
-[tick] 36700
-[tick] 36800
-[tick] 36900
-[tick] 37000
-[tick] 37100
-[tick] 37200
-[ELF] ELF64 entry=0x0000010000000000 phdrs=2
-[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=4736 memsz=4736
-[SCH] user process: pid=1 name=dhcp_test.elf entry=0x0000010000000000 cr3=0x000000000044c000
-[tick] 37300
-[tick] 37400
-[tick] 37500
-[tick] 37600
-[tick] 37700
-[tick] 37800
-[tick] 37900
-[tick] 38000
-[tick] 38100
-[tick] 38200
+
+*** CENTCOM CORE BOOT FAULT ***

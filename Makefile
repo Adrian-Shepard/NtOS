@@ -7,7 +7,6 @@ OBJCOPY := objcopy
 QEMU       := /mnt/x/OSdevTools/qemu/qemu-system-x86_64.exe
 OVMF_CODE  := X:/OSdevTools/qemu/share/edk2-x86_64-code.fd
 OVMF_VARS  := X:/OSdevTools/qemu/share/edk2-x86_64-vars.fd
-IMG_WIN    := X:/NtOS/NtOS/ntos.img
 DISK_WIN   := X:/NtOS/NtOS/disk.img
 SERIAL_WIN := X:/NtOS/NtOS/serial.log
 
@@ -29,7 +28,8 @@ CC_CFLAGS := -ffreestanding -fno-stack-protector -fno-stack-check \
 
 CC_LDFLAGS := -nostdlib -static -T centcom/centcom.ld -z max-page-size=0x1000
 
-COBJS := $(BUILD)/entry.o \
+COBJS := $(BUILD)/multiboot.o \
+         $(BUILD)/dualboot.o \
          $(BUILD)/boot.o \
          $(BUILD)/panic.o \
          $(BUILD)/log.o \
@@ -42,6 +42,7 @@ COBJS := $(BUILD)/entry.o \
          $(BUILD)/idt.o \
          $(BUILD)/isr_c.o \
          $(BUILD)/isr_asm.o \
+         $(BUILD)/flush.o \
          $(BUILD)/pic.o \
          $(BUILD)/pmm.o \
          $(BUILD)/vmm.o \
@@ -75,7 +76,7 @@ COBJS := $(BUILD)/entry.o \
 DEPS := $(COBJS:.o=.d)
 -include $(DEPS)
 
-all: ntos.img
+all: ntos.iso
 
 # ---------- userspace ----------
 userspace/initrd.tar: FORCE
@@ -90,25 +91,23 @@ $(BUILD)/initrd.o: userspace/initrd.tar
 	    --redefine-sym _binary_userspace_initrd_tar_end=initrd_end \
 	    $< $@
 
-# ---------- boot (UEFI PE/COFF) ----------
-$(BUILD)/BOOTX64.EFI: boot/bootx64.c boot/efi.h bootinfo.h
-	@mkdir -p $(BUILD)
-	$(MINGW) $(BOOT_CFLAGS) -c boot/bootx64.c -o $(BUILD)/bootx64.o
-	$(MINGW) -nostdlib -Wl,--subsystem,10 -Wl,-e,efi_main \
-	    $(BUILD)/bootx64.o -o $@
-
-# ---------- centcom (ELF ядро) ----------
-$(BUILD)/entry.o: centcom/core/entry.asm
+# ---------- boot ----------
+$(BUILD)/multiboot.o: boot/multiboot.asm
 	@mkdir -p $(BUILD)
 	$(NASM) -f elf64 $< -o $@
 
-# Явные правила для всех .asm файлов
+$(BUILD)/dualboot.o: boot/dualboot.c
+	@mkdir -p $(BUILD)
+	$(CC) $(BOOT_CFLAGS) -c $< -o $@
+
+# ---------- centcom (ELF ядро) ----------
+# Явные правила для .asm файлов
 $(BUILD)/isr_asm.o: centcom/irq/isr.asm             ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
 $(BUILD)/syscall_asm.o: centcom/core/syscall.asm    ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
 $(BUILD)/usermode_asm.o: centcom/core/usermode.asm  ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
 $(BUILD)/context.o: centcom/sched/context.asm       ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
-
-# ЯВНОЕ ПРАВИЛО ДЛЯ isr_c.o
+$(BUILD)/flush.o: centcom/core/flush.asm            ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
+# ЯВНОЕ ПРАВИЛО ДЛЯ isr_c.o (исправляет ошибку "No rule to make target")
 $(BUILD)/isr_c.o: centcom/irq/isr.c                 ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 
 # Шаблонные правила для C-файлов
@@ -131,27 +130,21 @@ $(BUILD)/%.o: centcom/ipc/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -
 $(BUILD)/centcom.elf: $(COBJS) centcom/centcom.ld
 	$(LD) $(CC_LDFLAGS) $(COBJS) -o $@
 
-$(BUILD)/centcom.bin: $(BUILD)/centcom.elf
-	$(OBJCOPY) -O binary $< $@
-
-# ---------- образ FAT32 ----------
-ntos.img: $(BUILD)/BOOTX64.EFI $(BUILD)/centcom.bin startup.nsh
-	dd if=/dev/zero of=$@ bs=1M count=64 status=none
-	mkfs.vfat -F 32 $@ >/dev/null
-	mmd -i $@ ::/EFI
-	mmd -i $@ ::/EFI/BOOT
-	mcopy -i $@ $(BUILD)/BOOTX64.EFI ::/EFI/BOOT/BOOTX64.EFI
-	mcopy -i $@ $(BUILD)/centcom.bin   ::/centcom.bin
-	mcopy -i $@ startup.nsh            ::/startup.nsh
+# ---------- Сборка ISO ----------
+ntos.iso: $(BUILD)/centcom.elf userspace/initrd.tar boot/grub.cfg
+	@mkdir -p $(BUILD)/iso/boot/grub
+	cp $(BUILD)/centcom.elf $(BUILD)/iso/boot/
+	cp boot/grub.cfg $(BUILD)/iso/boot/grub/
+	grub-mkrescue -o ntos.iso $(BUILD)/iso
 
 disk.img:
 	@echo "Создаю пустой disk.img (16 MiB)..."
 	dd if=/dev/zero of=$@ bs=1M count=16 status=none
 
 # ---------- запуск ----------
-run: ntos.img disk.img
-	@echo "Запускаю QEMU..."
-	@$(QEMU) -M q35 -m 512 \
+run: ntos.iso disk.img
+	@echo "Запускаю QEMU (UEFI)..."
+	@$(QEMU) -M q35 -m 512 -vga std \
 	    -audiodev sdl,id=snd0 \
 	    -machine pcspk-audiodev=snd0 \
 	    -device sb16,audiodev=snd0 \
@@ -159,10 +152,25 @@ run: ntos.img disk.img
 	    -device e1000,netdev=net0,romfile= \
 	    -drive if=pflash,format=raw,readonly=on,file=$(OVMF_CODE) \
 	    -drive if=pflash,format=raw,file=$(OVMF_VARS) \
-	    -drive format=raw,file=$(IMG_WIN) \
+	    -cdrom ntos.iso \
 	    -device ich9-ahci,id=ahci_ctrl \
 	    -drive id=disk0,format=raw,file=$(DISK_WIN),if=none \
 	    -device ide-hd,drive=disk0,bus=ahci_ctrl.0 \
+	    -serial file:$(SERIAL_WIN) \
+	    -display sdl &
+
+run-legacy: ntos.iso disk.img
+	@echo "Запускаю QEMU (Legacy BIOS)..."
+	@$(QEMU) -M pc -m 512 \
+	    -audiodev sdl,id=snd0 \
+	    -machine pcspk-audiodev=snd0 \
+	    -device sb16,audiodev=snd0 \
+	    -netdev user,id=net0 \
+	    -device e1000,netdev=net0,romfile= \
+	    -cdrom ntos.iso \
+	    -device ahci,id=ahci \
+	    -drive id=disk0,format=raw,file=$(DISK_WIN),if=none \
+	    -device ide-hd,drive=disk0,bus=ahci.0 \
 	    -serial file:$(SERIAL_WIN) \
 	    -display sdl &
 
@@ -174,7 +182,7 @@ stop:
 
 clean:
 	$(MAKE) -C userspace clean
-	rm -rf $(BUILD) ntos.img disk.img serial.log
+	rm -rf $(BUILD) ntos.iso disk.img serial.log
 	@echo "Cleaned root build."
 
-.PHONY: all run log stop clean FORCE
+.PHONY: all run run-legacy log stop clean FORCE
