@@ -17,7 +17,7 @@ struct window {
     void (*on_key)(window_t *win, int key);
 };
 
-// Структура для регистрации приложения
+// Структура для регистрации встроенного (kernel) приложения
 typedef struct {
     const char *name;       // Имя для заголовка окна и подписи
     const char *icon_text;  // Текст внутри иконки (например ">_")
@@ -28,6 +28,14 @@ typedef struct {
     void (*click)(window_t*, int, int);
     void (*key)(window_t*, int);
 } app_meta_t;
+
+// НОВОЕ: Структура ярлыка на рабочем столе
+typedef struct {
+    const char *name;        // Имя для отображения на рабочем столе
+    const char *exec_path;   // "KERNEL://app_name" или "program.elf"
+    const char *icon_text;   // Текст иконки (например ">_")
+    uint32_t icon_color;     // Цвет иконки
+} desktop_shortcut_t;
 
 extern int g_gui_active;
 void gui_write(const char *s, uint64_t len);

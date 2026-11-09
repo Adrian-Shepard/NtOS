@@ -22,7 +22,7 @@ CC_CFLAGS := -ffreestanding -fno-stack-protector -fno-stack-check \
              -mno-sse -mno-sse2 -mno-mmx -MMD -MP \
              -Wall -Wextra -O2 \
              -I centcom -I centcom/core -I centcom/log -I centcom/tty \
-             -I centcom/gui -I centcom/irq -I centcom/mem -I centcom/time \
+             -I centcom/gui -I centcom/apps -I centcom/irq -I centcom/mem -I centcom/time \
              -I centcom/driver -I centcom/elf -I centcom/fs \
              -I centcom/ntsad -I centcom/sound -I centcom/sched \
              -I centcom/store -I centcom/bus -I centcom/ipc -I .
@@ -38,7 +38,11 @@ COBJS := $(BUILD)/multiboot.o \
          $(BUILD)/fb.o \
          $(BUILD)/bootscreen.o \
          $(BUILD)/gui.o \
+         $(BUILD)/desktop.o \
          $(BUILD)/apps.o \
+         $(BUILD)/terminal.o \
+         $(BUILD)/taskman.o \
+         $(BUILD)/editor.o \
          $(BUILD)/shell.o \
          $(BUILD)/gdt.o \
          $(BUILD)/idt.o \
@@ -68,6 +72,8 @@ COBJS := $(BUILD)/multiboot.o \
          $(BUILD)/sb16.o \
          $(BUILD)/pci.o \
          $(BUILD)/ahci.o \
+         $(BUILD)/usb.o \
+         $(BUILD)/xhci.o \
          $(BUILD)/e1000.o \
          $(BUILD)/kv.o \
          $(BUILD)/sched.o \
@@ -114,6 +120,7 @@ $(BUILD)/%.o: centcom/core/%.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -
 $(BUILD)/%.o: centcom/log/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/tty/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/gui/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/apps/%.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/irq/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/mem/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/time/%.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
@@ -142,7 +149,7 @@ disk.img:
 	dd if=/dev/zero of=$@ bs=1M count=16 status=none
 
 run: ntos.iso disk.img
-	@echo "Запускаю QEMU (UEFI)..."
+	@echo "Запускаю QEMU (UEFI) с USB-контроллером..."
 	@$(QEMU) -M q35 -m 512 -vga std \
 	    -audiodev sdl,id=snd0 \
 	    -machine pcspk-audiodev=snd0 \
@@ -152,6 +159,9 @@ run: ntos.iso disk.img
 	    -drive if=pflash,format=raw,readonly=on,file=$(OVMF_CODE) \
 	    -drive if=pflash,format=raw,file=$(OVMF_VARS) \
 	    -cdrom ntos.iso \
+	    -device qemu-xhci,id=xhci \
+	    -device usb-kbd,bus=xhci.0 \
+	    -device usb-mouse,bus=xhci.0 \
 	    -device ich9-ahci,id=ahci_ctrl \
 	    -drive id=disk0,format=raw,file=$(DISK_WIN),if=none \
 	    -device ide-hd,drive=disk0,bus=ahci_ctrl.0 \

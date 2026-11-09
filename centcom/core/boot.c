@@ -4,7 +4,7 @@
 #include "../log/log.h"
 #include "../tty/fb.h"
 #include "../tty/bootscreen.h"
-#include "../gui/gui.h"      // <-- ИСПРАВЛЕНО
+#include "../gui/gui.h"
 #include "../tty/shell.h"
 #include "../mem/pmm.h"
 #include "../mem/vmm.h"
@@ -16,6 +16,7 @@
 #include "../driver/mouse.h"
 #include "../driver/sb16.h"
 #include "../driver/ahci.h"
+#include "../driver/usb.h"      // <-- ДОБАВЛЕНО: Заголовок USB
 #include "../driver/e1000.h"
 #include "../fs/ntmem_fs.h"
 #include "../ntsad/ntsad.h"
@@ -90,6 +91,10 @@ void centcom_boot(bootinfo_t *bi_unused) {
 
     /* --- Сеть --- */
     e1000_init();
+
+    /* --- USB --- */
+    logi(S_DRV, "Initializing USB subsystem...");
+    usb_init(); // <-- ВЫЗОВ ИНИЦИАЛИЗАЦИИ USB
 
     /* --- Файловая система --- */
     extern const uint8_t initrd_start[];
