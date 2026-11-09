@@ -22,14 +22,13 @@ CC_CFLAGS := -ffreestanding -fno-stack-protector -fno-stack-check \
              -mno-sse -mno-sse2 -mno-mmx -MMD -MP \
              -Wall -Wextra -O2 \
              -I centcom -I centcom/core -I centcom/log -I centcom/tty \
-             -I centcom/irq -I centcom/mem -I centcom/time \
+             -I centcom/gui -I centcom/irq -I centcom/mem -I centcom/time \
              -I centcom/driver -I centcom/elf -I centcom/fs \
              -I centcom/ntsad -I centcom/sound -I centcom/sched \
              -I centcom/store -I centcom/bus -I centcom/ipc -I .
 
 CC_LDFLAGS := -nostdlib -static -T centcom/centcom.ld -z max-page-size=0x1000
 
-# Список объектных файлов (каждый по одному разу)
 COBJS := $(BUILD)/multiboot.o \
          $(BUILD)/dualboot.o \
          $(BUILD)/boot.o \
@@ -114,6 +113,7 @@ $(BUILD)/isr_c.o: centcom/irq/isr.c                 ; @mkdir -p $(BUILD); $(CC) 
 $(BUILD)/%.o: centcom/core/%.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/log/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/tty/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/%.o: centcom/gui/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/irq/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/mem/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/time/%.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
@@ -141,7 +141,6 @@ disk.img:
 	@echo "Создаю пустой disk.img (16 MiB)..."
 	dd if=/dev/zero of=$@ bs=1M count=16 status=none
 
-# ---------- запуск ----------
 run: ntos.iso disk.img
 	@echo "Запускаю QEMU (UEFI)..."
 	@$(QEMU) -M q35 -m 512 -vga std \

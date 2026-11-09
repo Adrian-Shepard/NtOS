@@ -1,15 +1,15 @@
-build/gui.o: centcom/tty/gui.c centcom/tty/gui.h centcom/tty/apps.h \
+build/gui.o: centcom/gui/gui.c centcom/gui/gui.h centcom/gui/apps.h \
  centcom/tty/fb.h centcom/tty/../../bootinfo.h \
- centcom/tty/../driver/keyboard.h centcom/tty/../driver/mouse.h \
- centcom/tty/../driver/../irq/isr.h centcom/tty/../time/pit.h \
- centcom/tty/../mem/heap.h centcom/tty/../mem/pmm.h
-centcom/tty/gui.h:
-centcom/tty/apps.h:
+ centcom/gui/../driver/keyboard.h centcom/gui/../driver/mouse.h \
+ centcom/gui/../driver/../irq/isr.h centcom/gui/../time/pit.h \
+ centcom/gui/../mem/heap.h centcom/gui/../mem/pmm.h
+centcom/gui/gui.h:
+centcom/gui/apps.h:
 centcom/tty/fb.h:
 centcom/tty/../../bootinfo.h:
-centcom/tty/../driver/keyboard.h:
-centcom/tty/../driver/mouse.h:
-centcom/tty/../driver/../irq/isr.h:
-centcom/tty/../time/pit.h:
-centcom/tty/../mem/heap.h:
-centcom/tty/../mem/pmm.h:
+centcom/gui/../driver/keyboard.h:
+centcom/gui/../driver/mouse.h:
+centcom/gui/../driver/../irq/isr.h:
+centcom/gui/../time/pit.h:
+centcom/gui/../mem/heap.h:
+centcom/gui/../mem/pmm.h:

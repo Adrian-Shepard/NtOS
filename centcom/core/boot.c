@@ -4,7 +4,7 @@
 #include "../log/log.h"
 #include "../tty/fb.h"
 #include "../tty/bootscreen.h"
-#include "../tty/gui.h"
+#include "../gui/gui.h"      // <-- ИСПРАВЛЕНО
 #include "../tty/shell.h"
 #include "../mem/pmm.h"
 #include "../mem/vmm.h"
@@ -16,7 +16,7 @@
 #include "../driver/mouse.h"
 #include "../driver/sb16.h"
 #include "../driver/ahci.h"
-#include "../driver/e1000.h"      // <-- ДОБАВЛЕНО
+#include "../driver/e1000.h"
 #include "../fs/ntmem_fs.h"
 #include "../ntsad/ntsad.h"
 #include "../sound/speaker.h"
@@ -89,7 +89,7 @@ void centcom_boot(bootinfo_t *bi_unused) {
     bootscreen_phase4();
 
     /* --- Сеть --- */
-    e1000_init();             // <-- ДОБАВЛЕНО
+    e1000_init();
 
     /* --- Файловая система --- */
     extern const uint8_t initrd_start[];

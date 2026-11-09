@@ -1,7 +1,7 @@
 build/boot.o: centcom/core/boot.c centcom/core/../../bootinfo.h \
  centcom/core/../log/serial.h centcom/core/../log/log.h \
  centcom/core/../tty/fb.h centcom/core/../tty/bootscreen.h \
- centcom/core/../tty/gui.h centcom/core/../tty/shell.h \
+ centcom/core/../gui/gui.h centcom/core/../tty/shell.h \
  centcom/core/../mem/pmm.h centcom/core/../mem/vmm.h \
  centcom/core/../mem/heap.h centcom/core/../irq/pic.h \
  centcom/core/../irq/isr.h centcom/core/../time/pit.h \
@@ -17,7 +17,7 @@ centcom/core/../log/serial.h:
 centcom/core/../log/log.h:
 centcom/core/../tty/fb.h:
 centcom/core/../tty/bootscreen.h:
-centcom/core/../tty/gui.h:
+centcom/core/../gui/gui.h:
 centcom/core/../tty/shell.h:
 centcom/core/../mem/pmm.h:
 centcom/core/../mem/vmm.h:

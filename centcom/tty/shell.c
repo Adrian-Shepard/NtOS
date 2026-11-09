@@ -1,6 +1,6 @@
 #include "shell.h"
 #include "fb.h"
-#include "gui.h"           // <-- ДОБАВЛЕНО (вместо gui_demo)
+#include "../gui/gui.h"
 #include "../driver/keyboard.h"
 #include "../driver/sb16.h"
 #include "../driver/ahci.h"
