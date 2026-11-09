@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "gui.h"
 #include "apps.h"
 #include "fb.h"
@@ -67,15 +68,15 @@ static void put_str_gui(const char *s, uint32_t fg, uint32_t bg) { while (*s) fb
 
 // Отрисовка иконок на основе массива g_apps
 static void draw_desktop_icons(void) {
-    for (int i = 0; i < APP_COUNT; i++) {
+    for (size_t i = 0; i < APP_COUNT; i++) {              // FIX: int -> size_t
         int ix = 32;
-        int iy = 80 + i * 80;
-        
+        int iy = 80 + (int)i * 80;
+
         fb_fill_rect(ix, iy, 32, 32, GUI_WIN_BG);
         fb_draw_box(ix, iy, 32, 32, g_apps[i]->icon_color);
         fb_set_cursor(ix + 4, iy + 4);
         put_str_gui(g_apps[i]->icon_text, g_apps[i]->icon_color, GUI_WIN_BG);
-        
+
         fb_set_cursor(ix - 10, iy + 36);
         put_str_gui(g_apps[i]->name, GUI_TEXT, GUI_BG_DESKTOP);
     }
@@ -92,11 +93,11 @@ int wm_create_window(const char *title, int x, int y, int w, int h,
             g_windows[i].draw_content = draw;
             g_windows[i].on_click = click;
             g_windows[i].on_key = key;
-            
+
             window_t tmp = g_windows[i];
             for (int j = i; j < MAX_WINDOWS - 1; j++) g_windows[j] = g_windows[j + 1];
             g_windows[MAX_WINDOWS - 1] = tmp;
-            
+
             g_active_win_id = tmp.id;
             return tmp.id;
         }
@@ -112,15 +113,15 @@ static void draw_top_bar(void) {
     uint32_t w = fb_width();
     fb_fill_rect(0, 0, w, 24, GUI_BAR_BG);
     fb_fill_rect(0, 24, w, 2, GUI_BAR_ACCENT);
-    fb_fill_rect(0, 0, 120, 24, GUI_BAR_ACCENT); 
+    fb_fill_rect(0, 0, 120, 24, GUI_BAR_ACCENT);
     fb_set_cursor(16, 8);
     put_str_gui("NANOTRASEN", GUI_WHITE, GUI_BAR_ACCENT);
-    
+
     char time_str[80];
     int idx = 0;
     const char *prefix = "UPTIME: ";
     for (int i = 0; prefix[i]; i++) time_str[idx++] = prefix[i];
-    
+
     uint64_t total_sec = pit_ticks() / 100;
     uint64_t years   = total_sec / (365ULL * 24 * 3600);
     uint64_t days    = (total_sec / (24 * 3600)) % 365;
@@ -161,18 +162,18 @@ static void draw_windows(void) {
     for (int i = 0; i < MAX_WINDOWS; i++) {
         if (!g_windows[i].is_open) continue;
         window_t *win = &g_windows[i];
-        
+
         fb_fill_rect(win->x + 4, win->y + 4, win->w, win->h, 0x00000000);
         fb_fill_rect(win->x, win->y, win->w, win->h, GUI_WIN_BG);
-        
+
         uint32_t border = (win->id == g_active_win_id) ? GUI_WIN_BORDER : GUI_TEXT_MUTED;
         fb_draw_box(win->x, win->y, win->w, win->h, border);
-        
+
         uint32_t title_bg = (win->id == g_active_win_id) ? GUI_WIN_TITLE : GUI_TITLE_INACTIVE;
         fb_fill_rect(win->x + 1, win->y + 1, win->w - 2, TITLE_BAR_H - 4, title_bg);
         fb_set_cursor(win->x + 8, win->y + 8);
         put_str_gui(win->title, GUI_WHITE, title_bg);
-        
+
         fb_fill_rect(win->x + win->w - 20, win->y + 4, 16, 16, GUI_BTN_BG);
         fb_draw_box(win->x + win->w - 20, win->y + 4, 16, 16, GUI_WIN_BORDER);
         fb_set_cursor(win->x + win->w - 16, win->y + 8);
@@ -195,7 +196,7 @@ static void draw_cursor(int mx, int my) {
     for (int y = 0; y < 16; y++) for (int x = 0; x < 16; x++) {
         uint32_t *ptr = (uint32_t*)fb_get_real_ptr(mx + x, my + y);
         if (!ptr) continue;
-        saved_bg[y][x] = *ptr; 
+        saved_bg[y][x] = *ptr;
         if (cursor_bitmap[y][x] == 1) *ptr = 0x00000000;
         else if (cursor_bitmap[y][x] == 2) *ptr = 0x00FFFFFF;
     }
@@ -203,13 +204,13 @@ static void draw_cursor(int mx, int my) {
 }
 
 static void redraw_gui(int mx, int my) {
-    fb_clear(GUI_BG_DESKTOP);    
+    fb_clear(GUI_BG_DESKTOP);
     draw_top_bar();
     draw_desktop_icons();
     draw_windows();
-    fb_swap(); 
-    last_mx = -100; 
-    draw_cursor(mx, my); 
+    fb_swap();
+    last_mx = -100;
+    draw_cursor(mx, my);
 }
 
 int gui_start(void) {
@@ -217,9 +218,9 @@ int gui_start(void) {
     uint32_t *gui_buf = (uint32_t*)kmalloc(buf_size);
     if (gui_buf) fb_set_buffer(gui_buf);
 
-    g_gui_active = 1; 
+    g_gui_active = 1;
     for (int i = 0; i < MAX_WINDOWS; i++) g_windows[i].is_open = 0;
-    
+
     // Запускаем стартовое приложение (Терминал)
     if (app_terminal.init) app_terminal.init();
     wm_create_window(app_terminal.name, 200, 100, 500, 350, app_terminal.draw, app_terminal.click, app_terminal.key);
@@ -227,10 +228,10 @@ int gui_start(void) {
     redraw_gui(400, 300);
 
     int last_left = 0;
-    uint64_t last_sec = pit_ticks() / 100; // <-- ВОЗВРАЩАЕМ ТАЙМЕР
+    uint64_t last_sec = pit_ticks() / 100;
 
     while (!g_exit_to_shell && !g_shutdown) {
-        __asm__ volatile("sti"); 
+        __asm__ volatile("sti");
         int c = keyboard_getchar();
         if (c == 27) break;
 
@@ -257,9 +258,9 @@ int gui_start(void) {
         if (m.left && !last_left) {
             int icon_clicked = 0;
             // Проверяем клики по иконкам (динамически по массиву g_apps)
-            for (int i = 0; i < APP_COUNT; i++) {
+            for (size_t i = 0; i < APP_COUNT; i++) {      // FIX: int -> size_t
                 int ix = 32;
-                int iy = 80 + i * 80;
+                int iy = 80 + (int)i * 80;
                 if (m.x >= ix && m.x <= ix + 32 && m.y >= iy && m.y <= iy + 32) {
                     if (g_apps[i]->init) g_apps[i]->init();
                     wm_create_window(g_apps[i]->name, 200, 100, 500, 350, g_apps[i]->draw, g_apps[i]->click, g_apps[i]->key);
@@ -268,7 +269,7 @@ int gui_start(void) {
                     break;
                 }
             }
-            
+
             if (!icon_clicked) {
                 // Клик по окнам
                 for (int i = MAX_WINDOWS - 1; i >= 0; i--) {
@@ -301,11 +302,11 @@ int gui_start(void) {
         }
 
         if (!m.left && last_left) g_drag_idx = -1;
-        
+
         if (m.left && g_drag_idx >= 0) {
             window_t *win = &g_windows[g_drag_idx];
             int nx = m.x - g_drag_off_x, ny = m.y - g_drag_off_y;
-            if (nx < 0) nx = 0; 
+            if (nx < 0) nx = 0;
             if (ny < 24) ny = 24;
             if (nx + win->w > (int)fb_width()) nx = fb_width() - win->w;
             if (ny + win->h > (int)fb_height()) ny = fb_height() - win->h;
@@ -321,16 +322,16 @@ int gui_start(void) {
         }
 
         last_left = m.left;
-        __asm__ volatile("hlt"); 
+        __asm__ volatile("hlt");
     }
 
     __asm__ volatile("cli");
     restore_cursor_bg();
-    fb_set_buffer(0); 
+    fb_set_buffer(0);
     fb_clear(0x00101018);
     fb_set_cursor(0, 0);
     __asm__ volatile("sti");
-    
+
     g_gui_active = 0;
     if (gui_buf) kfree(gui_buf);
     return g_exit_to_shell;

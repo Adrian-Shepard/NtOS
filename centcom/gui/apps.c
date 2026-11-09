@@ -80,7 +80,10 @@ void app_term_write(const char *s, uint64_t len) {
     if (l > 0) { line[l] = 0; term_add_line_ex(line, TERM_TYPE_OUT); }
 }
 
-static void term_hexdump(uint64_t addr, const uint8_t *data, int len) {
+// FIX: функция зарезервирована под будущую команду 'hexdump' — помечаем unused,
+// чтобы не ловить -Wunused-function. Убрать атрибут, когда появится вызов.
+static void __attribute__((unused))
+term_hexdump(uint64_t addr, const uint8_t *data, int len) {
     char line[TERM_COLS];
     for (int i = 0; i < len; i += 8) {
         int p = 0;
@@ -135,7 +138,7 @@ static void term_execute(window_t *win) {
         term_add_line("  vfs_test        - test VFS via IPC");
         term_add_line_ex("--- MISC ---", TERM_TYPE_HEADER);
         term_add_line("  run <name>      - run ELF");
-    } 
+    }
     else if (gui_strcmp(arg, "mem") == 0) {
         char b[64]; copy_str(b, " total RAM: ", 64); int p = 12;
         uint64_t mb = (pmm_total_pages() * 4) / 1024;
@@ -171,7 +174,7 @@ static void app_term_draw(window_t *win) {
     int max_chars = (win->w - 16) / 8;
     int start_x = win->x + 8;
     int start_y = win->y + TITLE_BAR_H + 4;
-    
+
     fb_fill_rect(win->x + 1, win->y + TITLE_BAR_H, win->w - 2, win->h - TITLE_BAR_H - 1, 0x00000000);
     int max_visible_lines = (win->h - TITLE_BAR_H - 4 - 20) / 10;
     if (max_visible_lines < 1) max_visible_lines = 1;
@@ -189,7 +192,7 @@ static void app_term_draw(window_t *win) {
 
         while (*s) {
             if (chars >= max_chars || cx + 8 > win->x + win->w - 2) { cx = start_x; cy += 10; chars = 0; }
-            if (cy > win->y + win->h - 20) break; 
+            if (cy > win->y + win->h - 20) break;
             fb_set_cursor(cx, cy);
             uint32_t fg = line_fg;
             if (g_term_line_types[i] == TERM_TYPE_CMD) fg = (chars < 9) ? 0x0044FF88 : 0x00FFFFFF;
@@ -236,7 +239,7 @@ static void app_taskman_draw(window_t *win) {
     fb_fill_rect(win->x + 16, win->y + 56, win->w - 32, 1, 0x00808080);
     fb_set_cursor(win->x + 16, win->y + 72);
     put_str("PID  NAME", 0x00D0D0D0, 0x00141A20);
-    
+
     int y = win->y + 88;
     for (int i = 0; i < PROC_MAX && y < win->y + win->h - 20; i++) {
         process_t *p = process_get(i);

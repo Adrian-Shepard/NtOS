@@ -3,7 +3,7 @@
 #include "../log/log.h"
 #include "../log/serial.h"
 #include "../tty/fb.h"
-#include "../tty/gui.h"
+#include "../gui/gui.h"
 #include "../fs/ntmem_fs.h"
 #include "../fs/ntrfs.h"
 #include "../sched/sched.h"
