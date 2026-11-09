@@ -8,13 +8,13 @@ header_start:
     dd header_end - header_start ; Header length
     dd 0x100000000 - (0xE85250D6 + 0 + (header_end - header_start)) ; Checksum
 
-    ; Framebuffer tag (тип 5, запрос к загрузчику)
+    ; Framebuffer tag (тип 5, обязательный, 1280x800x32)
     align 8
     dw 5    ; Tag type: 5 = Framebuffer request
-    dw 1    ; Flags: 1 = Optional
+    dw 0    ; Flags: 0 = Required (обязательный)
     dd 20   ; Size
-    dd 1024 ; Width
-    dd 768  ; Height
+    dd 1280 ; Width
+    dd 800  ; Height
     dd 32   ; Depth (bpp)
 
     ; End tag

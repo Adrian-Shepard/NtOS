@@ -31,10 +31,10 @@ void dualboot_main(uint32_t mb_info, uint32_t magic) {
     bi->magic = BOOTINFO_MAGIC;
     
     // Дефолтные значения (на случай, если GRUB не передаст тег)
-    bi->fb_addr = 0x80000000; // Стандартный адрес VGA в QEMU
-    bi->fb_width = 1024;
-    bi->fb_height = 768;
-    bi->fb_pitch = 1024 * 4;
+    bi->fb_addr = 0x80000000;
+    bi->fb_width = 1280;
+    bi->fb_height = 800;
+    bi->fb_pitch = 1280 * 4;
     bi->fb_bpp = 32;
 
     mb2_tag_t *tag = (mb2_tag_t*)(uintptr_t)(mb_info + 8);

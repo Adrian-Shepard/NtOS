@@ -7,6 +7,7 @@ OBJCOPY := objcopy
 QEMU       := /mnt/x/OSdevTools/qemu/qemu-system-x86_64.exe
 OVMF_CODE  := X:/OSdevTools/qemu/share/edk2-x86_64-code.fd
 OVMF_VARS  := X:/OSdevTools/qemu/share/edk2-x86_64-vars.fd
+IMG_WIN    := X:/NtOS/NtOS/ntos.img
 DISK_WIN   := X:/NtOS/NtOS/disk.img
 SERIAL_WIN := X:/NtOS/NtOS/serial.log
 
@@ -28,6 +29,7 @@ CC_CFLAGS := -ffreestanding -fno-stack-protector -fno-stack-check \
 
 CC_LDFLAGS := -nostdlib -static -T centcom/centcom.ld -z max-page-size=0x1000
 
+# Список объектных файлов (каждый по одному разу)
 COBJS := $(BUILD)/multiboot.o \
          $(BUILD)/dualboot.o \
          $(BUILD)/boot.o \
@@ -37,6 +39,7 @@ COBJS := $(BUILD)/multiboot.o \
          $(BUILD)/fb.o \
          $(BUILD)/bootscreen.o \
          $(BUILD)/gui.o \
+         $(BUILD)/apps.o \
          $(BUILD)/shell.o \
          $(BUILD)/gdt.o \
          $(BUILD)/idt.o \
@@ -101,16 +104,13 @@ $(BUILD)/dualboot.o: boot/dualboot.c
 	$(CC) $(BOOT_CFLAGS) -c $< -o $@
 
 # ---------- centcom (ELF ядро) ----------
-# Явные правила для .asm файлов
 $(BUILD)/isr_asm.o: centcom/irq/isr.asm             ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
 $(BUILD)/syscall_asm.o: centcom/core/syscall.asm    ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
 $(BUILD)/usermode_asm.o: centcom/core/usermode.asm  ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
 $(BUILD)/context.o: centcom/sched/context.asm       ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
 $(BUILD)/flush.o: centcom/core/flush.asm            ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
-# ЯВНОЕ ПРАВИЛО ДЛЯ isr_c.o (исправляет ошибку "No rule to make target")
 $(BUILD)/isr_c.o: centcom/irq/isr.c                 ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 
-# Шаблонные правила для C-файлов
 $(BUILD)/%.o: centcom/core/%.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/log/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/tty/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
@@ -161,7 +161,7 @@ run: ntos.iso disk.img
 
 run-legacy: ntos.iso disk.img
 	@echo "Запускаю QEMU (Legacy BIOS)..."
-	@$(QEMU) -M pc -m 512 \
+	@$(QEMU) -M pc -m 512 -vga std \
 	    -audiodev sdl,id=snd0 \
 	    -machine pcspk-audiodev=snd0 \
 	    -device sb16,audiodev=snd0 \
