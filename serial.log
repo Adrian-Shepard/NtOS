@@ -8,16 +8,16 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [4] copying kernel...
 [5] filling bootinfo at fixed addr...
 [6] preparing memory map...
-[7] final GetMemoryMap + ExitBootServices...
+[7] final ExitBootServices...
 [DRV] PC speaker ready
-[CPU] GDT loaded: 7 entries, TSS at 0x000000000409ef60
+[CPU] GDT loaded: 7 entries, TSS at 0x00000000040a6860
 [CPU] IDT loaded: 256 vectors (int3 DPL=3)
 [PMM] total RAM: 510 MB
-[PMM] free pages: 115466 (451 MB)
+[PMM] free pages: 115679 (451 MB)
 [VMM] old CR3 = 0x000000001f801000
 [VMM] new CR3 = 0x0000000000400000
 [HEP] heap ready: 0x0000000005000000..0x0000000006000000 (16 MB) [free-list]
-[DRV] AHCI PCI: vendor=0x0000000000008086 dev=0x0000000000002922 bar5=0x0000000081061000
+[DRV] AHCI PCI: vendor=0x0000000000008086 dev=0x0000000000002922 bar5=0x0000000081031000
 [DRV] AHCI CAP=0x0000000000000000 GHC=0x0000000080000000
 [DRV] AHCI GHC after enable=0x0000000080000000
 [DRV] AHCI Ports Implemented (PI) = 0x000000000000003f
@@ -35,24 +35,27 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [LOG] NTSAD bus online (queue=128, subs=16)
 [SYC] IPC subsystem initialized (32 ports)
 [DRV] cue subsystem ready
-[DRV] e1000 found, MMIO at 0x0000000081040000
+[DRV] e1000 found, MMIO at 0x0000000081000000
 [DRV] e1000 MAC: 0x0000000000000052:0x0000000000000054:0x0000000000000000:0x0000000000000012
 [DRV] e1000 initialized
-[NTM] tar: 15 files parsed
-[NTM] ntmem_fs: 15 files mounted
+[NTM] tar: 18 files parsed
+[NTM] ntmem_fs: 18 files mounted
 [NTM]   audio_server.elf (12840 bytes)
 [NTM]   audio_test.elf (10096 bytes)
 [NTM]   cat.elf (10008 bytes)
+[NTM]   dhcp_test.elf (10808 bytes)
 [NTM]   echo.elf (9840 bytes)
 [NTM]   hello.elf (10120 bytes)
 [NTM]   ls.elf (9856 bytes)
 [NTM]   midi2ntsad.elf (15056 bytes)
 [NTM]   midiplay.elf (14664 bytes)
 [NTM]   net_test.elf (10272 bytes)
+[NTM]   ping.elf (10832 bytes)
 [NTM]   sh.elf (10592 bytes)
 [NTM]   sleep.elf (9888 bytes)
 [NTM]   synth.elf (18704 bytes)
 [NTM]   test.mid (1485 bytes)
+[NTM]   udp_test.elf (10832 bytes)
 [NTM]   vfs_server.elf (10528 bytes)
 [NTM]   vfs_test.elf (10496 bytes)
 [SYC] syscall enabled: STAR=0x0010000800000000 LSTAR=0x000000000400dd10
@@ -61,12 +64,12 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [BOO] CENTCOM core online
 [BOO] NtOS v0.15.2 boot sequence complete
 [VMM] framebuffer = 1280x800 @ 0x0000000080000000
-[PMM] RAM: 510 MiB total, 434 MiB free
-[HEP] heap: 165000/16777216 bytes used
+[PMM] RAM: 510 MiB total, 435 MiB free
+[HEP] heap: 197584/16777216 bytes used
 [TMR] PIT configured at 100 Hz
 [KBD] PS/2 keyboard ready
 [KBD] PS/2 mouse ready
-[NTM] ntmem_fs: 15 file(s)
+[NTM] ntmem_fs: 18 file(s)
 [SCH] scheduler: 1 threads
 [DRV] SB16 detected (IRQ5 enabled)
 [SYC] IPC subsystem online
@@ -124,9 +127,6 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [tick] 5000
 [tick] 5100
 [tick] 5200
-[ELF] ELF64 entry=0x0000010000000000 phdrs=2
-[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=4284 memsz=4284
-[SCH] user process: pid=1 name=net_test.elf entry=0x0000010000000000 cr3=0x000000000044c000
 [tick] 5300
 [tick] 5400
 [tick] 5500
@@ -134,3 +134,329 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [tick] 5700
 [tick] 5800
 [tick] 5900
+[tick] 6000
+[tick] 6100
+[tick] 6200
+[tick] 6300
+[tick] 6400
+[tick] 6500
+[tick] 6600
+[tick] 6700
+[tick] 6800
+[tick] 6900
+[tick] 7000
+[tick] 7100
+[tick] 7200
+[tick] 7300
+[tick] 7400
+[tick] 7500
+[tick] 7600
+[tick] 7700
+[tick] 7800
+[tick] 7900
+[tick] 8000
+[tick] 8100
+[tick] 8200
+[tick] 8300
+[tick] 8400
+[tick] 8500
+[tick] 8600
+[tick] 8700
+[tick] 8800
+[tick] 8900
+[tick] 9000
+[tick] 9100
+[tick] 9200
+[tick] 9300
+[tick] 9400
+[tick] 9500
+[tick] 9600
+[tick] 9700
+[tick] 9800
+[tick] 9900
+[tick] 10000
+[tick] 10100
+[tick] 10200
+[tick] 10300
+[tick] 10400
+[tick] 10500
+[tick] 10600
+[tick] 10700
+[tick] 10800
+[tick] 10900
+[tick] 11000
+[tick] 11100
+[tick] 11200
+[tick] 11300
+[tick] 11400
+[tick] 11500
+[tick] 11600
+[tick] 11700
+[tick] 11800
+[tick] 11900
+[tick] 12000
+[tick] 12100
+[tick] 12200
+[tick] 12300
+[tick] 12400
+[tick] 12500
+[tick] 12600
+[tick] 12700
+[tick] 12800
+[tick] 12900
+[tick] 13000
+[tick] 13100
+[tick] 13200
+[tick] 13300
+[tick] 13400
+[tick] 13500
+[tick] 13600
+[tick] 13700
+[tick] 13800
+[tick] 13900
+[tick] 14000
+[tick] 14100
+[tick] 14200
+[tick] 14300
+[tick] 14400
+[tick] 14500
+[tick] 14600
+[tick] 14700
+[tick] 14800
+[tick] 14900
+[tick] 15000
+[tick] 15100
+[tick] 15200
+[tick] 15300
+[tick] 15400
+[tick] 15500
+[tick] 15600
+[tick] 15700
+[tick] 15800
+[tick] 15900
+[tick] 16000
+[tick] 16100
+[tick] 16200
+[tick] 16300
+[tick] 16400
+[tick] 16500
+[tick] 16600
+[tick] 16700
+[tick] 16800
+[tick] 16900
+[tick] 17000
+[tick] 17100
+[tick] 17200
+[tick] 17300
+[tick] 17400
+[tick] 17500
+[tick] 17600
+[tick] 17700
+[tick] 17800
+[tick] 17900
+[tick] 18000
+[tick] 18100
+[tick] 18200
+[tick] 18300
+[tick] 18400
+[tick] 18500
+[tick] 18600
+[tick] 18700
+[tick] 18800
+[tick] 18900
+[tick] 19000
+[tick] 19100
+[tick] 19200
+[tick] 19300
+[tick] 19400
+[tick] 19500
+[tick] 19600
+[tick] 19700
+[tick] 19800
+[tick] 19900
+[tick] 20000
+[tick] 20100
+[tick] 20200
+[tick] 20300
+[tick] 20400
+[tick] 20500
+[tick] 20600
+[tick] 20700
+[tick] 20800
+[tick] 20900
+[tick] 21000
+[tick] 21100
+[tick] 21200
+[tick] 21300
+[tick] 21400
+[tick] 21500
+[tick] 21600
+[tick] 21700
+[tick] 21800
+[tick] 21900
+[tick] 22000
+[tick] 22100
+[tick] 22200
+[tick] 22300
+[tick] 22400
+[tick] 22500
+[tick] 22600
+[tick] 22700
+[tick] 22800
+[tick] 22900
+[tick] 23000
+[tick] 23100
+[tick] 23200
+[tick] 23300
+[tick] 23400
+[tick] 23500
+[tick] 23600
+[tick] 23700
+[tick] 23800
+[tick] 23900
+[tick] 24000
+[tick] 24100
+[tick] 24200
+[tick] 24300
+[tick] 24400
+[tick] 24500
+[tick] 24600
+[tick] 24700
+[tick] 24800
+[tick] 24900
+[tick] 25000
+[tick] 25100
+[tick] 25200
+[tick] 25300
+[tick] 25400
+[tick] 25500
+[tick] 25600
+[tick] 25700
+[tick] 25800
+[tick] 25900
+[tick] 26000
+[tick] 26100
+[tick] 26200
+[tick] 26300
+[tick] 26400
+[tick] 26500
+[tick] 26600
+[tick] 26700
+[tick] 26800
+[tick] 26900
+[tick] 27000
+[tick] 27100
+[tick] 27200
+[tick] 27300
+[tick] 27400
+[tick] 27500
+[tick] 27600
+[tick] 27700
+[tick] 27800
+[tick] 27900
+[tick] 28000
+[tick] 28100
+[tick] 28200
+[tick] 28300
+[tick] 28400
+[tick] 28500
+[tick] 28600
+[tick] 28700
+[tick] 28800
+[tick] 28900
+[tick] 29000
+[tick] 29100
+[tick] 29200
+[tick] 29300
+[tick] 29400
+[tick] 29500
+[tick] 29600
+[tick] 29700
+[tick] 29800
+[tick] 29900
+[tick] 30000
+[tick] 30100
+[tick] 30200
+[tick] 30300
+[tick] 30400
+[tick] 30500
+[tick] 30600
+[tick] 30700
+[tick] 30800
+[tick] 30900
+[tick] 31000
+[tick] 31100
+[tick] 31200
+[tick] 31300
+[tick] 31400
+[tick] 31500
+[tick] 31600
+[tick] 31700
+[tick] 31800
+[tick] 31900
+[tick] 32000
+[tick] 32100
+[tick] 32200
+[tick] 32300
+[tick] 32400
+[tick] 32500
+[tick] 32600
+[tick] 32700
+[tick] 32800
+[tick] 32900
+[tick] 33000
+[tick] 33100
+[tick] 33200
+[tick] 33300
+[tick] 33400
+[tick] 33500
+[tick] 33600
+[tick] 33700
+[tick] 33800
+[tick] 33900
+[tick] 34000
+[tick] 34100
+[tick] 34200
+[tick] 34300
+[tick] 34400
+[tick] 34500
+[tick] 34600
+[tick] 34700
+[tick] 34800
+[tick] 34900
+[tick] 35000
+[tick] 35100
+[tick] 35200
+[tick] 35300
+[tick] 35400
+[tick] 35500
+[tick] 35600
+[tick] 35700
+[tick] 35800
+[tick] 35900
+[tick] 36000
+[tick] 36100
+[tick] 36200
+[tick] 36300
+[tick] 36400
+[tick] 36500
+[tick] 36600
+[tick] 36700
+[tick] 36800
+[tick] 36900
+[tick] 37000
+[tick] 37100
+[tick] 37200
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=4736 memsz=4736
+[SCH] user process: pid=1 name=dhcp_test.elf entry=0x0000010000000000 cr3=0x000000000044c000
+[tick] 37300
+[tick] 37400
+[tick] 37500
+[tick] 37600
+[tick] 37700
+[tick] 37800
+[tick] 37900
+[tick] 38000
+[tick] 38100
+[tick] 38200

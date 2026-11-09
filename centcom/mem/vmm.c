@@ -71,11 +71,20 @@ uint64_t vmm_alloc_pml4(void) {
     if (!p) return 0;
     uint64_t *npml4 = phys_to_virt(p);
     for (int i = 0; i < 512; i++) npml4[i] = 0;
-    npml4[0] = g_pml4[0]; // Share kernel space
+    npml4[0] = g_pml4[0];
     return p;
 }
 
 void vmm_map(uint64_t virt, uint64_t phys, uint64_t flags) {
+    // ФИКС #7: Проверка выравнивания virt по странице
+    if (virt & 0xFFF) {
+        logw(S_VMM, "vmm_map: unaligned virt %x", virt);
+        virt &= ~0xFFFULL;
+    }
+    if (phys & 0xFFF) {
+        phys &= ~0xFFFULL;
+    }
+
     uint64_t pml4_i = (virt >> 39) & 0x1FF;
     uint64_t pdpt_i = (virt >> 30) & 0x1FF;
     uint64_t pd_i   = (virt >> 21) & 0x1FF;

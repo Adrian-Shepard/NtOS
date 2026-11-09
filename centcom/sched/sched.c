@@ -117,7 +117,7 @@ process_t *process_create_kernel(void (*entry)(void), const char *name) {
 
 static uint64_t build_user_stack(uint64_t stack_phys_top, int argc, const char **argv) {
     uint8_t *base = (uint8_t*)stack_phys_top;
-    uint64_t offset = 0x1000; // Начинаем с вершины страницы
+    uint64_t offset = 0x1000;
     uint64_t argv_ptrs[16];
 
     if (argc > 16) argc = 16;
@@ -125,10 +125,12 @@ static uint64_t build_user_stack(uint64_t stack_phys_top, int argc, const char *
 
     for (int i = argc - 1; i >= 0; i--) {
         const char *s = argv[i];
+        if (!s) s = ""; // ФИКС #3: Защита от NULL
+
         uint64_t len = 0;
         while (s[len]) len++;
         offset -= (len + 1);
-        if (offset < 64) return 0; // Защита от переполнения стека
+        if (offset < 64) return 0;
         uint64_t vaddr = USER_STACK_VADDR - 0x1000 + offset;
         for (uint64_t j = 0; j <= len; j++) base[offset + j] = s[j];
         argv_ptrs[i] = vaddr;
@@ -165,23 +167,35 @@ process_t *process_create_user(const uint8_t *elf, uint64_t elf_size,
     uint64_t entry = elf_load(elf, elf_size);
     if (!entry) { vmm_switch(old_cr3); pmm_free(new_cr3); return 0; }
 
-    uint64_t top_stack_phys = 0;
+    uint64_t user_stack_phys = 0;
+    uint64_t alloced[STACK_PAGES]; // ФИКС #4: Массив для отслеживания
+
     for (int i = 0; i < STACK_PAGES; i++) {
         uint64_t phys = pmm_alloc();
         if (!phys) {
-            // TODO: Освободить предыдущие страницы
+            // ФИКС #4: Освобождаем уже выделенные страницы
+            for (int j = 0; j < i; j++) {
+                vmm_unmap(USER_STACK_VADDR - (j + 1) * 0x1000);
+                pmm_free(alloced[j]);
+            }
             vmm_switch(old_cr3); 
             pmm_free(new_cr3);
             return 0;
         }
+        alloced[i] = phys;
         vmm_map(USER_STACK_VADDR - (i + 1) * 0x1000, phys, PTE_PRESENT | PTE_WRITE | PTE_USER);
-        if (i == 0) top_stack_phys = phys;
+        if (i == 0) user_stack_phys = phys;
     }
 
-    uint64_t user_rsp = build_user_stack(top_stack_phys, argc, argv);
+    uint64_t user_rsp = build_user_stack(user_stack_phys, argc, argv);
     if (!user_rsp) {
+        // ФИКС #4: Освобождаем всё, если стек не собрался
+        for (int i = 0; i < STACK_PAGES; i++) {
+            vmm_unmap(USER_STACK_VADDR - (i + 1) * 0x1000);
+            pmm_free(alloced[i]);
+        }
         vmm_switch(old_cr3);
-        // TODO: Освободить все страницы
+        pmm_free(new_cr3);
         return 0;
     }
 
@@ -189,7 +203,8 @@ process_t *process_create_user(const uint8_t *elf, uint64_t elf_size,
 
     uint64_t kstack_phys = pmm_alloc();
     if (!kstack_phys) {
-        // TODO: Освободить страницы
+        // ФИКС #4: Освобождаем всё
+        vmm_free_address_space(new_cr3);
         return 0;
     }
 
@@ -215,7 +230,7 @@ process_t *process_create_user(const uint8_t *elf, uint64_t elf_size,
     p->cr3              = new_cr3;
     p->kernel_stack_top = kstack_phys + 0x1000;
     p->user_entry       = entry;
-    p->stack_phys       = top_stack_phys;
+    p->stack_phys       = user_stack_phys;
     p->stack_size       = STACK_PAGES * 0x1000;
     p->wake_tick        = 0;
     p->exit_code        = 0;

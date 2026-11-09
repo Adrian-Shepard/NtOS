@@ -294,12 +294,19 @@ static void term_execute(window_t *win) {
     else if (gui_strcmp(arg, "fs") == 0) {
         int n = ntmem_fs_count();
         char b[64]; copy_str(b, " ntmem_fs: ", 64); int p = 11;
-        b[p++] = '0' + (n/10)%10; b[p++] = '0' + (n/1)%10; b[p]=0; term_add_line(b);
-        for(int i=0; i<n && i<5; i++) {
+        b[p++] = '0' + (n/10)%10; b[p++] = '0' + (n/1)%10; b[p]=0; 
+        term_add_line(b);
+        
+        // Выводим ВСЕ файлы
+        for(int i=0; i<n; i++) {
             ntmem_file_t *f = ntmem_fs_get(i);
-            if (f) { char fb[64]; copy_str(fb, "  ", 64); copy_str(fb+2, f->name, 62); term_add_line(fb); }
+            if (f) { 
+                char fb[64]; 
+                copy_str(fb, "  ", 64); 
+                copy_str(fb+2, f->name, 62); 
+                term_add_line(fb); 
+            }
         }
-        if (n > 5) term_add_line("  ...");
     }
     else if (gui_strncmp(arg, "cat ", 4) == 0) {
         int idx = 0; char *p = arg + 4; while(*p >= '0' && *p <= '9') { idx = idx*10 + (*p - '0'); p++; }

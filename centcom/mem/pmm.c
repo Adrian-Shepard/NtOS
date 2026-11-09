@@ -1,14 +1,12 @@
 #include "pmm.h"
 #include "../log/log.h"
 
-#define MAX_PAGES   1048576                 /* 4 GB / 4 KB */
-#define BITMAP_LEN  (MAX_PAGES / 8)         /* 128 KB */
+#define MAX_PAGES   1048576
+#define BITMAP_LEN  (MAX_PAGES / 8)
 
 static uint8_t  g_bitmap[BITMAP_LEN];
 static uint64_t g_total_pages = 0;
 static uint64_t g_free_pages  = 0;
-
-/* Оптимизация: hint для быстрого поиска свободной страницы */
 static uint64_t g_last_alloc_hint = 0;
 
 static inline void bit_set(uint64_t i)   { g_bitmap[i >> 3] |=  (1 << (i & 7)); }
@@ -27,7 +25,8 @@ static void mark_used(uint64_t base, uint64_t size) {
 
 static void mark_free(uint64_t base, uint64_t size) {
     uint64_t start = base / PAGE_SIZE;
-    uint64_t count = size / PAGE_SIZE;
+    // ФИКС #8: Округляем вверх, чтобы освободить последнюю страницу
+    uint64_t count = (size + PAGE_SIZE - 1) / PAGE_SIZE;
     for (uint64_t i = 0; i < count; i++) {
         uint64_t p = start + i;
         if (p >= MAX_PAGES) break;
@@ -45,9 +44,7 @@ void pmm_init(bootinfo_t *bi) {
     uint64_t n = bi->mmap_size / bi->mmap_desc_size;
 
     for (uint64_t i = 0; i < n; i++) {
-        EFI_MEMORY_DESCRIPTOR *e =
-            (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)d + i * bi->mmap_desc_size);
-
+        EFI_MEMORY_DESCRIPTOR *e = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)d + i * bi->mmap_desc_size);
         if (e->Type == 7) {
             mark_free(e->PhysicalStart, e->NumberOfPages * PAGE_SIZE);
             uint64_t pages = e->NumberOfPages;
@@ -56,16 +53,14 @@ void pmm_init(bootinfo_t *bi) {
         }
     }
 
-    mark_used(0, 0x400000);            /* первые 4 МБ — firmware */
-    mark_used(0x4000000, 0x500000);    /* ядро + bootinfo */
+    mark_used(0, 0x400000);
+    mark_used(0x4000000, 0x500000);
 
     logi(S_PMM, "total RAM: %d MB", (g_total_pages * PAGE_SIZE) / (1024 * 1024));
-    logi(S_PMM, "free pages: %d (%d MB)",
-         g_free_pages, (g_free_pages * PAGE_SIZE) / (1024 * 1024));
+    logi(S_PMM, "free pages: %d (%d MB)", g_free_pages, (g_free_pages * PAGE_SIZE) / (1024 * 1024));
 }
 
 uint64_t pmm_alloc(void) {
-    /* 1. Поиск с hint до конца */
     for (uint64_t i = g_last_alloc_hint; i < MAX_PAGES; i++) {
         if (!bit_test(i)) {
             bit_set(i);
@@ -74,7 +69,6 @@ uint64_t pmm_alloc(void) {
             return i * PAGE_SIZE;
         }
     }
-    /* 2. Если дошли до конца — с начала до hint */
     for (uint64_t i = 0; i < g_last_alloc_hint && i < MAX_PAGES; i++) {
         if (!bit_test(i)) {
             bit_set(i);
@@ -92,14 +86,10 @@ void pmm_free(uint64_t phys) {
     if (bit_test(p)) {
         bit_clear(p);
         g_free_pages++;
-        /* Если освободили страницу ДО hint — обновим его для быстрого возврата */
         if (p < g_last_alloc_hint) g_last_alloc_hint = p;
     }
 }
 
-void pmm_reserve(uint64_t base, uint64_t size) {
-    mark_used(base, size);
-}
-
+void pmm_reserve(uint64_t base, uint64_t size) { mark_used(base, size); }
 uint64_t pmm_total_pages(void) { return g_total_pages; }
 uint64_t pmm_free_pages(void)  { return g_free_pages; }

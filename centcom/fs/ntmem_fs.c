@@ -17,7 +17,6 @@ static void copy_name(char *dst, const char *src) {
     dst[i] = 0;
 }
 
-/* callback из tar_parse */
 static void on_file(const char *name, const uint8_t *data, uint64_t size) {
     if (g_count >= NTMEM_MAX_FILES) {
         logw(S_NTM, "too many files, skipping %s", name);
@@ -26,11 +25,10 @@ static void on_file(const char *name, const uint8_t *data, uint64_t size) {
     ntmem_file_t *f = &g_files[g_count];
     copy_name(f->name, name);
 
-    /* Копируем данные в кучу, чтобы не зависеть от tar_data */
     uint8_t *copy = (uint8_t*)kmalloc(size + 1);
     if (!copy) {
         logw(S_NTM, "kmalloc failed for %s (%d bytes)", name, size);
-        return;
+        return; // ФИКС #5: Пропускаем файл
     }
     for (uint64_t i = 0; i < size; i++) copy[i] = data[i];
     copy[size] = 0;
@@ -41,7 +39,14 @@ static void on_file(const char *name, const uint8_t *data, uint64_t size) {
 }
 
 void ntmem_fs_init(const uint8_t *tar_data, uint64_t tar_size) {
+    // ФИКС #5: Освобождаем старые файлы при повторной инициализации
+    for (int i = 0; i < g_count; i++) {
+        if (g_files[i].data) {
+            kfree((void*)g_files[i].data);
+        }
+    }
     g_count = 0;
+    
     for (int i = 0; i < NTMEM_MAX_FILES; i++) {
         g_files[i].name[0] = 0;
         g_files[i].data = 0;

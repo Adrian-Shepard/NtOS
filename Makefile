@@ -65,7 +65,7 @@ COBJS := $(BUILD)/entry.o \
          $(BUILD)/sb16.o \
          $(BUILD)/pci.o \
          $(BUILD)/ahci.o \
-		 $(BUILD)/e1000.o \
+         $(BUILD)/e1000.o \
          $(BUILD)/kv.o \
          $(BUILD)/sched.o \
          $(BUILD)/context.o \
@@ -102,13 +102,16 @@ $(BUILD)/entry.o: centcom/core/entry.asm
 	@mkdir -p $(BUILD)
 	$(NASM) -f elf64 $< -o $@
 
-# Явные правила для файлов, имена которых не совпадают с исходниками
-$(BUILD)/isr_c.o: centcom/irq/isr.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/isr_asm.o: centcom/irq/isr.asm     ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
-$(BUILD)/syscall_asm.o: centcom/core/syscall.asm ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
-$(BUILD)/usermode_asm.o: centcom/core/usermode.asm ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
+# Явные правила для всех .asm файлов
+$(BUILD)/isr_asm.o: centcom/irq/isr.asm             ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
+$(BUILD)/syscall_asm.o: centcom/core/syscall.asm    ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
+$(BUILD)/usermode_asm.o: centcom/core/usermode.asm  ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
+$(BUILD)/context.o: centcom/sched/context.asm       ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
 
-# Шаблонные правила для всех остальных .c и .asm
+# ЯВНОЕ ПРАВИЛО ДЛЯ isr_c.o
+$(BUILD)/isr_c.o: centcom/irq/isr.c                 ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+
+# Шаблонные правила для C-файлов
 $(BUILD)/%.o: centcom/core/%.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/log/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/tty/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
@@ -121,7 +124,6 @@ $(BUILD)/%.o: centcom/fs/%.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -
 $(BUILD)/%.o: centcom/ntsad/%.c       ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/sound/%.c       ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/sched/%.c       ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/%.o: centcom/sched/%.asm     ; @mkdir -p $(BUILD); $(NASM) -f elf64 $< -o $@
 $(BUILD)/%.o: centcom/store/%.c       ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/bus/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/ipc/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
@@ -154,7 +156,7 @@ run: ntos.img disk.img
 	    -machine pcspk-audiodev=snd0 \
 	    -device sb16,audiodev=snd0 \
 	    -netdev user,id=net0 \
-	    -device e1000,netdev=net0 \
+	    -device e1000,netdev=net0,romfile= \
 	    -drive if=pflash,format=raw,readonly=on,file=$(OVMF_CODE) \
 	    -drive if=pflash,format=raw,file=$(OVMF_VARS) \
 	    -drive format=raw,file=$(IMG_WIN) \
