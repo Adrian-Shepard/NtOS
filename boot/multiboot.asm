@@ -117,5 +117,5 @@ gdt64:
 section .bss
 align 16
 stack_bottom:
-    resb 32768
+    resb 262144
 stack_top:

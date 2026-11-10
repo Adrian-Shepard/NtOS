@@ -10,7 +10,7 @@
 #include "../mem/pmm.h"
 #include "../fs/ntmem_fs.h"
 #include "../sched/sched.h"
-#include "../log/log.h"          /* NEW: log_set_fb_output */
+#include "../log/log.h"
 
 #define GUI_BG_DESKTOP 0x000A0A0C
 #define GUI_BAR_BG     0x00141A20
@@ -37,6 +37,7 @@ static int g_drag_off_x = 0, g_drag_off_y = 0;
 static int g_active_win_id = -1;
 static int g_exit_to_shell = 0;
 static int g_shutdown = 0;
+static uint32_t *g_gui_buf = 0;
 
 static process_t *g_gui_children[MAX_WINDOWS] = {0};
 
@@ -102,6 +103,9 @@ static void launch_shortcut(int index) {
             wm_create_window(app_taskman.name, 200, 100, 600, 400, app_taskman.draw, app_taskman.click, app_taskman.key);
         } else if (gui_strcmp(sys_app, "editor") == 0) {
             wm_create_window(app_editor.name, 200, 100, 500, 350, app_editor.draw, app_editor.click, app_editor.key);
+        } else if (gui_strcmp(sys_app, "doom") == 0) {
+            extern void doom_main(void);
+            doom_main(); // Запуск DOOM. При выходе (ESC) управление вернётся сюда.
         }
     } else {
         ntmem_file_t *f = ntmem_fs_find(path);
@@ -112,8 +116,6 @@ static void launch_shortcut(int index) {
                 for (int i = 0; i < MAX_WINDOWS; i++)
                     if (g_gui_children[i] == 0) { slot = i; break; }
                 if (slot >= 0) g_gui_children[slot] = p;
-                /* else: слотов нет — процесс не отслеживается.
-                 * Рекомендуется добавить лимит на количество окон. */
             }
         }
     }
@@ -252,8 +254,8 @@ static void redraw_gui(int mx, int my) {
 int gui_start(void) {
     /* Освобождаемый буфер */
     uint32_t buf_size = fb_width() * fb_height() * 4;
-    uint32_t *gui_buf = (uint32_t *)kmalloc(buf_size);
-    if (gui_buf) fb_set_buffer(gui_buf);
+    g_gui_buf = (uint32_t *)kmalloc(buf_size);
+    if (g_gui_buf) fb_set_buffer(g_gui_buf);
 
     /* <<< Подавляем вывод отладки в framebuffer, чтобы не засорять UI */
     log_set_fb_output(0);
@@ -392,7 +394,6 @@ cleanup:
     __asm__ volatile("cli");
     restore_cursor_bg();
 
-    /* <<< Почистим зомби-детей; живые просто отвязываем (пусть живут) */
     for (int i = 0; i < MAX_WINDOWS; i++) {
         if (g_gui_children[i] && g_gui_children[i]->state == PROC_ZOMBIE)
             process_reap(g_gui_children[i]);
@@ -407,6 +408,6 @@ cleanup:
     __asm__ volatile("sti");
 
     g_gui_active = 0;
-    if (gui_buf) kfree(gui_buf);   /* гарантированное освобождение */
+    if (g_gui_buf) { kfree(g_gui_buf); g_gui_buf = 0; }   /* гарантированное освобождение */
     return g_exit_to_shell;
 }

@@ -8,6 +8,24 @@ static volatile char     g_buf[KBD_BUF_SIZE];
 static volatile uint32_t g_head = 0;
 static volatile uint32_t g_tail = 0;
 
+// ===== DOOM: очередь «сырых» скан-кодов =====
+#define KD_Q 256
+static volatile uint8_t kd_q[KD_Q];
+static volatile int kd_h = 0, kd_t = 0;
+
+void keyboard_push_scancode(uint8_t sc) {
+    int nt = (kd_t + 1) % KD_Q;
+    if (nt != kd_h) { kd_q[kd_t] = sc; kd_t = nt; }
+}
+
+int keyboard_pop_scancode(void) {
+    if (kd_h == kd_t) return -1;
+    uint8_t v = kd_q[kd_h];
+    kd_h = (kd_h + 1) % KD_Q;
+    return v;
+}
+// ===========================================
+
 static const char kbd_map[128] = {
     0,  27, '1','2','3','4','5','6','7','8','9','0','-','=','\b',
     '\t','q','w','e','r','t','y','u','i','o','p','[',']','\n',
@@ -53,8 +71,12 @@ void keyboard_irq(void) {
     uint8_t status = inb(0x64);
     if (!(status & 0x01)) return;
     uint8_t sc = inb(0x60);
-    
+
     if (status & 0x20) return; // Данные от мыши — игнорируем
+
+    // ===== DOOM: пушим ВСЁ (включая release и shift) =====
+    keyboard_push_scancode(sc);
+    // =====================================================
 
     if (sc == 0x2A || sc == 0x36) { g_shift = 1; return; }
     if (sc == 0xAA || sc == 0xB6) { g_shift = 0; return; }
