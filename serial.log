@@ -5,12 +5,12 @@ BdsDxe: starting Boot0001 "UEFI QEMU DVD-ROM QM00005 " from PciRoot(0x0)/Pci(0x1
 [04;02H┌────────────────────────────────────────────────────────────────────────────────────────────────┐[05;02H││[06;02H││[07;02H││[08;02H││[09;02H││[10;02H││[11;02H││[12;02H││[13;02H││[14;02H││[15;02H││[16;02H││[17;02H││[18;02H││[19;02H││[20;02H││[21;02H││[22;02H││[23;02H││[24;02H└────────────────────────────────────────────────────────────────────────────────────────────────┘[25;02H[26;02H     Use the ▲ and ▼ keys to select which entry is highlighted.                              
       Press enter to boot the selected OS, `e' to edit the commands before booting or `c' for 
       a command-line.                                                                          [0m[30m[47m[05;03H*NtOS (DualBoot)                                                                                [0m[37m[40m[06;03H                                                                                                [07;03H                                                                                                [08;03H                                                                                                [09;03H                                                                                                [10;03H                                                                                                [11;03H                                                                                                [12;03H                                                                                                [13;03H                                                                                                [14;03H                                                                                                [15;03H                                                                                                [16;03H                                                                                                [17;03H                                                                                                [18;03H                                                                                                [19;03H                                                                                                [20;03H                                                                                                [21;03H                                                                                                [22;03H                                                                                                [23;03H                                                                                                 [29;01H   The highlighted entry will be executed automatically in 3s.                                     [29;01H   The highlighted entry will be executed automatically in 2s.                                     [29;01H   The highlighted entry will be executed automatically in 1s.                                     [29;01H   The highlighted entry will be executed automatically in 0s.                                     [0m[30m[40m[2J[01;01H[0m[37m[40m[DRV] PC speaker ready
-[CPU] GDT loaded: 7 entries, TSS at 0x000000000064a460
+[CPU] GDT loaded: 7 entries, TSS at 0x000000000064a4a0
 [CPU] IDT loaded: 256 vectors (int3 DPL=3)
 [PMM] total RAM: 510 MB
-[PMM] free pages: 127267 (497 MB)
+[PMM] free pages: 126419 (493 MB)
 [VMM] old CR3 = 0x0000000000200000
-[VMM] new CR3 = 0x0000000000400000
+[VMM] new CR3 = 0x0000000000750000
 [HEP] heap ready: 0x0000000005000000..0x0000000006000000 (16 MB) [free-list]
 [DRV] AHCI PCI: vendor=0x0000000000008086 dev=0x0000000000002922 bar5=0x0000000081031000
 [DRV] AHCI CAP=0x00000000c0141f05 GHC=0x0000000080000000
@@ -18,7 +18,7 @@ BdsDxe: starting Boot0001 "UEFI QEMU DVD-ROM QM00005 " from PciRoot(0x0)/Pci(0x1
 [DRV] AHCI Ports Implemented (PI) = 0x000000000000003f
 [DRV] Port 0: ssts=0x0000000000000113 sig=0x0000000000000101 cmd=0x0000000000000006
 [DRV] SATA drive on port 0 (sig=0x0000000000000101)
-[DRV] AHCI ready, buf=0x0000000000409000 cmd=0x000000000000c017 tfd=0x0000000000000050
+[DRV] AHCI ready, buf=0x0000000000759000 cmd=0x000000000000c017 tfd=0x0000000000000050
 [sb16] init: start t=0
 [DRV] SB16 DSP ready (ack=0x0x00000000000000aa)
 [sb16] init: setting sample rate t=0
@@ -57,12 +57,12 @@ BdsDxe: starting Boot0001 "UEFI QEMU DVD-ROM QM00005 " from PciRoot(0x0)/Pci(0x1
 [NTM]   vfs_server.elf (10528 bytes)
 [NTM]   vfs_test.elf (10496 bytes)
 [SYC] syscall enabled: STAR=0x0010000800000000 LSTAR=0x000000000010ed30
-[SCH] scheduler initialized, main pid=0 cr3=0x0000000000400000
+[SCH] scheduler initialized, main pid=0 cr3=0x0000000000750000
 [CPU] interrupts enabled
 [BOO] CENTCOM core online
 [BOO] NtOS v0.15.2 boot sequence complete
 [VMM] framebuffer = 1280x800 @ 0x0000000080000000
-[PMM] RAM: 510 MiB total, 480 MiB free
+[PMM] RAM: 510 MiB total, 477 MiB free
 [HEP] heap: 198192/16777216 bytes used
 [TMR] PIT configured at 100 Hz
 [KBD] PS/2 keyboard ready
@@ -77,13 +77,6 @@ BdsDxe: starting Boot0001 "UEFI QEMU DVD-ROM QM00005 " from PciRoot(0x0)/Pci(0x1
 [tick] 200
 [tick] 300
 [tick] 400
-[tick] 500
-[tick] 600
-[tick] 700
-[tick] 800
-[tick] 900
-[tick] 1000
-[tick] 1100
                            Doom Generic 0.1
 Z_Init: Init zone memory allocation daemon. 
 zone memory: 0x55126b0, 600000 allocated for zone
@@ -117,6 +110,13 @@ I_InitGraphics: framebuffer: x_res: 640, y_res: 400, x_virtual: 640, y_virtual: 
 I_InitGraphics: framebuffer: RGBA: 8888, red_off: 16, green_off: 8, blue_off: 0, transp_off: 24
 I_InitGraphics: DOOM screen size: w x h: 320 x 200
 I_InitGraphics: Auto-scaling factor: 2
+[tick] 500
+[tick] 600
+[tick] 700
+[tick] 800
+[tick] 900
+[tick] 1000
+[tick] 1100
 [tick] 1200
 [tick] 1300
 [tick] 1400
@@ -124,5 +124,105 @@ I_InitGraphics: Auto-scaling factor: 2
 [tick] 1600
 [tick] 1700
 [tick] 1800
-
-*** CENTCOM CORE BOOT FAULT ***
+[tick] 1900
+[tick] 2000
+[tick] 2100
+[tick] 2200
+[tick] 2300
+[tick] 2400
+[tick] 2500
+[tick] 2600
+[tick] 2700
+[tick] 2800
+[tick] 2900
+[tick] 3000
+[tick] 3100
+[tick] 3200
+[tick] 3300
+[tick] 3400
+[tick] 3500
+[tick] 3600
+[tick] 3700
+[tick] 3800
+[tick] 3900
+[tick] 4000
+[tick] 4100
+[tick] 4200
+[tick] 4300
+[tick] 4400
+[tick] 4500
+[tick] 4600
+[tick] 4700
+[tick] 4800
+[tick] 4900
+[tick] 5000
+[tick] 5100
+[tick] 5200
+[tick] 5300
+[tick] 5400
+[tick] 5500
+[tick] 5600
+[tick] 5700
+[tick] 5800
+[tick] 5900
+[tick] 6000
+[tick] 6100
+[tick] 6200
+[tick] 6300
+[tick] 6400
+[tick] 6500
+[tick] 6600
+[tick] 6700
+[tick] 6800
+[tick] 6900
+[tick] 7000
+[tick] 7100
+[tick] 7200
+[tick] 7300
+[tick] 7400
+[tick] 7500
+[tick] 7600
+[tick] 7700
+[tick] 7800
+[tick] 7900
+[tick] 8000
+[tick] 8100
+[tick] 8200
+[tick] 8300
+[tick] 8400
+[tick] 8500
+[tick] 8600
+[tick] 8700
+[tick] 8800
+[tick] 8900
+[tick] 9000
+[tick] 9100
+[tick] 9200
+[tick] 9300
+[tick] 9400
+[tick] 9500
+[tick] 9600
+[tick] 9700
+[tick] 9800
+[tick] 9900
+[tick] 10000
+[tick] 10100
+[tick] 10200
+[tick] 10300
+[tick] 10400
+[tick] 10500
+[tick] 10600
+[tick] 10700
+[tick] 10800
+[tick] 10900
+[tick] 11000
+[tick] 11100
+[tick] 11200
+[tick] 11300
+[tick] 11400
+[tick] 11500
+[tick] 11600
+[tick] 11700
+[tick] 11800
+[tick] 11900
+[tick] 12000

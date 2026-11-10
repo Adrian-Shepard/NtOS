@@ -5,6 +5,10 @@
 #define BITMAP_LEN  (MAX_PAGES / 8)
 
 static uint8_t  g_bitmap[BITMAP_LEN];
+
+/* Конец образа ядра (определяется в centcom/centcom.ld) */
+extern uint8_t kernel_end[];
+
 static uint64_t g_total_pages = 0;
 static uint64_t g_free_pages  = 0;
 static uint64_t g_last_alloc_hint = 0;
@@ -53,7 +57,12 @@ void pmm_init(bootinfo_t *bi) {
         }
     }
 
-    mark_used(0, 0x400000);
+    // GRUB грузит ядро по адресу 0x100000 (1 МБ). Образ занимает text + data
+    // (включая встроенный doom1.wad ~4 МБ) + bss + стек — вплоть до kernel_end
+    // (~7.5 МБ). Резервируем весь этот диапазон, иначе pmm_alloc() начнёт
+    // выдавать страницы поверх кода/данных ядра: например, таблицы страниц
+    // VMM ложились прямо в середину doom1.wad и портили его содержимое.
+    mark_used(0, (uint64_t)kernel_end);
     mark_used(0x4000000, 0x500000);
 
     logi(S_PMM, "total RAM: %d MB", (g_total_pages * PAGE_SIZE) / (1024 * 1024));

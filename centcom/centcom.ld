@@ -9,6 +9,7 @@ SECTIONS {
     .rodata : { *(.rodata .rodata.*) }
     .data   : { *(.data .data.*) }
     .bss    : { *(COMMON) *(.bss .bss.*) }
+    kernel_end = ALIGN(4096);
 
     /DISCARD/ : {
         *(.eh_frame)

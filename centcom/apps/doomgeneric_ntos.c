@@ -6,6 +6,7 @@ extern void     fb_swap(void);
 extern uint32_t fb_width(void);
 extern uint32_t fb_height(void);
 extern void*    fb_get_real_ptr(int x, int y);
+extern void*    fb_get_ptr(int x, int y);
 extern int      keyboard_pop_scancode(void);
 extern uint64_t pit_ticks(void);
 
@@ -24,15 +25,18 @@ void DG_DrawFrame(void) {
     int xo = (W - 640) / 2; if (xo < 0) xo = 0;
     int yo = (H - 400) / 2; if (yo < 0) yo = 0;
 
+    // Рисуем в ЗАДНИЙ буфер (двойная буферизация GUI), а не напрямую в
+    // видеопамять. Иначе fb_swap() сразу затирал только что нарисованный
+    // кадр содержимым GUI-буфера — отсюда и мерцание.
     for (int y = 0; y < 400; y++) {
-        uint32_t *row = (uint32_t *)fb_get_real_ptr(xo, yo + y);
+        uint32_t *row = (uint32_t *)fb_get_ptr(xo, yo + y);
         if (row) {
             for (int x = 0; x < 640; x++) {
                 row[x] = DG_ScreenBuffer[y * 640 + x];
             }
         }
     }
-    fb_swap(); // Используем полную замену кадра
+    fb_swap();
 }
 
 // ============ ТАЙМИНГ ============
@@ -41,7 +45,14 @@ uint32_t DG_GetTicksMs(void) {
     if (!_t0) _t0 = pit_ticks();
     return (uint32_t)((pit_ticks() - _t0) * 10);
 }
-void DG_SleepMs(uint32_t ms) { (void)ms; } // Без сна, чтобы избежать зависаний
+void DG_SleepMs(uint32_t ms) {
+    // PIT = 100 Гц, значит 1 тик = 10 мс. 
+    // Заставляем игру ждать, чтобы убрать мерцание и перегрузку.
+    uint64_t end = pit_ticks() + (ms / 10);
+    while (pit_ticks() < end) {
+        __asm__ volatile("pause");
+    }
+}
 
 // ============ КЛАВИАТУРА ============
 int DG_GetKey(int* pressed, unsigned char* doomKey) {
