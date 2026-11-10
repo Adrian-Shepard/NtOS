@@ -148,9 +148,10 @@ disk.img:
 	@echo "Создаю пустой disk.img (16 MiB)..."
 	dd if=/dev/zero of=$@ bs=1M count=16 status=none
 
+# ---------- Запуск в QEMU: PS/2 клавиатура и мышь (USB отключён) ----------
 run: ntos.iso disk.img
-	@echo "Запускаю QEMU (UEFI) с USB-контроллером..."
-	@$(QEMU) -M q35 -m 512 -vga std \
+	@echo "Запускаю QEMU (UEFI) — ввод через PS/2..."
+	@$(QEMU) -machine q35,i8042=on -m 512 -vga std \
 	    -audiodev sdl,id=snd0 \
 	    -machine pcspk-audiodev=snd0 \
 	    -device sb16,audiodev=snd0 \
@@ -159,9 +160,6 @@ run: ntos.iso disk.img
 	    -drive if=pflash,format=raw,readonly=on,file=$(OVMF_CODE) \
 	    -drive if=pflash,format=raw,file=$(OVMF_VARS) \
 	    -cdrom ntos.iso \
-	    -device qemu-xhci,id=xhci \
-	    -device usb-kbd,bus=xhci.0 \
-	    -device usb-mouse,bus=xhci.0 \
 	    -device ich9-ahci,id=ahci_ctrl \
 	    -drive id=disk0,format=raw,file=$(DISK_WIN),if=none \
 	    -device ide-hd,drive=disk0,bus=ahci_ctrl.0 \
@@ -169,8 +167,8 @@ run: ntos.iso disk.img
 	    -display sdl &
 
 run-legacy: ntos.iso disk.img
-	@echo "Запускаю QEMU (Legacy BIOS)..."
-	@$(QEMU) -M pc -m 512 -vga std \
+	@echo "Запускаю QEMU (Legacy BIOS) — ввод через PS/2..."
+	@$(QEMU) -machine pc,i8042=on -m 512 -vga std \
 	    -audiodev sdl,id=snd0 \
 	    -machine pcspk-audiodev=snd0 \
 	    -device sb16,audiodev=snd0 \
