@@ -5,14 +5,14 @@ build/boot.o: centcom/core/boot.c centcom/core/../../bootinfo.h \
  centcom/core/../mem/pmm.h centcom/core/../mem/vmm.h \
  centcom/core/../mem/heap.h centcom/core/../irq/pic.h \
  centcom/core/../irq/isr.h centcom/core/../time/pit.h \
- centcom/core/../driver/keyboard.h centcom/core/../driver/mouse.h \
- centcom/core/../driver/sb16.h centcom/core/../driver/ahci.h \
- centcom/core/../driver/usb.h centcom/core/../driver/e1000.h \
- centcom/core/../fs/ntmem_fs.h centcom/core/../ntsad/ntsad.h \
- centcom/core/../sound/speaker.h centcom/core/../sound/cue.h \
- centcom/core/../sched/sched.h centcom/core/../sched/../core/syscall.h \
- centcom/core/../ipc/ipc.h centcom/core/panic.h centcom/core/gdt.h \
- centcom/core/idt.h
+ centcom/driver/input/keyboard/keyboard.h \
+ centcom/driver/input/mouse/mouse.h centcom/driver/audio/sb16/sb16.h \
+ centcom/driver/storage/ahci/ahci.h centcom/driver/usb/controller/usb.h \
+ centcom/driver/network/e1000/e1000.h centcom/core/../fs/ntmem_fs.h \
+ centcom/core/../ntsad/ntsad.h centcom/core/../sound/speaker.h \
+ centcom/core/../sound/cue.h centcom/core/../sched/sched.h \
+ centcom/core/../sched/../core/syscall.h centcom/core/../ipc/ipc.h \
+ centcom/core/panic.h centcom/core/gdt.h centcom/core/idt.h
 centcom/core/../../bootinfo.h:
 centcom/core/../log/serial.h:
 centcom/core/../log/log.h:
@@ -26,12 +26,12 @@ centcom/core/../mem/heap.h:
 centcom/core/../irq/pic.h:
 centcom/core/../irq/isr.h:
 centcom/core/../time/pit.h:
-centcom/core/../driver/keyboard.h:
-centcom/core/../driver/mouse.h:
-centcom/core/../driver/sb16.h:
-centcom/core/../driver/ahci.h:
-centcom/core/../driver/usb.h:
-centcom/core/../driver/e1000.h:
+centcom/driver/input/keyboard/keyboard.h:
+centcom/driver/input/mouse/mouse.h:
+centcom/driver/audio/sb16/sb16.h:
+centcom/driver/storage/ahci/ahci.h:
+centcom/driver/usb/controller/usb.h:
+centcom/driver/network/e1000/e1000.h:
 centcom/core/../fs/ntmem_fs.h:
 centcom/core/../ntsad/ntsad.h:
 centcom/core/../sound/speaker.h:

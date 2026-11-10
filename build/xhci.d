@@ -1,8 +1,10 @@
-build/xhci.o: centcom/driver/xhci.c centcom/driver/xhci.h \
- centcom/driver/usb.h centcom/driver/../log/log.h \
- centcom/driver/../mem/heap.h centcom/driver/../time/pit.h
-centcom/driver/xhci.h:
-centcom/driver/usb.h:
-centcom/driver/../log/log.h:
-centcom/driver/../mem/heap.h:
-centcom/driver/../time/pit.h:
+build/xhci.o: centcom/driver/usb/xhci/xhci.c \
+ centcom/driver/usb/xhci/xhci.h centcom/driver/usb/controller/usb.h \
+ centcom/driver/input/keyboard/keyboard.h centcom/log/log.h \
+ centcom/mem/heap.h centcom/time/pit.h
+centcom/driver/usb/xhci/xhci.h:
+centcom/driver/usb/controller/usb.h:
+centcom/driver/input/keyboard/keyboard.h:
+centcom/log/log.h:
+centcom/mem/heap.h:
+centcom/time/pit.h:

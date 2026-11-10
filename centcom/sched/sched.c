@@ -12,6 +12,7 @@
 #define USER_CODE_VADDR  0x0000010000000000ULL
 #define USER_STACK_VADDR 0x0000020000000000ULL
 #define STACK_PAGES 16
+#define KSTACK_PAGES 4   /* стек ядра пользовательского процесса (16 КБ) */
 
 extern void usermode_enter(uint64_t entry, uint64_t user_rsp);
 extern uint8_t stack_top[];
@@ -158,27 +159,33 @@ process_t *process_create_user(const uint8_t *elf, uint64_t elf_size,
                                int argc, const char **argv) {
     if (!elf || elf_size < 64) return 0;
 
+    /* КРИТИЧЕСКАЯ СЕКЦИЯ: переключение CR3 и загрузка ELF/стека.
+       Прерывания отключаем, иначе планировщик может переключить процесс
+       посреди загрузки, и vmm_map() отмапит ELF в чужое адресное
+       пространство (g_active_pml4 сменится) — порча памяти и краш. */
+    uint64_t flags = irq_save();
+
     uint64_t new_cr3 = vmm_alloc_pml4();
-    if (!new_cr3) return 0;
-    
+    if (!new_cr3) { irq_restore(flags); return 0; }
+
     uint64_t old_cr3 = vmm_get_current_pml4();
     vmm_switch(new_cr3);
 
     uint64_t entry = elf_load(elf, elf_size);
-    if (!entry) { vmm_switch(old_cr3); pmm_free(new_cr3); return 0; }
+    if (!entry) { vmm_switch(old_cr3); irq_restore(flags); pmm_free(new_cr3); return 0; }
 
     uint64_t user_stack_phys = 0;
-    uint64_t alloced[STACK_PAGES]; // ФИКС #4: Массив для отслеживания
+    uint64_t alloced[STACK_PAGES];
 
     for (int i = 0; i < STACK_PAGES; i++) {
         uint64_t phys = pmm_alloc();
         if (!phys) {
-            // ФИКС #4: Освобождаем уже выделенные страницы
             for (int j = 0; j < i; j++) {
                 vmm_unmap(USER_STACK_VADDR - (j + 1) * 0x1000);
                 pmm_free(alloced[j]);
             }
-            vmm_switch(old_cr3); 
+            vmm_switch(old_cr3);
+            irq_restore(flags);
             pmm_free(new_cr3);
             return 0;
         }
@@ -189,26 +196,33 @@ process_t *process_create_user(const uint8_t *elf, uint64_t elf_size,
 
     uint64_t user_rsp = build_user_stack(user_stack_phys, argc, argv);
     if (!user_rsp) {
-        // ФИКС #4: Освобождаем всё, если стек не собрался
         for (int i = 0; i < STACK_PAGES; i++) {
             vmm_unmap(USER_STACK_VADDR - (i + 1) * 0x1000);
             pmm_free(alloced[i]);
         }
         vmm_switch(old_cr3);
+        irq_restore(flags);
         pmm_free(new_cr3);
         return 0;
     }
 
     vmm_switch(old_cr3);
+    irq_restore(flags);
 
-    uint64_t kstack_phys = pmm_alloc();
-    if (!kstack_phys) {
-        // ФИКС #4: Освобождаем всё
-        vmm_free_address_space(new_cr3);
-        return 0;
+    /* Стек ядра процесса — KSTACK_PAGES страниц (16 КБ). 4 КБ не хватало:
+       на нём выполняются и syscall'ы, и обработчики прерываний (таймер, USB). */
+    uint64_t kstack_phys = 0;
+    for (int i = 0; i < KSTACK_PAGES; i++) {
+        uint64_t phys = pmm_alloc();
+        if (!phys) {
+            for (int j = 0; j < i; j++) pmm_free(kstack_phys + j * 0x1000);
+            vmm_free_address_space(new_cr3);
+            return 0;
+        }
+        if (i == 0) kstack_phys = phys;
     }
 
-    uint64_t *sp = (uint64_t*)(kstack_phys + 0x1000);
+    uint64_t *sp = (uint64_t*)(kstack_phys + KSTACK_PAGES * 0x1000);
     *--sp = (uint64_t)process_exit;
     *--sp = (uint64_t)user_entry_thunk;
     *--sp = 0; *--sp = 0; *--sp = 0; *--sp = 0; *--sp = 0; *--sp = 0;
@@ -219,7 +233,7 @@ process_t *process_create_user(const uint8_t *elf, uint64_t elf_size,
     process_t *p = alloc_slot();
     if (!p) { 
         irq_restore(f); 
-        pmm_free(kstack_phys);
+        for (int i = 0; i < KSTACK_PAGES; i++) pmm_free(kstack_phys + i * 0x1000);
         return 0; 
     }
 
@@ -228,7 +242,7 @@ process_t *process_create_user(const uint8_t *elf, uint64_t elf_size,
     p->rsp              = initial_rsp;
     p->user_rsp         = user_rsp;
     p->cr3              = new_cr3;
-    p->kernel_stack_top = kstack_phys + 0x1000;
+    p->kernel_stack_top = kstack_phys + KSTACK_PAGES * 0x1000;
     p->user_entry       = entry;
     p->stack_phys       = user_stack_phys;
     p->stack_size       = STACK_PAGES * 0x1000;
@@ -253,10 +267,20 @@ process_t *process_fork(process_t *parent, syscall_regs_t *r) {
     child->cr3 = vmm_clone_address_space(parent->cr3);
     if (!child->cr3) { irq_restore(flags); return 0; }
 
-    uint64_t kstack_phys = pmm_alloc();
-    if (!kstack_phys) { pmm_free(child->cr3); irq_restore(flags); return 0; }
+    /* Стек ядра ребёнка — как у обычного пользовательского процесса */
+    uint64_t kstack_phys = 0;
+    for (int i = 0; i < KSTACK_PAGES; i++) {
+        uint64_t phys = pmm_alloc();
+        if (!phys) {
+            for (int j = 0; j < i; j++) pmm_free(kstack_phys + j * 0x1000);
+            pmm_free(child->cr3);
+            irq_restore(flags);
+            return 0;
+        }
+        if (i == 0) kstack_phys = phys;
+    }
 
-    uint64_t *sp = (uint64_t*)(kstack_phys + 0x1000);
+    uint64_t *sp = (uint64_t*)(kstack_phys + KSTACK_PAGES * 0x1000);
 
     sp -= 15;
     syscall_regs_t *child_regs = (syscall_regs_t*)sp;
@@ -272,7 +296,7 @@ process_t *process_fork(process_t *parent, syscall_regs_t *r) {
     *--sp = 0; // r14
     *--sp = 0; // r15
 
-    child->kernel_stack_top = kstack_phys + 0x1000;
+    child->kernel_stack_top = kstack_phys + KSTACK_PAGES * 0x1000;
     child->rsp = (uint64_t)sp;
     child->user_rsp = syscall_get_user_rsp();
     child->user_entry = parent->user_entry;
@@ -316,6 +340,7 @@ void process_kill(uint64_t pid) {
 
 void process_reap(process_t *p) {
     if (!p || p->state != PROC_ZOMBIE) return;
+    logi(S_SCH, "reap pid=%d (%s)", p->pid, p->name);
     if (p->is_user && p->cr3) vmm_free_address_space(p->cr3);
     if (p->is_user && p->stack_phys) {
         for (int i = 0; i < STACK_PAGES; i++) {
@@ -323,8 +348,10 @@ void process_reap(process_t *p) {
             pmm_free(phys);
         }
     }
-    if (p->kernel_stack_top && p->kernel_stack_top != (uint64_t)stack_top)
-        pmm_free(p->kernel_stack_top - 0x1000);
+    if (p->kernel_stack_top && p->kernel_stack_top != (uint64_t)stack_top) {
+        for (int i = 0; i < KSTACK_PAGES; i++)
+            pmm_free(p->kernel_stack_top - KSTACK_PAGES * 0x1000 + i * 0x1000);
+    }
     p->state = PROC_FREE;
     p->cr3 = 0;
     p->stack_phys = 0;

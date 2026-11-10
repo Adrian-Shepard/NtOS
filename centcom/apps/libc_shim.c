@@ -15,6 +15,7 @@ extern volatile int doom_should_exit;
 // Используем безопасную кучу ядра (адрес 0x5000000)
 extern void* kmalloc(size_t size);
 extern void  kfree(void* ptr);
+extern uint64_t ksize(void* ptr);
 
 int errno = 0;
 
@@ -31,7 +32,12 @@ void* doom_calloc(size_t nmemb, size_t size) {
 void* doom_realloc(void* ptr, size_t size) {
     if (!ptr) return kmalloc(size);
     void* p = kmalloc(size);
-    if (p) { memcpy(p, ptr, size); kfree(ptr); }
+    if (p) {
+        size_t old = (size_t)ksize(ptr);   /* не читаем за границей старого блока */
+        if (old > size) old = size;
+        memcpy(p, ptr, old);
+        kfree(ptr);
+    }
     return p;
 }
 

@@ -1,5 +1,5 @@
 #include "synth.h"
-#include "driver/sb16.h" // опционально, если нужно
+#include "driver/audio/sb16/sb16.h" // опционально, если нужно
 #include "../log/log.h"
 #include <stdint.h>
 

@@ -1,10 +1,10 @@
-build/mouse.o: centcom/driver/mouse.c centcom/driver/mouse.h \
- centcom/driver/../irq/isr.h centcom/driver/../core/io.h \
- centcom/driver/../log/log.h centcom/driver/../tty/fb.h \
- centcom/driver/../tty/../../bootinfo.h
-centcom/driver/mouse.h:
-centcom/driver/../irq/isr.h:
-centcom/driver/../core/io.h:
-centcom/driver/../log/log.h:
-centcom/driver/../tty/fb.h:
-centcom/driver/../tty/../../bootinfo.h:
+build/mouse.o: centcom/driver/input/mouse/mouse.c \
+ centcom/driver/input/mouse/mouse.h centcom/core/../irq/isr.h \
+ centcom/core/io.h centcom/log/log.h centcom/tty/fb.h \
+ centcom/tty/../../bootinfo.h
+centcom/driver/input/mouse/mouse.h:
+centcom/core/../irq/isr.h:
+centcom/core/io.h:
+centcom/log/log.h:
+centcom/tty/fb.h:
+centcom/tty/../../bootinfo.h:

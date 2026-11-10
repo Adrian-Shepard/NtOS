@@ -41,6 +41,9 @@ extern int g_gui_active;
 void gui_write(const char *s, uint64_t len);
 int gui_start(void);
 
+/* Рабочий стол: заполняет ярлыки из /etc/desktop.cfg и каталога /bin */
+void desktop_init(void);
+
 int wm_create_window(const char *title, int x, int y, int w, int h,
                      void (*draw)(window_t*), 
                      void (*click)(window_t*, int, int), 

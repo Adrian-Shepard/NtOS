@@ -4,13 +4,14 @@
 #include "../log/serial.h"
 #include "../tty/fb.h"
 #include "../gui/gui.h"
+#include "../gui/uwm.h"
 #include "../fs/ntmem_fs.h"
 #include "../fs/ntrfs.h"
 #include "../sched/sched.h"
 #include "../time/pit.h"
-#include "../driver/sb16.h"
-#include "../driver/keyboard.h"
-#include "../driver/e1000.h"    // <-- для net_send/net_recv
+#include "driver/audio/sb16/sb16.h"
+#include "driver/input/keyboard/keyboard.h"
+#include "driver/network/e1000/e1000.h"    // <-- для net_send/net_recv
 #include "../store/kv.h"
 #include "../mem/vmm.h"
 #include "../mem/pmm.h"
@@ -373,6 +374,66 @@ static uint64_t sys_wait(uint64_t pid, uint64_t status_ptr) {
     }
 }
 
+/* ============ GUI-окна для пользовательских процессов ============ */
+
+static uint64_t copy_user_str(uint64_t ptr, char *dst, uint64_t max) {
+    if (!is_user_ptr(ptr, 1)) return (uint64_t)-1;
+    const char *s = (const char*)ptr;
+    uint64_t n = 0;
+    while (n < max && s[n]) n++;
+    if (n >= max) return (uint64_t)-1;
+    if (!is_user_ptr(ptr, n + 1)) return (uint64_t)-1;
+    for (uint64_t i = 0; i <= n; i++) dst[i] = s[i];
+    return n;
+}
+
+static uint64_t sys_gui_win_create(uint64_t name_ptr, uint64_t w, uint64_t h) {
+    char title[64];
+    if (copy_user_str(name_ptr, title, 63) == (uint64_t)-1) return (uint64_t)-1;
+    process_t *p = process_current();
+    int id = uwm_create(title, (int)w, (int)h, p ? p->pid : 0);
+    return id < 0 ? (uint64_t)-1 : (uint64_t)id;
+}
+
+static uint64_t sys_gui_win_close(uint64_t id) {
+    return (uint64_t)uwm_close((int)id);
+}
+
+static uint64_t sys_gui_win_rect(uint64_t id, uint64_t cmd_ptr) {
+    if (!is_user_ptr(cmd_ptr, sizeof(gui_rect_cmd_t))) return (uint64_t)-1;
+    const gui_rect_cmd_t *u = (const gui_rect_cmd_t*)cmd_ptr;
+    uwm_fill_rect((int)id, u->x, u->y, u->w, u->h, u->color);
+    return 0;
+}
+
+static uint64_t sys_gui_win_text(uint64_t id, uint64_t cmd_ptr) {
+    if (!is_user_ptr(cmd_ptr, sizeof(gui_text_cmd_t))) return (uint64_t)-1;
+    const gui_text_cmd_t *u = (const gui_text_cmd_t*)cmd_ptr;
+    char txt[256];
+    if (copy_user_str((uint64_t)u->text, txt, 255) == (uint64_t)-1) return (uint64_t)-1;
+    uwm_draw_text((int)id, u->x, u->y, txt, u->fg, u->bg);
+    return 0;
+}
+
+static uint64_t sys_gui_win_event(uint64_t id, uint64_t ev_ptr) {
+    if (!is_user_ptr(ev_ptr, sizeof(gui_event_t))) return (uint64_t)-1;
+    gui_event_t ev;
+    int r = uwm_poll_event((int)id, &ev);
+    if (r == 1) {
+        gui_event_t *u = (gui_event_t*)ev_ptr;
+        u->type = ev.type; u->key = ev.key; u->x = ev.x; u->y = ev.y;
+        return 1;
+    }
+    return (uint64_t)r;
+}
+
+static uint64_t sys_gui_win_title(uint64_t id, uint64_t title_ptr) {
+    char title[64];
+    if (copy_user_str(title_ptr, title, 63) == (uint64_t)-1) return (uint64_t)-1;
+    uwm_set_title((int)id, title);
+    return 0;
+}
+
 uint64_t syscall_dispatch(syscall_regs_t *r) {
     g_last_syscall = (int)r->rax;
     g_last_syscall_arg = r->rdi;
@@ -437,6 +498,16 @@ uint64_t syscall_dispatch(syscall_regs_t *r) {
         // --- СЕТЬ ---
         case SYS_NET_SEND:   return sys_net_send(r->rdi, r->rsi);
         case SYS_NET_RECV:   return sys_net_recv(r->rdi, r->rsi);
+
+        case SYS_TICKS: return pit_ticks();
+
+        // --- GUI-ОКНА ---
+        case SYS_GUI_WIN_CREATE: return sys_gui_win_create(r->rdi, r->rsi, r->rdx);
+        case SYS_GUI_WIN_CLOSE:  return sys_gui_win_close(r->rdi);
+        case SYS_GUI_WIN_RECT:   return sys_gui_win_rect(r->rdi, r->rsi);
+        case SYS_GUI_WIN_TEXT:   return sys_gui_win_text(r->rdi, r->rsi);
+        case SYS_GUI_WIN_EVENT:  return sys_gui_win_event(r->rdi, r->rsi);
+        case SYS_GUI_WIN_TITLE:  return sys_gui_win_title(r->rdi, r->rsi);
 
         default:
             logw(S_SYC, "unknown syscall %d", r->rax);

@@ -22,6 +22,13 @@ global ipc_send
 global ipc_recv
 global net_send
 global net_recv
+global gui_win_create
+global gui_win_close
+global gui_win_rect
+global gui_win_text
+global gui_win_event
+global gui_win_set_title
+global get_ticks
 
 section .text
 
@@ -138,5 +145,40 @@ net_send:
 
 net_recv:
     mov rax, 22
+    syscall
+    ret
+
+gui_win_create:
+    mov rax, 23
+    syscall
+    ret
+
+gui_win_close:
+    mov rax, 24
+    syscall
+    ret
+
+gui_win_rect:
+    mov rax, 25
+    syscall
+    ret
+
+gui_win_text:
+    mov rax, 26
+    syscall
+    ret
+
+gui_win_event:
+    mov rax, 27
+    syscall
+    ret
+
+gui_win_set_title:
+    mov rax, 28
+    syscall
+    ret
+
+get_ticks:
+    mov rax, 29
     syscall
     ret

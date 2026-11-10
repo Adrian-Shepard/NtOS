@@ -52,7 +52,7 @@ static void draw_centered_text(const char *s, uint32_t scale, uint32_t y, uint32
 
 static void draw_header(const char *subtitle) {
     uint32_t w = fb_width();
-    
+
     fb_fill_rect(PAD_X, PAD_Y + 48, w - PAD_X * 2, 16, COL_BG);
 
     fb_fill_rect(PAD_X, PAD_Y, w - PAD_X * 2, 32, COL_RED);
@@ -239,6 +239,7 @@ void bootscreen_phase4(void) {
     log_line("PIC", "8259 Interrupt Controller remapped");
     log_line("PIT", "Timer configured at 100 Hz");
     log_line("PS2_KBD", "Keyboard buffer online");
+    log_line("USB_KBD", "HID keyboard polling enabled");
     log_line("SB16", "Audio DSP ready");
     
     animate_progress(85);

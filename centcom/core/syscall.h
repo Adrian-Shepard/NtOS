@@ -35,6 +35,16 @@ uint64_t syscall_dispatch(syscall_regs_t *r);
 #define SYS_NET_SEND    21
 #define SYS_NET_RECV    22
 
+/* --- ГРАФИЧЕСКИЕ ОКНА ДЛЯ ПОЛЬЗОВАТЕЛЬСКИХ ПРИЛОЖЕНИЙ --- */
+#define SYS_GUI_WIN_CREATE  23
+#define SYS_GUI_WIN_CLOSE   24
+#define SYS_GUI_WIN_RECT    25
+#define SYS_GUI_WIN_TEXT    26
+#define SYS_GUI_WIN_EVENT   27
+#define SYS_GUI_WIN_TITLE   28
+
+#define SYS_TICKS           29   /* uptime в тиках PIT (100 Гц) */
+
 uint64_t syscall_get_kstack(void);
 void     syscall_set_kstack(uint64_t top);
 uint64_t syscall_get_user_rsp(void);

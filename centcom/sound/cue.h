@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#define CUE_SOUND_ENABLED 0
+#define CUE_SOUND_ENABLED 0   /* системные cue-звуки ВЫКЛЮЧЕНЫ (загрузка/паника/GUI) */
 /* встроенные сигналы */
 #define CUE_BOOT        0x01
 #define CUE_SHUTDOWN    0x02

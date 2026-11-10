@@ -41,6 +41,7 @@ COBJS := $(BUILD)/multiboot.o \
          $(BUILD)/bootscreen.o \
          $(BUILD)/gui.o \
          $(BUILD)/desktop.o \
+         $(BUILD)/uwm.o \
          $(BUILD)/apps.o \
          $(BUILD)/terminal.o \
          $(BUILD)/taskman.o \
@@ -187,7 +188,15 @@ $(BUILD)/%.o: centcom/apps/%.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -
 $(BUILD)/%.o: centcom/irq/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/mem/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/time/%.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
-$(BUILD)/%.o: centcom/driver/%.c      ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+# Драйверы разложены по подкатегориям: input/, audio/, storage/, network/, usb/
+$(BUILD)/keyboard.o: centcom/driver/input/keyboard/keyboard.c  ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/mouse.o:    centcom/driver/input/mouse/mouse.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/sb16.o:     centcom/driver/audio/sb16/sb16.c           ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/ahci.o:     centcom/driver/storage/ahci/ahci.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/dma.o:      centcom/driver/storage/dma/dma.c           ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/e1000.o:    centcom/driver/network/e1000/e1000.c       ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/usb.o:      centcom/driver/usb/controller/usb.c        ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
+$(BUILD)/xhci.o:     centcom/driver/usb/xhci/xhci.c             ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/elf/%.c         ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/fs/%.c          ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@
 $(BUILD)/%.o: centcom/ntsad/%.c       ; @mkdir -p $(BUILD); $(CC) $(CC_CFLAGS) -c $< -o $@

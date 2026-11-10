@@ -64,11 +64,13 @@ static void putpixel(uint32_t x, uint32_t y, uint32_t c) {
 }
 
 void fb_clear(uint32_t color) {
-    for (uint32_t y = 0; y < g_h; y++) {
-        for (uint32_t x = 0; x < g_w; x++) {
-            g_back_buffer[y * g_pitch_px + x] = color;
-        }
-    }
+    /* rep stosl — быстрое заполнение всего буфера */
+    uint32_t *dst = g_back_buffer;
+    uint32_t count = g_h * g_pitch_px;
+    __asm__ volatile("cld\n\trep stosl"
+        : "+D"(dst), "+c"(count)
+        : "a"((uint64_t)color)
+        : "memory");
     g_cx = g_cy = 0;
 }
 
@@ -129,13 +131,68 @@ void fb_fill_rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t c) {
     uint32_t y_end = y + h;
     if (x_end > g_w) x_end = g_w;
     if (y_end > g_h) y_end = g_h;
+    if (x >= g_w || y >= g_h) return;
 
     for (uint32_t yy = y; yy < y_end; yy++) {
-        for (uint32_t xx = x; xx < x_end; xx++) {
-            g_back_buffer[yy * g_pitch_px + xx] = c;
-        }
+        uint32_t *row = &g_back_buffer[yy * g_pitch_px + x];
+        uint32_t cnt = x_end - x;
+        __asm__ volatile("cld\n\trep stosl"
+            : "+D"(row), "+c"(cnt)
+            : "a"((uint64_t)c)
+            : "memory");
     }
 }
 
 void *fb_get_ptr(uint32_t x, uint32_t y) { if (x >= g_w || y >= g_h) return 0; return (void*)&g_back_buffer[y * g_pitch_px + x]; }
 void *fb_get_real_ptr(uint32_t x, uint32_t y) { if (x >= g_w || y >= g_h) return 0; return (void*)&g_fb[y * g_pitch_px + x]; }
+
+uint32_t fb_pitch_px(void) { return g_pitch_px; }
+
+/* Заливка прямоугольника в произвольном pixel-буфере */
+void fb_fill_buf(uint32_t *dst, uint32_t pitch,
+                 uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t color) {
+    for (uint32_t yy = 0; yy < h; yy++) {
+        for (uint32_t xx = 0; xx < w; xx++) {
+            dst[(y + yy) * pitch + (x + xx)] = color;
+        }
+    }
+}
+
+/* Вывод строки 8x8-шрифтом в произвольный pixel-буфер */
+void fb_text_buf(uint32_t *dst, uint32_t pitch, uint32_t max_w, uint32_t max_h,
+                 uint32_t x, uint32_t y, const char *s, uint32_t fg, uint32_t bg) {
+    uint32_t cx = x, cy = y;
+    while (*s) {
+        char c = *s++;
+        if (c == '\n') { cx = x; cy += 8; continue; }
+        if ((uint8_t)c < 32 || (uint8_t)c > 127) c = '?';
+        if (cx + 8 > max_w) { cx = x; cy += 8; }
+        if (cy + 8 > max_h) return;
+
+        const uint8_t *g = font8x8_basic[(uint8_t)c];
+        for (uint32_t gy = 0; gy < 8; gy++) {
+            for (uint32_t gx = 0; gx < 8; gx++) {
+                uint32_t col = (g[gy] & (1 << gx)) ? fg : bg;
+                dst[(cy + gy) * pitch + (cx + gx)] = col;
+            }
+        }
+        cx += 8;
+    }
+}
+
+/* Копирование pixel-буфера в задний буфер экрана (без учёта двойной буферизации,
+   всегда пишет в g_back_buffer, чтобы работало и до, и после fb_set_buffer) */
+void fb_blit(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint32_t *src) {
+    if (x >= g_w || y >= g_h) return;
+    if (x + w > g_w) w = g_w - x;
+    if (y + h > g_h) h = g_h - y;
+
+    for (uint32_t yy = 0; yy < h; yy++) {
+        uint32_t *dst = &g_back_buffer[(y + yy) * g_pitch_px + x];
+        const uint32_t *s  = &src[yy * w];
+        uint32_t cnt = w;
+        __asm__ volatile("cld\n\trep movsl"
+            : "+D"(dst), "+S"(s), "+c"(cnt)
+            : : "memory");
+    }
+}

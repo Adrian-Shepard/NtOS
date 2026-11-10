@@ -1,7 +1,7 @@
 #include "pit.h"
 #include "../core/io.h"
 #include "../log/log.h"
-#include "../driver/xhci.h"
+#include "driver/usb/xhci/xhci.h"
 
 #define PIT_CH0  0x40
 #define PIT_CMD  0x43

@@ -1,9 +1,9 @@
 #include "shell.h"
 #include "fb.h"
 #include "../gui/gui.h"
-#include "../driver/keyboard.h"
-#include "../driver/sb16.h"
-#include "../driver/ahci.h"
+#include "driver/input/keyboard/keyboard.h"
+#include "driver/audio/sb16/sb16.h"
+#include "driver/storage/ahci/ahci.h"
 #include "../mem/pmm.h"
 #include "../mem/heap.h"
 #include "../time/pit.h"
@@ -67,7 +67,7 @@ static void cmd_help(void) {
     sh_puts("  mem       - memory statistics\n", SH_DIM);
     sh_puts("  heap      - heap statistics\n", SH_DIM);
     sh_puts("  ticks     - PIT tick counter\n", SH_DIM);
-    sh_puts("  fs        - list files in ntmem_fs\n", SH_DIM);
+    sh_puts("  fs        - list files (bin/, etc/, home/)\n", SH_DIM);
     sh_puts("  cat <n>   - hex dump of file by index\n", SH_DIM);
     sh_puts("  disk      - read sector 0 from SATA drive\n", SH_DIM);
     sh_puts("  format    - format disk (NTRFS)\n", SH_DIM);
@@ -75,8 +75,8 @@ static void cmd_help(void) {
     sh_puts("  dls       - list files on disk\n", SH_DIM);
     sh_puts("  dread <n> - read file from disk (hex)\n", SH_DIM);
     sh_puts("  dsave <i> <name> - copy ntmem file #i to disk\n", SH_DIM);
-    sh_puts("  spawn <n> [args] - start ELF in background\n", SH_DIM);
-    sh_puts("  run <n>   [args] - start ELF and wait for exit\n", SH_DIM);
+    sh_puts("  spawn <path> [args] - start ELF in background\n", SH_DIM);
+    sh_puts("  run <path>   [args] - start ELF and wait for exit\n", SH_DIM);
     sh_puts("  kill <pid>- terminate process (0 = panic)\n", SH_DIM);
     sh_puts("  hello     - run hello.elf\n", SH_DIM);
     sh_puts("  procs     - list processes\n", SH_DIM);
@@ -297,7 +297,7 @@ static void cmd_run(const char *rest) {
     process_reap(p2);
 }
 
-static void cmd_hello(void) { cmd_run("hello.elf"); }
+static void cmd_hello(void) { cmd_run("bin/hello.elf"); }
 
 static void cmd_kill(const char *arg) {
     int pid = -1;

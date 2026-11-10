@@ -1,7 +1,7 @@
-build/keyboard.o: centcom/driver/keyboard.c centcom/driver/keyboard.h \
- centcom/driver/../core/io.h centcom/driver/../log/log.h \
- centcom/driver/../log/serial.h
-centcom/driver/keyboard.h:
-centcom/driver/../core/io.h:
-centcom/driver/../log/log.h:
-centcom/driver/../log/serial.h:
+build/keyboard.o: centcom/driver/input/keyboard/keyboard.c \
+ centcom/driver/input/keyboard/keyboard.h centcom/core/io.h \
+ centcom/log/log.h centcom/log/serial.h
+centcom/driver/input/keyboard/keyboard.h:
+centcom/core/io.h:
+centcom/log/log.h:
+centcom/log/serial.h:

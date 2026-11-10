@@ -1,5 +1,5 @@
 #include "ntrfs.h"
-#include "../driver/ahci.h"
+#include "driver/storage/ahci/ahci.h"
 #include "../log/log.h"
 #include "../log/serial.h"
 

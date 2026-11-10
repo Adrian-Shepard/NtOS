@@ -1,10 +1,12 @@
 #include <stddef.h>
 #include "gui.h"
 #include "apps.h"
+#include "uwm.h"
 #include "fb.h"
-#include "../driver/keyboard.h"
-#include "../driver/mouse.h"
-#include "../driver/xhci.h"
+#include "sound/cue.h"
+#include "driver/input/keyboard/keyboard.h"
+#include "driver/input/mouse/mouse.h"
+#include "driver/usb/xhci/xhci.h"
 #include "../time/pit.h"
 #include "../mem/heap.h"
 #include "../mem/pmm.h"
@@ -35,6 +37,11 @@ static int g_next_win_id = 1;
 static int g_drag_idx = -1;
 static int g_drag_off_x = 0, g_drag_off_y = 0;
 static int g_active_win_id = -1;
+
+/* Состояние выделения ярлыков рабочего стола */
+static int      g_selected_icon   = -1;
+static int      g_last_click_icon = -1;
+static uint64_t g_last_click_tick = 0;
 static int g_exit_to_shell = 0;
 static int g_shutdown = 0;
 static uint32_t *g_gui_buf = 0;
@@ -78,20 +85,56 @@ static int gui_strncmp(const char *a, const char *b, int n) {
     return (unsigned char)*a - (unsigned char)*b;
 }
 
+/* Простое альфа-смешивание двух RGB-цветов (для полупрозрачной подсветки) */
+static uint32_t blend_color(uint32_t bg, uint32_t fg, uint32_t alpha) {
+    uint32_t br = (bg >> 16) & 0xFF, bgg = (bg >> 8) & 0xFF, bb = bg & 0xFF;
+    uint32_t fr = (fg >> 16) & 0xFF, fgg = (fg >> 8) & 0xFF, fb = fg & 0xFF;
+    uint32_t r = (br * (255 - alpha) + fr * alpha) / 255;
+    uint32_t g = (bgg * (255 - alpha) + fgg * alpha) / 255;
+    uint32_t b = (bb * (255 - alpha) + fb * alpha) / 255;
+    return 0x00000000u | (r << 16) | (g << 8) | b;
+}
+
+/* Позиция ярлыка на сетке рабочего стола (как иконки в Windows/Linux) */
+static void desktop_icon_pos(int i, int *ox, int *oy) {
+    int col = i % 4;
+    int row = i / 4;
+    *ox = 28 + col * 112;
+    *oy = 92 + row * 106;
+}
+
 static void draw_desktop_icons(void) {
     for (int i = 0; i < g_desktop_shortcut_count; i++) {
-        int ix = 32, iy = 80 + i * 80;
-        fb_fill_rect(ix, iy, 32, 32, GUI_WIN_BG);
-        fb_draw_box(ix, iy, 32, 32, g_desktop_shortcuts[i].icon_color);
-        fb_set_cursor(ix + 4, iy + 4);
+        int ix, iy;
+        desktop_icon_pos(i, &ix, &iy);
+
+        /* полупрозрачная синеватая подсветка выбранного ярлыка */
+        if (i == g_selected_icon) {
+            uint32_t hl = blend_color(GUI_BG_DESKTOP, 0x0044DDFF, 110);
+            fb_fill_rect(ix - 6, iy - 6, 60, 60, hl);
+            fb_draw_box(ix - 6, iy - 6, 60, 60, 0x00449ACC);
+        }
+
+        /* иконка 48x48 */
+        fb_fill_rect(ix, iy, 48, 48, GUI_WIN_BG);
+        fb_draw_box(ix, iy, 48, 48, g_desktop_shortcuts[i].icon_color);
+        fb_set_cursor(ix + 8, iy + 12);
         put_str_gui(g_desktop_shortcuts[i].icon_text, g_desktop_shortcuts[i].icon_color, GUI_WIN_BG);
-        fb_set_cursor(ix - 10, iy + 36);
-        put_str_gui(g_desktop_shortcuts[i].name, GUI_TEXT, GUI_BG_DESKTOP);
+
+        /* подпись: по центру, обрезаем до 13 символов, чтобы не налезать на соседей */
+        const char *name = g_desktop_shortcuts[i].name;
+        int len = 0;
+        while (name[len] && len < 13) len++;
+        int lx = ix + 24 - len * 4;
+        if (lx < ix - 10) lx = ix - 10;
+        fb_set_cursor(lx, iy + 54);
+        for (int k = 0; k < len; k++) fb_putc(name[k], GUI_TEXT, GUI_BG_DESKTOP);
     }
 }
 
 static void launch_shortcut(int index) {
     if (index < 0 || index >= g_desktop_shortcut_count) return;
+    cue_play(CUE_NOTIFY);   /* звук запуска приложения */
     const char *path = g_desktop_shortcuts[index].exec_path;
 
     if (gui_strncmp(path, "KERNEL://", 9) == 0) {
@@ -105,7 +148,8 @@ static void launch_shortcut(int index) {
             wm_create_window(app_editor.name, 200, 100, 500, 350, app_editor.draw, app_editor.click, app_editor.key);
         } else if (gui_strcmp(sys_app, "doom") == 0) {
             extern void doom_main(void);
-            doom_main(); // Запуск DOOM. При выходе (ESC) управление вернётся сюда.
+            doom_main();     // Запуск DOOM. При выходе (ESC) управление вернётся сюда.
+            keyboard_flush(); // Сбрасываем очереди, чтобы ESC из Doom не закрыл GUI
         }
     } else {
         ntmem_file_t *f = ntmem_fs_find(path);
@@ -138,6 +182,7 @@ int wm_create_window(const char *title, int x, int y, int w, int h,
             g_windows[MAX_WINDOWS - 1] = tmp;
 
             g_active_win_id = tmp.id;
+            cue_play(CUE_UI_REVEAL);   /* звук открытия окна (C4-E4-G4) */
             return tmp.id;
         }
     }
@@ -195,6 +240,22 @@ static void draw_top_bar(void) {
     put_str_gui(ts, GUI_TEXT, GUI_BAR_BG);
 }
 
+static void draw_bottom_bar(void) {
+    uint32_t w = fb_width();
+    int by = (int)fb_height() - 24;
+    fb_fill_rect(0, by, w, 24, GUI_BAR_BG);
+    fb_fill_rect(0, by, w, 2, GUI_BAR_ACCENT);
+
+    fb_set_cursor(16, by + 8);
+    put_str_gui("NANOTRASEN SECURITY SYSTEMS // CENTCOM DESKTOP", GUI_TEXT_MUTED, GUI_BAR_BG);
+
+    const char *r = "apps are loaded from /bin and /etc";
+    int rlen = 0;
+    while (r[rlen]) rlen++;
+    fb_set_cursor((int)w - (rlen * 8) - 16, by + 8);
+    put_str_gui(r, GUI_TEXT_MUTED, GUI_BAR_BG);
+}
+
 static void draw_windows(void) {
     for (int i = 0; i < MAX_WINDOWS; i++) {
         if (!g_windows[i].is_open) continue;
@@ -218,6 +279,9 @@ static void draw_windows(void) {
 
         if (win->draw_content) win->draw_content(win);
     }
+
+    /* Окна пользовательских процессов (поверх встроенных) */
+    uwm_draw_all();
 }
 
 static void restore_cursor_bg(void) {
@@ -240,11 +304,23 @@ static void draw_cursor(int mx, int my) {
     last_mx = mx; last_my = my;
 }
 
+/* Синеватый вертикальный градиент рабочего стола */
+static void draw_desktop_bg(void) {
+    uint32_t w = fb_width(), h = fb_height();
+    uint32_t top    = 0x00131C28;
+    uint32_t bottom = 0x00070B12;
+    for (uint32_t y = 0; y < h; y++) {
+        uint32_t c = blend_color(bottom, top, ((h - y) * 255) / h);
+        fb_fill_rect(0, y, w, 1, c);
+    }
+}
+
 static void redraw_gui(int mx, int my) {
-    fb_clear(GUI_BG_DESKTOP);
+    draw_desktop_bg();
     draw_top_bar();
     draw_desktop_icons();
     draw_windows();
+    draw_bottom_bar();
     fb_swap();
     last_mx = -100;
     draw_cursor(mx, my);
@@ -252,8 +328,9 @@ static void redraw_gui(int mx, int my) {
 
 /* ================================================================== */
 int gui_start(void) {
-    /* Освобождаемый буфер */
-    uint32_t buf_size = fb_width() * fb_height() * 4;
+    /* Освобождаемый буфер. Размер по pitch (в пикселях), а не по ширине,
+       иначе fb_swap() читает за границей при pitch > width. */
+    uint32_t buf_size = fb_pitch_px() * fb_height() * 4;
     g_gui_buf = (uint32_t *)kmalloc(buf_size);
     if (g_gui_buf) fb_set_buffer(g_gui_buf);
 
@@ -265,6 +342,9 @@ int gui_start(void) {
         g_windows[i].is_open = 0;
         g_gui_children[i] = 0;
     }
+
+    /* Заполняем рабочий стол из конфига и /bin (автообнаружение приложений) */
+    desktop_init();
 
     redraw_gui(400, 300);
 
@@ -278,19 +358,22 @@ int gui_start(void) {
         /* <<< Локальный опрос xHCI для свежих нажатий */
         xhci_poll();
 
-        /* <<< PS/2 имеет приоритет, иначе — USB-клавиатура */
+        /* PS/2 и USB-клавиатура объединены в keyboard_getchar()
+           (USB мостится в PS/2-буферы в xhci.c) */
         int c = keyboard_getchar();
-        if (!c) c = xhci_get_key();
         if (c == 27) break;
 
-        if (c && g_active_win_id >= 0) {
-            window_t *win = &g_windows[MAX_WINDOWS - 1];
-            if (win->is_open && win->on_key) {
-                win->on_key(win, c);
-                win->draw_content(win);
-                restore_cursor_bg();
-                fb_swap_rect(win->x, win->y, win->w, win->h);
-                draw_cursor(mouse_get_state().x, mouse_get_state().y);
+        if (c) {
+            /* Сначала доставляем клавишу активному пользовательскому окну */
+            if (!uwm_deliver_key(c) && g_active_win_id >= 0) {
+                window_t *win = &g_windows[MAX_WINDOWS - 1];
+                if (win->is_open && win->on_key) {
+                    win->on_key(win, c);
+                    win->draw_content(win);
+                    restore_cursor_bg();
+                    fb_swap_rect(win->x, win->y, win->w, win->h);
+                    draw_cursor(mouse_get_state().x, mouse_get_state().y);
+                }
             }
         }
 
@@ -305,15 +388,19 @@ int gui_start(void) {
         if (current_ticks - last_draw_ticks >= 10) {
             last_draw_ticks = current_ticks;
 
-            /* reap только завершившихся */
+            /* reap завершившихся и закрываем их окна */
             for (int i = 0; i < MAX_WINDOWS; i++) {
                 if (g_gui_children[i] && g_gui_children[i]->state == PROC_ZOMBIE) {
+                    uwm_close_by_pid(g_gui_children[i]->pid);
                     process_reap(g_gui_children[i]);
                     g_gui_children[i] = 0;
                 }
             }
 
-            if (g_active_win_id >= 0) {
+            if (uwm_has_windows()) {
+                /* Пользовательские окна обновляются асинхронно — полная перерисовка */
+                redraw_gui(mouse_get_state().x, mouse_get_state().y);
+            } else if (g_active_win_id >= 0) {
                 window_t *win = &g_windows[MAX_WINDOWS - 1];
                 if (win->is_open && win->draw_content) {
                     win->draw_content(win);
@@ -326,23 +413,43 @@ int gui_start(void) {
 
         mouse_state_t m = mouse_get_state();
         if (m.left && !last_left) {
-            int icon_clicked = 0;
+            int handled = 0;
+
+            /* иконки рабочего стола: одинарный клик — выделение,
+               двойной клик (в пределах 500 мс) — запуск */
             for (int i = 0; i < g_desktop_shortcut_count; i++) {
-                int ix = 32, iy = 80 + i * 80;
-                if (m.x >= ix && m.x <= ix + 32 && m.y >= iy && m.y <= iy + 32) {
-                    launch_shortcut(i);
+                int ix, iy;
+                desktop_icon_pos(i, &ix, &iy);
+                if (m.x >= ix - 8 && m.x <= ix + 56 && m.y >= iy - 6 && m.y <= iy + 66) {
+                    uint64_t now = pit_ticks();
+                    if (g_last_click_icon == i && (now - g_last_click_tick) <= 50) {
+                        launch_shortcut(i);       /* двойной клик */
+                    } else {
+                        cue_play(CUE_CLICK);      /* одинарный клик — выделение */
+                    }
+                    g_selected_icon   = i;
+                    g_last_click_icon = i;
+                    g_last_click_tick = now;
                     redraw_gui(m.x, m.y);
-                    icon_clicked = 1;
+                    handled = 1;
                     break;
                 }
             }
 
-            if (!icon_clicked) {
+            /* клик мимо ярлыка — снимаем выделение */
+            if (!handled && g_selected_icon != -1) {
+                g_selected_icon = -1;
+                redraw_gui(m.x, m.y);
+            }
+
+            /* встроенные окна */
+            if (!handled) {
                 for (int i = MAX_WINDOWS - 1; i >= 0; i--) {
                     if (!g_windows[i].is_open) continue;
                     window_t *win = &g_windows[i];
                     if (m.x >= win->x && m.x <= win->x + win->w && m.y >= win->y && m.y <= win->y + win->h) {
                         g_active_win_id = win->id;
+                        uwm_clear_active();
                         window_t tmp = g_windows[i];
                         for (int k = i; k < MAX_WINDOWS - 1; k++) g_windows[k] = g_windows[k + 1];
                         g_windows[MAX_WINDOWS - 1] = tmp;
@@ -352,6 +459,7 @@ int gui_start(void) {
                             if (m.x >= win->x + win->w - 20 && m.x <= win->x + win->w - 4) {
                                 win->is_open = 0;
                                 g_active_win_id = -1;
+                                cue_play(CUE_UI_SOFT);   /* звук закрытия окна */
                             } else {
                                 g_drag_idx = MAX_WINDOWS - 1;
                                 g_drag_off_x = m.x - win->x;
@@ -361,8 +469,17 @@ int gui_start(void) {
                             win->on_click(win, m.x, m.y);
                         }
                         redraw_gui(m.x, m.y);
+                        handled = 1;
                         break;
                     }
+                }
+            }
+
+            /* окна пользовательских процессов */
+            if (!handled) {
+                if (uwm_handle_click(m.x, m.y)) {
+                    g_active_win_id = -1;
+                    redraw_gui(m.x, m.y);
                 }
             }
         }
@@ -375,7 +492,7 @@ int gui_start(void) {
             if (nx < 0) nx = 0;
             if (ny < 24) ny = 24;
             if (nx + win->w > (int)fb_width())  nx = fb_width() - win->w;
-            if (ny + win->h > (int)fb_height()) ny = fb_height() - win->h;
+            if (ny + win->h > (int)fb_height() - 26) ny = fb_height() - win->h - 26;
             if (nx != win->x || ny != win->y) {
                 win->x = nx; win->y = ny;
                 redraw_gui(m.x, m.y);

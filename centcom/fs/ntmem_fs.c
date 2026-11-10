@@ -69,8 +69,32 @@ ntmem_file_t *ntmem_fs_get(int i) {
 }
 
 ntmem_file_t *ntmem_fs_find(const char *name) {
+    if (!name || !*name) return 0;
+
+    /* 1) Точное совпадение */
     for (int i = 0; i < g_count; i++) {
         if (streq(g_files[i].name, name)) return &g_files[i];
     }
+
+    /* 2) Сброс ведущих '/' и './' — поддержка абсолютных/относительных путей */
+    const char *base = name;
+    while (*base == '/' || *base == '.') base++;
+    if (*base) {
+        for (int i = 0; i < g_count; i++) {
+            if (streq(g_files[i].name, base)) return &g_files[i];
+        }
+
+        /* 3) Поиск в каталоге /bin (как PATH в Linux / PATH в Windows) */
+        char buf[NTMEM_NAME_MAX];
+        const char *p = "bin/";
+        int n = 0;
+        while (*p && n < NTMEM_NAME_MAX - 1) buf[n++] = *p++;
+        while (*base && n < NTMEM_NAME_MAX - 1) buf[n++] = *base++;
+        buf[n] = 0;
+        for (int i = 0; i < g_count; i++) {
+            if (streq(g_files[i].name, buf)) return &g_files[i];
+        }
+    }
+
     return 0;
 }

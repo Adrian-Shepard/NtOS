@@ -106,5 +106,11 @@ void kfree(void *p) {
     }
 }
 
+uint64_t ksize(void *p) {
+    if (!p) return 0;
+    block_t *b = (block_t*)((uint8_t*)p - HDR_SIZE);
+    return b->size;
+}
+
 uint64_t heap_used(void)  { return g_heap_cur - g_heap_start; }
 uint64_t heap_total(void) { return HEAP_SIZE; }
