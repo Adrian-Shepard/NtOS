@@ -1,5 +1,7 @@
 #pragma once
 #include <stdint.h>
+
 void pit_init(uint32_t hz);
 uint64_t pit_ticks(void);
 void pit_on_tick(void);
+void pit_enable_usb_polling(void);

@@ -94,8 +94,8 @@ void centcom_boot(bootinfo_t *bi_unused) {
 
     /* --- USB --- */
     logi(S_DRV, "Initializing USB subsystem...");
-    usb_init(); // <-- ВЫЗОВ ИНИЦИАЛИЗАЦИИ USB
-
+    usb_init();
+    pit_enable_usb_polling();
     /* --- Файловая система --- */
     extern const uint8_t initrd_start[];
     extern const uint8_t initrd_end[];

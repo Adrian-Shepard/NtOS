@@ -283,9 +283,17 @@ void panic_exception(regs_t *r) {
     fb_set_cursor(cx, h - 32);
     put_str("RECOVERY: system halted. Manual reset required.", COL_RED, COL_BG);
     
-    uint32_t idx = pit_ticks() % PANIC_PHRASE_COUNT;
-    const char *p = panic_phrases[idx];
-    if (!p) p = "That wasn't our mistake. Meow :3";
+    const char *p;
+    uint64_t ticks = pit_ticks();
+
+    if (ticks == 0) {
+        // Сработает только если краш произошел ДО первого тика таймера
+        p = "Generic fucking error. Wait, why the hell do you see this? You're not supposed to. No sys_tick has occurred yet, so this shit shouldn't be physically possible.";
+    } else {
+        uint32_t idx = ticks % PANIC_PHRASE_COUNT;
+        p = panic_phrases[idx];
+        if (!p) p = "That wasn't our mistake. Meow :3";
+    }
     
     uint32_t plen = 0; while (p[plen]) plen++;
     uint32_t px = (w - (plen * 8)) / 2;
