@@ -20,3 +20,5 @@ void logd(subsys_t s, const char *fmt, ...);
 
 void log_get_recent(char *out_buf, int max_lines);
 void log_set_fb(int enabled); // <-- НОВАЯ ФУНКЦИЯ
+void log_set_fb_output(int enabled);
+int  log_get_fb_output(void);

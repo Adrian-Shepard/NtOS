@@ -24,16 +24,12 @@ uint64_t pit_ticks(void) { return g_ticks; }
 void pit_on_tick(void) {
     g_ticks++;
 
-    // Отладка: выводим каждые 10 тиков (100 мс), но только первые 5 раз
-    if (g_ticks % 10 == 0) {
-        static int debug_count = 0;
-        if (debug_count < 5) {
-            logi(S_DRV, "[PIT] tick %d, usb_ready=%d", (int)g_ticks, g_usb_ready);
-            debug_count++;
-        }
-        if (g_usb_ready) {
-            xhci_poll();
-        }
+    /* USB polling — каждый тик (100 Гц => 10 мс), чтобы клавиатура
+     * не теряла нажатия. Двойной опрос с главным циклом GUI безвреден:
+     * xhci_poll идемпотентен по состоянию портов и просто выбирает
+     * накопившиеся события из event ring. */
+    if (g_usb_ready) {
+        xhci_poll();
     }
 }
 
