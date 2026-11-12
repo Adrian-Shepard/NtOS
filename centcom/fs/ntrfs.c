@@ -84,6 +84,15 @@ int ntrfs_mount(void) {
     return 1;
 }
 
+/* Сравнение имени файла с именем inode (обе строки не длиннее NTRFS_NAME_MAX). */
+static int name_eq(const char *a, const char *b) {
+    for (int k = 0; k < NTRFS_NAME_MAX; k++) {
+        if (a[k] != b[k]) return 0;
+        if (a[k] == 0) return 1;
+    }
+    return 1;
+}
+
 int ntrfs_create(const char *name, const uint8_t *data, uint32_t size) {
     if (!g_mounted) return 0;
     if (size > 255 * NTRFS_BLOCK_SIZE) {
@@ -92,25 +101,21 @@ int ntrfs_create(const char *name, const uint8_t *data, uint32_t size) {
     }
 
     uint32_t blocks_needed = (size + NTRFS_BLOCK_SIZE - 1) / NTRFS_BLOCK_SIZE;
-    if (blocks_needed > g_super.free_blocks) {
-        loge(S_NTM, "create: no free blocks");
-        return 0;
-    }
 
+    /* Ищем свободный inode и позицию для данных. При перезаписи существующего
+       файла учитываем, сколько блоков он уже занимал, чтобы корректно
+       пересчитать счётчик свободных блоков. */
     uint32_t slot = NTRFS_INODE_MAX;
     uint32_t free_block = g_super.data_start;
+    int32_t  old_blocks = 0;
     for (uint32_t i = 0; i < g_super.inode_count; i++) {
         ntrfs_inode_t in;
         if (!read_inode(i, &in)) break;
         if (in.type == 1) {
-            int match = 1;
-            for (int k = 0; k < NTRFS_NAME_MAX; k++) {
-                if (in.name[k] != name[k]) { match = 0; break; }
-                if (name[k] == 0) break;
-            }
-            if (match) {
+            if (name_eq(in.name, name)) {
                 slot = i;
                 free_block = in.first_block;
+                old_blocks = (int32_t)in.block_count;
                 break;
             }
         } else if (slot == NTRFS_INODE_MAX) {
@@ -122,6 +127,13 @@ int ntrfs_create(const char *name, const uint8_t *data, uint32_t size) {
 
     if (slot == NTRFS_INODE_MAX) {
         loge(S_NTM, "create: no free inode");
+        return 0;
+    }
+
+    /* Реальный прирост: сколько НОВЫХ блоков потребуется сверх уже занятых. */
+    int32_t delta = (int32_t)blocks_needed - old_blocks;
+    if (delta > 0 && (uint32_t)delta > g_super.free_blocks) {
+        loge(S_NTM, "create: no free blocks");
         return 0;
     }
 
@@ -151,7 +163,10 @@ int ntrfs_create(const char *name, const uint8_t *data, uint32_t size) {
 
     if (!write_inode(slot, &in)) return 0;
 
-    g_super.free_blocks -= blocks_needed;
+    /* Возвращаем/списываем ровно разницу блоков (фикс утечки free_blocks
+       при перезаписи файла с увеличением размера). */
+    if (delta > 0)      g_super.free_blocks -= (uint32_t)delta;
+    else if (delta < 0) g_super.free_blocks += (uint32_t)(-delta);
     write_super();
 
     logi(S_NTM, "created: '%s' size=%d inode=%d block=%d", name, size, slot, free_block);
@@ -166,12 +181,7 @@ int ntrfs_read(const char *name, uint8_t *out, uint32_t max) {
         if (!read_inode(i, &in)) return -1;
         if (in.type != 1) continue;
 
-        int match = 1;
-        for (int k = 0; k < NTRFS_NAME_MAX; k++) {
-            if (in.name[k] != name[k]) { match = 0; break; }
-            if (name[k] == 0) break;
-        }
-        if (!match) continue;
+        if (!name_eq(in.name, name)) continue;
 
         uint32_t n = in.size;
         if (n > max) n = max;

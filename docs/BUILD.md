@@ -2,7 +2,7 @@
 
 ## Инструменты
 
-- `gcc` (ядро: freestanding, `-mcmodel=kernel`, `-mno-sse`; Doom дополнительно `-msse2`)
+- `gcc` (ядро: freestanding, `-mcmodel=kernel`, `-mno-sse`)
 - `ld` (линковка по `centcom/centcom.ld`)
 - `nasm` (ассемблер: boot, isr, syscall, context, usermode)
 - `objcopy` (встраивание initrd и doom1.wad как бинарных объектов)
@@ -25,14 +25,17 @@
 `$(BUILD)/%.o: centcom/core/%.c`, `centcom/tty/%.c`, `centcom/gui/%.c` и т.д.
 Драйверы — отдельные правила (`centcom/driver/input/keyboard/keyboard.c` и т.п.).
 
-Флаги: `CC_CFLAGS` (общие), `BOOT_CFLAGS` (загрузчик), `DOOM_CFLAGS` (Doom, +SSE).
+Флаги: `CC_CFLAGS` (общие), `BOOT_CFLAGS` (загрузчик).
 
 ### Сборка userspace
 
 `make -C userspace`:
 - `libc.a` = crt0.o + printf.o + string.o + synth_user.o + syscall.o
 - приложения: каждая папка `apps/*/main.c` → `apps/*/*.elf`
-- `initrd.tar` = `stage/bin/*.elf` + `stage/etc/*` + `stage/home/*`
+- `apps/doom/` собирается отдельно (Doom + свой мини-libc `doom_libc.c`,
+  линкуется с `crt0.o` + `syscall.o` вместо `libc.a`)
+- `initrd.tar` = `stage/bin/*.elf` + `stage/etc/*` + `stage/home/*` + `stage/share/*`
+  (в `/share/doom1.wad` лежит IWAD)
 
 Линковка ELF: `-T libc/user.ld` (база `0x10000000000`), `-mcmodel=large`.
 

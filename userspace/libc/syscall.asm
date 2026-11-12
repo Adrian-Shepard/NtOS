@@ -28,6 +28,8 @@ global gui_win_rect
 global gui_win_text
 global gui_win_event
 global gui_win_set_title
+global gui_win_blit
+global key_poll
 global get_ticks
 
 section .text
@@ -175,6 +177,17 @@ gui_win_event:
 
 gui_win_set_title:
     mov rax, 28
+    syscall
+    ret
+
+gui_win_blit:
+    mov r10, rcx      ; 4-й аргумент (h) переносим в r10 (SysV syscall ABI)
+    mov rax, 30
+    syscall
+    ret
+
+key_poll:
+    mov rax, 31
     syscall
     ret
 

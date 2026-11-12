@@ -45,6 +45,9 @@ uint64_t syscall_dispatch(syscall_regs_t *r);
 
 #define SYS_TICKS           29   /* uptime в тиках PIT (100 Гц) */
 
+#define SYS_GUI_WIN_BLIT    30   /* скопировать пиксельный буфер в окно */
+#define SYS_KEY_POLL        31   /* следующий «сырой» скан-код (-1 если пусто) */
+
 uint64_t syscall_get_kstack(void);
 void     syscall_set_kstack(uint64_t top);
 uint64_t syscall_get_user_rsp(void);

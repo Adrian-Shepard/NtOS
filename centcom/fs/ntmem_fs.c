@@ -76,9 +76,12 @@ ntmem_file_t *ntmem_fs_find(const char *name) {
         if (streq(g_files[i].name, name)) return &g_files[i];
     }
 
-    /* 2) Сброс ведущих '/' и './' — поддержка абсолютных/относительных путей */
+    /* 2) Сброс ведущих '/' и './' — поддержка абсолютных/относительных путей.
+          (Сбрасываем только настоящие разделители, чтобы не портить имена,
+          начинающиеся с точки, и не разрешать обход каталогов через '..') */
     const char *base = name;
-    while (*base == '/' || *base == '.') base++;
+    while (*base == '/') base++;
+    while (base[0] == '.' && base[1] == '/') base += 2;
     if (*base) {
         for (int i = 0; i < g_count; i++) {
             if (streq(g_files[i].name, base)) return &g_files[i];

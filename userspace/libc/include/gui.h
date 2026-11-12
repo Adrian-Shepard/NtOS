@@ -34,6 +34,7 @@ int gui_win_rect(int id, const gui_rect_cmd_t *cmd);
 int gui_win_text(int id, const gui_text_cmd_t *cmd);
 int gui_win_event(int id, gui_event_t *ev);
 int gui_win_set_title(int id, const char *title);
+int gui_win_blit(int id, const void *pixels, int w, int h);
 
 /* uptime системы в тиках PIT (100 Гц) */
 unsigned long get_ticks(void);

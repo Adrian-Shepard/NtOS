@@ -5,15 +5,21 @@
 #include "../mem/heap.h"
 #include "../sched/sched.h"
 
-#define UWM_BG        0x00141A20
-#define UWM_BORDER    0x00AA2222
-#define UWM_TITLE_BG  0x00AA2222
+#define UWM_BG        0x00141A24
+#define UWM_BORDER    0x002A3A48
+#define UWM_BORDER_ACT 0x002EE6C8
+#define UWM_TITLE_BG  0x001C2A36
 #define UWM_TITLE_FG  0x00FFFFFF
-#define UWM_BTN_BG    0x00303030
+#define UWM_BTN_BG    0x0024303C
+#define UWM_BTN_ACT   0x00FF5555
 
 static uwm_window_t g_wins[UWM_MAX_WINDOWS];
 static uint32_t     g_next_id = 1;
 static int          g_active_id = -1;
+
+/* Состояние перетаскивания user-окна за заголовок */
+static int          g_drag_id = -1;
+static int          g_drag_off_x = 0, g_drag_off_y = 0;
 
 static uwm_window_t *find_win(int id) {
     for (int i = 0; i < UWM_MAX_WINDOWS; i++)
@@ -67,6 +73,11 @@ int uwm_create(const char *title, int w, int h, uint64_t owner_pid) {
         win->ev_head   = 0;
         win->ev_tail   = 0;
 
+        /* Текстовый буфер stdout процесса */
+        win->text_lines = 0;
+        win->text_col   = 0;
+        for (int t = 0; t < 64; t++) win->text[t][0] = 0;
+
         fb_fill_buf(surf, (uint32_t)w, 0, 0, (uint32_t)w, (uint32_t)h, UWM_BG);
 
         g_active_id = (int)win->id;
@@ -114,6 +125,50 @@ void uwm_draw_text(int id, int x, int y, const char *s, uint32_t fg, uint32_t bg
                 (uint32_t)x, (uint32_t)y, s, fg, bg);
 }
 
+/* Запись stdout процесса в текстовый буфер окна (мини-терминал). */
+void uwm_win_write(int id, const char *s, uint64_t len) {
+    uwm_window_t *win = find_win(id);
+    if (!win) return;
+    for (uint64_t i = 0; i < len; i++) {
+        char c = s[i];
+        if (c == '\n') {
+            win->text[win->text_lines][win->text_col] = 0;
+            win->text_col = 0;
+            if (win->text_lines < 63) {
+                win->text_lines++;
+                win->text[win->text_lines][0] = 0;
+            } else {
+                /* скролл: сдвигаем все строки вверх */
+                for (int j = 0; j < 63; j++)
+                    for (int k = 0; k < 96; k++)
+                        win->text[j][k] = win->text[j + 1][k];
+                win->text[63][0] = 0;
+            }
+        } else if (c == '\r') {
+            win->text_col = 0;
+        } else if (c >= 32 && c < 127) {
+            if (win->text_col < 95)
+                win->text[win->text_lines][win->text_col++] = c;
+        }
+    }
+    win->text[win->text_lines][win->text_col] = 0;   /* терминатор текущей строки */
+}
+
+/* Копирование пользовательского pixel-буфера в поверхность окна (для Doom).
+ * Буфер формата RGB32, w x h пикселей; лишнее обрезается по размеру окна. */
+void uwm_blit(int id, const uint32_t *src, int w, int h) {
+    uwm_window_t *win = find_win(id);
+    if (!win || !src) return;
+    if (w > win->w) w = win->w;
+    if (h > win->h - UWM_TITLE_H) h = win->h - UWM_TITLE_H;
+    /* Рисуем кадр НИЖЕ заголовка окна, чтобы не перекрывать его */
+    for (int y = 0; y < h; y++) {
+        uint32_t *dst = &win->surface[(uint32_t)(UWM_TITLE_H + y) * (uint32_t)win->w];
+        const uint32_t *s  = &src[y * w];
+        for (int x = 0; x < w; x++) dst[x] = s[x];
+    }
+}
+
 void uwm_set_title(int id, const char *title) {
     uwm_window_t *w = find_win(id);
     if (!w) return;
@@ -136,22 +191,38 @@ void uwm_draw_all(void) {
         uwm_window_t *w = &g_wins[i];
         if (!w->used) continue;
 
+        int active = ((int)w->id == g_active_id);
+
+        /* Текстовый stdout процесса — рисуем в поверхность окна */
+        if (w->text_lines > 0 || w->text_col > 0) {
+            int maxln = ((int)w->h - UWM_TITLE_H - 6) / 10;
+            if (maxln > 63) maxln = 63;
+            for (int ln = 0; ln <= w->text_lines && ln < maxln; ln++) {
+                fb_text_buf(w->surface, (uint32_t)w->w, (uint32_t)w->w, (uint32_t)w->h,
+                            6, UWM_TITLE_H + 4 + ln * 10, w->text[ln],
+                            0x00E2E8F0, UWM_BG);
+            }
+        }
+
         fb_blit((uint32_t)w->x, (uint32_t)w->y, (uint32_t)w->w, (uint32_t)w->h, w->surface);
 
-        uint32_t border = ((int)w->id == g_active_id) ? UWM_BORDER : 0x00404040;
+        uint32_t border = active ? UWM_BORDER_ACT : UWM_BORDER;
         fb_draw_box((uint32_t)w->x, (uint32_t)w->y, (uint32_t)w->w, (uint32_t)w->h, border);
 
-        uint32_t tbg = ((int)w->id == g_active_id) ? UWM_TITLE_BG : 0x00404040;
+        uint32_t tbg = active ? UWM_TITLE_BG : 0x00182028;
         fb_fill_rect((uint32_t)w->x + 1, (uint32_t)w->y + 1,
                      (uint32_t)w->w - 2, UWM_TITLE_H - 4, tbg);
+        if (active) fb_fill_rect((uint32_t)w->x + 1, (uint32_t)w->y + UWM_TITLE_H - 3,
+                                 (uint32_t)w->w - 2, 2, UWM_BORDER_ACT);
         fb_set_cursor((uint32_t)w->x + 8, (uint32_t)w->y + 8);
         const char *t = w->title;
-        while (*t) fb_putc(*t++, UWM_TITLE_FG, tbg);
+        while (*t) fb_putc(*t++, active ? UWM_TITLE_FG : 0x008A94A3, tbg);
 
-        fb_fill_rect((uint32_t)w->x + w->w - 20, (uint32_t)w->y + 4, 16, 16, UWM_BTN_BG);
+        uint32_t cbg = active ? UWM_BTN_ACT : UWM_BTN_BG;
+        fb_fill_rect((uint32_t)w->x + w->w - 20, (uint32_t)w->y + 4, 16, 16, cbg);
         fb_draw_box((uint32_t)w->x + w->w - 20, (uint32_t)w->y + 4, 16, 16, border);
         fb_set_cursor((uint32_t)w->x + w->w - 16, (uint32_t)w->y + 8);
-        fb_putc('X', 0x00D0D0D0, UWM_BTN_BG);
+        fb_putc('X', UWM_TITLE_FG, cbg);
     }
 }
 
@@ -170,11 +241,17 @@ int uwm_handle_click(int mx, int my) {
         g_active_id = (int)w->id;
 
         if (my <= w->y + UWM_TITLE_H) {
-            if (mx >= w->x + w->w - 20 && mx <= w->x + w->w - 4) {
+            /* Кнопка закрытия (16x16) */
+            if (mx >= w->x + w->w - 20 && mx <= w->x + w->w - 4 &&
+                my >= w->y + 4 && my <= w->y + 20) {
                 uwm_close((int)w->id);
                 return 1;
             }
-            return 1; /* заголовок: только активация */
+            /* Заголовок: активация + начало перетаскивания */
+            g_drag_id = (int)w->id;
+            g_drag_off_x = mx - w->x;
+            g_drag_off_y = my - w->y;
+            return 1;
         }
 
         push_event(w, GUI_EV_CLICK, 0, mx - w->x, my - w->y);
@@ -182,6 +259,29 @@ int uwm_handle_click(int mx, int my) {
     }
     g_active_id = -1;
     return 0;
+}
+
+/* Перетаскивание user-окна за заголовок. Возвращает 1, если окно сдвинулось. */
+int uwm_handle_drag(int mx, int my) {
+    if (g_drag_id < 0) return 0;
+    uwm_window_t *w = find_win(g_drag_id);
+    if (!w) { g_drag_id = -1; return 0; }
+
+    int nx = mx - g_drag_off_x;
+    int ny = my - g_drag_off_y;
+    if (nx < 0) nx = 0;
+    if (ny < 24) ny = 24;
+    if (nx + w->w > (int)fb_width())  nx = (int)fb_width() - w->w;
+    if (ny + w->h > (int)fb_height() - 26) ny = (int)fb_height() - w->h - 26;
+
+    if (nx == w->x && ny == w->y) return 0;
+    w->x = nx;
+    w->y = ny;
+    return 1;
+}
+
+void uwm_end_drag(void) {
+    g_drag_id = -1;
 }
 
 int uwm_deliver_key(int key) {

@@ -41,4 +41,7 @@ long ipc_recv(long port, void *buf, unsigned long max);
 long net_send(const void *buf, unsigned long len);
 long net_recv(void *buf, unsigned long max);
 
+// --- ДОБАВЛЕНО: СЫРОЙ ВВОД (скан-коды, для Doom) ---
+long key_poll(void);   // -1 если очередь пуста, иначе байт скан-кода
+
 #define O_RDONLY 0

@@ -40,6 +40,11 @@ static int ends_with(const char *s, const char *suffix) {
     return 1;
 }
 
+static int str_eq(const char *a, const char *b) {
+    while (*a && *b && *a == *b) { a++; b++; }
+    return *a == *b;
+}
+
 static uint32_t parse_color(const char *s) {
     uint32_t v = 0;
     if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) s += 2;
@@ -65,6 +70,14 @@ static void add_shortcut(const char *name, const char *exec, const char *icon, u
     g_desktop_shortcuts[i].icon_text  = g_icons[i];
     g_desktop_shortcuts[i].icon_color = color;
     g_desktop_shortcut_count++;
+}
+
+/* Проверяет, что исполняемый путь уже зарегистрирован (чтобы не дублировать
+   ярлык из desktop.cfg при автообнаружении ELF в /bin). */
+static int already_has_exec(const char *exec) {
+    for (int i = 0; i < g_desktop_shortcut_count; i++)
+        if (str_eq(g_desktop_shortcuts[i].exec_path, exec)) return 1;
+    return 0;
 }
 
 /* Простой парсер /etc/desktop.cfg: NAME | EXEC | ICON | COLOR */
@@ -136,6 +149,9 @@ static void discover_bin_apps(void) {
             name[k-2] == 'l' && name[k-1] == 'f') name[k-4] = 0;
 
         if (name[0] >= 'a' && name[0] <= 'z') name[0] -= 32;
+
+        /* не дублируем ярлыки, уже описанные в /etc/desktop.cfg */
+        if (already_has_exec(f->name)) continue;
 
         add_shortcut(name, f->name, "EXE", palette[color_idx % 8]);
         color_idx++;

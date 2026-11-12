@@ -73,6 +73,21 @@ static uint64_t sys_write(uint64_t fd, uint64_t buf, uint64_t len) {
     if (!is_user_ptr(buf, len)) return (uint64_t)-1;
     
     if (fd == 1 || fd == 2) { // stdout / stderr
+        process_t *p = process_current();
+
+        /* Каждому пользовательскому приложению — собственное окно.
+           При первом выводе создаём окно и пишем stdout в него. */
+        if (g_gui_active && p && p->is_user && p->window_id != -1) {
+            if (p->window_id == 0) {
+                int id = uwm_create(p->name, 480, 320, p->pid);
+                p->window_id = id > 0 ? id : 0;
+            }
+            if (p->window_id > 0) {
+                uwm_win_write(p->window_id, (const char*)buf, len);
+                return len;
+            }
+        }
+
         if (g_gui_active) {
             gui_write((const char*)buf, len);
         } else {
@@ -392,6 +407,8 @@ static uint64_t sys_gui_win_create(uint64_t name_ptr, uint64_t w, uint64_t h) {
     if (copy_user_str(name_ptr, title, 63) == (uint64_t)-1) return (uint64_t)-1;
     process_t *p = process_current();
     int id = uwm_create(title, (int)w, (int)h, p ? p->pid : 0);
+    /* Процесс сам создал своё окно — не создавать для него второе (stdout). */
+    if (id >= 0 && p) p->window_id = -1;
     return id < 0 ? (uint64_t)-1 : (uint64_t)id;
 }
 
@@ -432,6 +449,21 @@ static uint64_t sys_gui_win_title(uint64_t id, uint64_t title_ptr) {
     if (copy_user_str(title_ptr, title, 63) == (uint64_t)-1) return (uint64_t)-1;
     uwm_set_title((int)id, title);
     return 0;
+}
+
+static uint64_t sys_gui_win_blit(uint64_t id, uint64_t buf_ptr, uint64_t w, uint64_t h) {
+    if (w == 0 || h == 0) return 0;
+    if (w > 4096 || h > 4096) return (uint64_t)-1;   /* разумный предел */
+    uint64_t bytes = w * h * 4;
+    if (bytes / (w * h) != 4) return (uint64_t)-1;   /* переполнение */
+    if (!is_user_ptr(buf_ptr, bytes)) return (uint64_t)-1;
+    uwm_blit((int)id, (const uint32_t*)buf_ptr, (int)w, (int)h);
+    return 0;
+}
+
+static uint64_t sys_key_poll(void) {
+    int sc = keyboard_pop_scancode();
+    return sc < 0 ? (uint64_t)-1 : (uint64_t)sc;
 }
 
 uint64_t syscall_dispatch(syscall_regs_t *r) {
@@ -508,6 +540,8 @@ uint64_t syscall_dispatch(syscall_regs_t *r) {
         case SYS_GUI_WIN_TEXT:   return sys_gui_win_text(r->rdi, r->rsi);
         case SYS_GUI_WIN_EVENT:  return sys_gui_win_event(r->rdi, r->rsi);
         case SYS_GUI_WIN_TITLE:  return sys_gui_win_title(r->rdi, r->rsi);
+        case SYS_GUI_WIN_BLIT:   return sys_gui_win_blit(r->rdi, r->rsi, r->rdx, r->r10);
+        case SYS_KEY_POLL:       return sys_key_poll();
 
         default:
             logw(S_SYC, "unknown syscall %d", r->rax);

@@ -13,8 +13,8 @@ GUI находится в `centcom/gui/` и работает в **главном
 | `apps.c/.h` | реестр встроенных приложений (terminal, taskman, editor) |
 | `gui.h` | `window_t`, `desktop_shortcut_t`, `app_meta_t` |
 
-Встроенные приложения (в ядре): `centcom/apps/terminal.c`, `taskman.c`, `editor.c`,
-`doomgeneric_ntos.c` (Doom). Остальные приложения — **отдельные ELF** в userspace.
+Встроенные приложения (в ядре): `centcom/apps/terminal.c`, `taskman.c`, `editor.c`.
+Остальные приложения (включая **Doom**) — **отдельные ELF** в userspace.
 
 ## Ключевые структуры
 

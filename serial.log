@@ -5,12 +5,12 @@ BdsDxe: starting Boot0001 "UEFI QEMU DVD-ROM QM00005 " from PciRoot(0x0)/Pci(0x1
 [04;02H┌────────────────────────────────────────────────────────────────────────────────────────────────┐[05;02H││[06;02H││[07;02H││[08;02H││[09;02H││[10;02H││[11;02H││[12;02H││[13;02H││[14;02H││[15;02H││[16;02H││[17;02H││[18;02H││[19;02H││[20;02H││[21;02H││[22;02H││[23;02H││[24;02H└────────────────────────────────────────────────────────────────────────────────────────────────┘[25;02H[26;02H     Use the ▲ and ▼ keys to select which entry is highlighted.                              
       Press enter to boot the selected OS, `e' to edit the commands before booting or `c' for 
       a command-line.                                                                          [0m[30m[47m[05;03H*NtOS (DualBoot)                                                                                [0m[37m[40m[06;03H                                                                                                [07;03H                                                                                                [08;03H                                                                                                [09;03H                                                                                                [10;03H                                                                                                [11;03H                                                                                                [12;03H                                                                                                [13;03H                                                                                                [14;03H                                                                                                [15;03H                                                                                                [16;03H                                                                                                [17;03H                                                                                                [18;03H                                                                                                [19;03H                                                                                                [20;03H                                                                                                [21;03H                                                                                                [22;03H                                                                                                [23;03H                                                                                                 [29;01H   The highlighted entry will be executed automatically in 3s.                                     [29;01H   The highlighted entry will be executed automatically in 2s.                                     [29;01H   The highlighted entry will be executed automatically in 1s.                                     [29;01H   The highlighted entry will be executed automatically in 0s.                                     [0m[30m[40m[2J[01;01H[0m[37m[40m[DRV] PC speaker ready
-[CPU] GDT loaded: 7 entries, TSS at 0x00000000006561c0
+[CPU] GDT loaded: 7 entries, TSS at 0x000000000068ea20
 [CPU] IDT loaded: 256 vectors (int3 DPL=3)
 [PMM] total RAM: 510 MB
-[PMM] free pages: 126407 (493 MB)
+[PMM] free pages: 126417 (493 MB)
 [VMM] old CR3 = 0x0000000000200000
-[VMM] new CR3 = 0x000000000075c000
+[VMM] new CR3 = 0x0000000000752000
 [HEP] heap ready: 0x0000000005000000..0x0000000006000000 (16 MB) [free-list]
 [DRV] AHCI PCI: vendor=0x0000000000008086 dev=0x0000000000002922 bar5=0x0000000081031000
 [DRV] AHCI CAP=0x00000000c0141f05 GHC=0x0000000080000000
@@ -18,7 +18,7 @@ BdsDxe: starting Boot0001 "UEFI QEMU DVD-ROM QM00005 " from PciRoot(0x0)/Pci(0x1
 [DRV] AHCI Ports Implemented (PI) = 0x000000000000003f
 [DRV] Port 0: ssts=0x0000000000000113 sig=0x0000000000000101 cmd=0x0000000000000006
 [DRV] SATA drive on port 0 (sig=0x0000000000000101)
-[DRV] AHCI ready, buf=0x0000000000765000 cmd=0x000000000000c017 tfd=0x0000000000000050
+[DRV] AHCI ready, buf=0x000000000075b000 cmd=0x000000000000c017 tfd=0x0000000000000050
 [sb16] init: start t=0
 [DRV] SB16 DSP ready (ack=0x0x00000000000000aa)
 [sb16] init: setting sample rate t=0
@@ -36,43 +36,45 @@ BdsDxe: starting Boot0001 "UEFI QEMU DVD-ROM QM00005 " from PciRoot(0x0)/Pci(0x1
 [DRV] Initializing USB subsystem...
 [DRV] [USB] Scanning PCI bus for USB controllers...
 [DRV] [PIT] USB polling ENABLED!
-[NTM] tar: 23 files parsed
-[NTM] ntmem_fs: 23 files mounted
-[NTM]   bin/about.elf (7320 bytes)
-[NTM]   bin/audio_server.elf (13160 bytes)
-[NTM]   bin/audio_test.elf (10408 bytes)
-[NTM]   bin/cat.elf (10320 bytes)
-[NTM]   bin/clock.elf (7368 bytes)
-[NTM]   bin/dhcp_test.elf (11128 bytes)
-[NTM]   bin/echo.elf (10152 bytes)
-[NTM]   bin/hello.elf (10432 bytes)
-[NTM]   bin/ls.elf (10168 bytes)
-[NTM]   bin/midi2ntsad.elf (15376 bytes)
-[NTM]   bin/midiplay.elf (14984 bytes)
-[NTM]   bin/net_test.elf (10592 bytes)
-[NTM]   bin/ping.elf (11152 bytes)
-[NTM]   bin/sh.elf (11512 bytes)
-[NTM]   bin/sleep.elf (10200 bytes)
-[NTM]   bin/synth.elf (19024 bytes)
-[NTM]   bin/udp_test.elf (11152 bytes)
-[NTM]   bin/vfs_server.elf (10840 bytes)
-[NTM]   bin/vfs_test.elf (10808 bytes)
+[NTM] tar: 25 files parsed
+[NTM] ntmem_fs: 25 files mounted
+[NTM]   bin/about.elf (7408 bytes)
+[NTM]   bin/audio_server.elf (13264 bytes)
+[NTM]   bin/audio_test.elf (10496 bytes)
+[NTM]   bin/cat.elf (10408 bytes)
+[NTM]   bin/clock.elf (7456 bytes)
+[NTM]   bin/dhcp_test.elf (11208 bytes)
+[NTM]   bin/doom.elf (549472 bytes)
+[NTM]   bin/echo.elf (10240 bytes)
+[NTM]   bin/hello.elf (10520 bytes)
+[NTM]   bin/ls.elf (10256 bytes)
+[NTM]   bin/midi2ntsad.elf (15480 bytes)
+[NTM]   bin/midiplay.elf (15088 bytes)
+[NTM]   bin/net_test.elf (10680 bytes)
+[NTM]   bin/ping.elf (11232 bytes)
+[NTM]   bin/sh.elf (11600 bytes)
+[NTM]   bin/sleep.elf (10288 bytes)
+[NTM]   bin/synth.elf (19128 bytes)
+[NTM]   bin/udp_test.elf (11232 bytes)
+[NTM]   bin/vfs_server.elf (10928 bytes)
+[NTM]   bin/vfs_test.elf (10896 bytes)
 [NTM]   etc/desktop.cfg (347 bytes)
 [NTM]   etc/motd (52 bytes)
 [NTM]   etc/test.mid (1485 bytes)
 [NTM]   home/readme.txt (36 bytes)
-[SYC] syscall enabled: STAR=0x0010000800000000 LSTAR=0x0000000000110570
-[SCH] scheduler initialized, main pid=0 cr3=0x000000000075c000
+[NTM]   share/doom1.wad (4196020 bytes)
+[SYC] syscall enabled: STAR=0x0010000800000000 LSTAR=0x0000000000110ff0
+[SCH] scheduler initialized, main pid=0 cr3=0x0000000000752000
 [CPU] interrupts enabled
 [BOO] CENTCOM core online
 [BOO] NtOS v0.15.2 boot sequence complete
 [VMM] framebuffer = 1280x800 @ 0x0000000080000000
 [PMM] RAM: 510 MiB total, 477 MiB free
-[HEP] heap: 218808/16777216 bytes used
+[HEP] heap: 4966136/16777216 bytes used
 [TMR] PIT configured at 100 Hz
 [KBD] PS/2 keyboard ready
 [KBD] PS/2 mouse ready
-[NTM] ntmem_fs: 23 file(s)
+[NTM] ntmem_fs: 25 file(s)
 [SCH] scheduler: 1 threads
 [DRV] SB16 detected (IRQ5 enabled)
 [SYC] IPC subsystem online
@@ -80,27 +82,79 @@ BdsDxe: starting Boot0001 "UEFI QEMU DVD-ROM QM00005 " from PciRoot(0x0)/Pci(0x1
 [SEC] access level: 1/10
 [tick] 100
 [tick] 200
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=469888 memsz=34296032
+[SCH] user process: pid=1 name=bin/doom.elf entry=0x0000010000000000 cr3=0x000000000079e000
 [tick] 300
+[SCH] reap pid=1 (bin/doom.elf)
 [tick] 400
 [tick] 500
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=469888 memsz=34296032
+[SCH] user process: pid=2 name=bin/doom.elf entry=0x0000010000000000 cr3=0x000000000079e000
 [tick] 600
+[SCH] reap pid=2 (bin/doom.elf)
 [tick] 700
 [tick] 800
 [tick] 900
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=469888 memsz=34296032
+[SCH] user process: pid=3 name=bin/doom.elf entry=0x0000010000000000 cr3=0x000000000079e000
 [tick] 1000
+[SCH] reap pid=3 (bin/doom.elf)
 [tick] 1100
 [tick] 1200
 [tick] 1300
 [tick] 1400
 [tick] 1500
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=469888 memsz=34296032
+[SCH] user process: pid=4 name=bin/doom.elf entry=0x0000010000000000 cr3=0x000000000079e000
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=469888 memsz=34296032
+[SCH] user process: pid=5 name=bin/doom.elf entry=0x0000010000000000 cr3=0x000000000297e000
 [tick] 1600
+[SCH] reap pid=4 (bin/doom.elf)
+[SCH] reap pid=5 (bin/doom.elf)
 [tick] 1700
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=469888 memsz=34296032
+[SCH] user process: pid=6 name=bin/doom.elf entry=0x0000010000000000 cr3=0x000000000079e000
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=469888 memsz=34296032
+[SCH] user process: pid=7 name=bin/doom.elf entry=0x0000010000000000 cr3=0x000000000297e000
 [tick] 1800
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=469888 memsz=34296032
+[SCH] user process: pid=8 name=bin/doom.elf entry=0x0000010000000000 cr3=0x0000000004f5f000
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=469888 memsz=34296032
+[SCH] user process: pid=9 name=bin/doom.elf entry=0x0000010000000000 cr3=0x0000000008040000
+[SCH] reap pid=6 (bin/doom.elf)
+[SCH] reap pid=7 (bin/doom.elf)
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=469888 memsz=34296032
+[SCH] user process: pid=10 name=bin/doom.elf entry=0x0000010000000000 cr3=0x000000000079e000
+[SCH] reap pid=8 (bin/doom.elf)
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=469888 memsz=34296032
+[SCH] user process: pid=11 name=bin/doom.elf entry=0x0000010000000000 cr3=0x000000000297e000
 [tick] 1900
+[SCH] reap pid=9 (bin/doom.elf)
+[SCH] reap pid=10 (bin/doom.elf)
+[SCH] reap pid=11 (bin/doom.elf)
 [tick] 2000
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=469888 memsz=34296032
+[SCH] user process: pid=12 name=bin/doom.elf entry=0x0000010000000000 cr3=0x000000000079e000
+[SCH] reap pid=12 (bin/doom.elf)
 [tick] 2100
 [tick] 2200
 [tick] 2300
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=469888 memsz=34296032
+[SCH] user process: pid=13 name=bin/doom.elf entry=0x0000010000000000 cr3=0x000000000079e000
+[SCH] reap pid=13 (bin/doom.elf)
 [tick] 2400
 [tick] 2500
 [tick] 2600
@@ -108,6 +162,43 @@ BdsDxe: starting Boot0001 "UEFI QEMU DVD-ROM QM00005 " from PciRoot(0x0)/Pci(0x1
 [tick] 2800
 [tick] 2900
 [tick] 3000
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=4092 memsz=4092
+[SCH] user process: pid=14 name=bin/cat.elf entry=0x0000010000000000 cr3=0x000000000079e000
+[SCH] reap pid=14 (bin/cat.elf)
 [tick] 3100
-
-*** CENTCOM CORE BOOT FAULT ***
+[tick] 3200
+[tick] 3300
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=4204 memsz=4204
+[SCH] user process: pid=15 name=bin/hello.elf entry=0x0000010000000000 cr3=0x000000000079e000
+[SCH] reap pid=15 (bin/hello.elf)
+[tick] 3400
+[tick] 3500
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=4364 memsz=4364
+[SCH] user process: pid=16 name=bin/net_test.elf entry=0x0000010000000000 cr3=0x000000000079e000
+[SCH] reap pid=16 (bin/net_test.elf)
+[tick] 3600
+[tick] 3700
+[tick] 3800
+[tick] 3900
+[ELF] ELF64 entry=0x0000010000000000 phdrs=2
+[ELF] PT_LOAD vaddr=0x0000010000000000 filesz=12048 memsz=126944
+[SCH] user process: pid=17 name=bin/synth.elf entry=0x0000010000000000 cr3=0x000000000079e000
+[tick] 4000
+[tick] 4100
+[tick] 4200
+[tick] 4300
+[tick] 4400
+[tick] 4500
+[tick] 4600
+[tick] 4700
+[tick] 4800
+[tick] 4900
+[tick] 5000
+[tick] 5100
+[tick] 5200
+[tick] 5300
+[tick] 5400
+[tick] 5500

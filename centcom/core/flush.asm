@@ -21,6 +21,10 @@ gdt_flush:
     push rax
     retfq
 .reload_cs:
+    ; Загружаем Task Register (TSS). Без этого RSP0 не настроен,
+    ; и прерывание/исключение из ring3 роняет CPU (triple fault).
+    mov ax, 0x28
+    ltr ax
     ret
 
 ; void idt_flush(struct idt_ptr* ptr);

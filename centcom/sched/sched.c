@@ -1,5 +1,6 @@
 #include "sched.h"
 #include "context.h"
+#include "../gui/uwm.h"
 #include "../mem/pmm.h"
 #include "../mem/vmm.h"
 #include "../core/gdt.h"
@@ -250,6 +251,7 @@ process_t *process_create_user(const uint8_t *elf, uint64_t elf_size,
     p->exit_code        = 0;
     p->state            = PROC_READY;
     p->is_user          = 1;
+    p->window_id        = 0;
     copy_name(p->name, argv[0] ? argv[0] : "user");
     irq_restore(f);
 
@@ -341,6 +343,8 @@ void process_kill(uint64_t pid) {
 void process_reap(process_t *p) {
     if (!p || p->state != PROC_ZOMBIE) return;
     logi(S_SCH, "reap pid=%d (%s)", p->pid, p->name);
+    /* Закрываем окно процесса (если оно было создано для stdout). */
+    uwm_close_by_pid(p->pid);
     if (p->is_user && p->cr3) vmm_free_address_space(p->cr3);
     if (p->is_user && p->stack_phys) {
         for (int i = 0; i < STACK_PAGES; i++) {

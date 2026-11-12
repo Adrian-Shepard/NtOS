@@ -43,7 +43,7 @@ centcom/       ядро (CENTCOM)
   mem/         pmm, vmm, heap
   tty/         framebuffer (fb), shell, bootscreen, шрифты
   gui/         WM, рабочий стол, uwm (окна пользователей), kernel-apps
-  apps/        встроенные приложения (terminal, taskman, editor, doom, libc_shim)
+  apps/        встроенные приложения (terminal, taskman, editor)
   driver/      драйверы (input/, audio/, storage/, network/, usb/)
   fs/          ntmem_fs, ntrfs, tar
   sched/       планировщик

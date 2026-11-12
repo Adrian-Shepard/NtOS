@@ -25,6 +25,7 @@ typedef struct process {
     int      exit_code;
     uint8_t  state;
     uint8_t  is_user;
+    int      window_id;   /* окно UWM для stdout (0 = нет) */
     char     name[PROC_NAME_LEN];
 } process_t;
 
